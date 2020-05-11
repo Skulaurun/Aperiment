@@ -1,0 +1,60 @@
+/*
+ *
+ *   A-Periment - Custom minecraft launcher
+ *   Copyright (C) 2020 Adam Charvát
+ *
+ *   A-Periment is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   A-Periment is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with a-periment. If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+
+.content {
+    text-align: center;
+}
+
+.textbox {
+    margin-top: 50px;
+    padding: 3px 6px 3px 6px;
+    border: 1px solid #a0b3b0;
+    background: none;
+    color: #ffffff;
+    font-size: 20px;
+    transition-duration: 0.5s;
+    outline: none;
+    width: 50%;
+}
+.textbox:focus {
+    border: 1px solid #267aff;
+}
+
+#submit {
+    position: absolute;
+    right: 0px; left: 0px;
+    bottom: 50px;
+    margin: auto;
+    color: #ffffff;
+    background-color: #267aff;
+    border: none;
+    padding: 6px 50px 6px 50px;
+    font-weight: bold;
+    font-size: 20px;
+    transition-duration: 0.3s;
+    width: 50%;
+    outline: none;
+}
+#submit:hover {
+    background-color: #2269db;
+}
+#submit:focus {
+    background-color: #2269db;
+}

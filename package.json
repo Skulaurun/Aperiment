@@ -1,0 +1,63 @@
+{
+  "name": "a-periment",
+  "version": "0.1.0",
+  "description": "Custom minecraft launcher",
+  "main": "src/main/app.js",
+  "scripts": {
+    "start": "electron . --dev",
+    "build": "electron-builder --win --ia32 --publish never",
+    "deploy": "electron-builder --win --ia32 --publish always"
+  },
+  "build": {
+    "appId": "com.skulaurun.aper",
+    "productName": "A-Periment",
+    "publish": {
+      "provider": "github"
+    },
+    "directories": {
+      "output": "build",
+      "buildResources": "."
+    },
+    "extraFiles": [
+      "README.md",
+      "LICENSE.txt",
+      "LICENSE"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "license": "LICENSE"
+    }
+  },
+  "devDependencies": {
+    "electron": "^7.2.3",
+    "electron-builder": "^22.3.2"
+  },
+  "dependencies": {
+    "arch": "^2.1.1",
+    "axios": "^0.19.2",
+    "compare-versions": "^3.6.0",
+    "electron-log": "^4.1.2",
+    "electron-updater": "^4.3.1",
+    "node-machine-id": "^1.1.12",
+    "rimraf": "^3.0.2",
+    "unzipper": "^0.10.10",
+    "valid-url": "^1.0.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Skulaurun/a-periment.git"
+  },
+  "author": "Adam Charvát",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Skulaurun/a-periment/issues"
+  },
+  "homepage": "https://github.com/Skulaurun/a-periment#readme"
+}

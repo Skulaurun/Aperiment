@@ -1,0 +1,174 @@
+/*
+ *
+ *   A-Periment - Custom minecraft launcher
+ *   Copyright (C) 2020 Adam Charvát
+ *
+ *   A-Periment is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   A-Periment is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with a-periment. If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+
+.menu-container {
+    position: relative;
+    width: 64px;
+    height: 100%;
+    background-color: rgb(52, 73, 94);
+}
+.menu-item {
+    position: relative;
+    width: 100%;
+    height: 64px;
+    border-left: 3px solid rgb(52, 73, 94);
+    -webkit-user-select: none;
+    transition-duration: 0.2s;
+}
+.menu-item.selected {
+    border-left: 3px solid white;
+}
+.menu-item img {
+    width: 42px;
+    height: 42px;
+    position: absolute;
+    top: 0; right: 0;
+    bottom: 0; left: -3px;
+    margin: auto;
+    -webkit-user-select: none;
+    filter: brightness(60%);
+}
+.menu-item.selected img {
+    filter: brightness(100%);
+}
+
+.logout-button {
+    width: 100%;
+    height: 64px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+.logout-button img {
+    width: 42px;
+    height: 42px;
+    position: absolute;
+    top: 0; right: 0;
+    bottom: 0; left: 0;
+    margin: auto;
+}
+
+.page-container {
+    position: absolute;
+    top: 0;
+    left: 64px;
+    width: calc(100% - 64px);
+    height: 100%;
+    background-color: rgb(60, 79, 97);
+}
+.page-item {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    transition-duration: 0.35s;
+}
+.page-item.visible {
+    opacity: 1;
+    display: block;
+}
+
+.library-container {
+    width: 20%;
+    height: 100%;
+    overflow: hidden;
+    background-color: rgb(59, 90, 119);
+    -webkit-user-select: none;
+}
+.library-item {
+    width: 100%;
+    height: 32px;
+    margin-bottom: 6px;
+    padding-left: 6px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.library-item img {
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    margin-top: 2.5px;
+}
+.library-item p {
+    display: inline-block;
+    vertical-align: top;
+    line-height: 32px;
+    margin-left: 6px;
+    font-size: 25px;
+}
+.library-item.selected {
+    background-color: rgb(68, 106, 141);
+}
+.modpack-container {
+    position: absolute;
+    top: 0;
+    left: 20%;
+    width: 80%;
+    height: 100%;
+}
+
+.progress-bar {
+    position: absolute;
+    width: 100%;
+    height: 5px;
+    overflow-x: hidden;
+}
+.progress-bar .background {
+    position: absolute;
+    opacity: 0.4;
+    background: #4a8df8;
+    width: 150%;
+    height: 5px;
+}
+.progress-bar .line {
+    position: absolute;
+    background: #4a8df8;
+    height: 5px; 
+}
+.line.progress {
+    transition-duration: 0.2s;
+}
+.line.infinite-increase {
+    display: none;
+    animation: increase 2s infinite;
+}
+.line.infinite-decrease {
+    display: none;
+    animation: decrease 2s 0.5s infinite;
+}
+
+.settings-table {
+    width: 100%;
+}
+.settings-table input {
+    width: 100%;
+}
+
+@keyframes increase {
+    from { left: -5%; width: 5%; }
+    to { left: 130%; width: 100%;}
+}
+@keyframes decrease {
+    from { left: -80%; width: 80%; }
+    to { left: 110%; width: 10%;}
+}

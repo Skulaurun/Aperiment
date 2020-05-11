@@ -1,0 +1,70 @@
+<!--
+
+    A-Periment - Custom minecraft launcher
+    Copyright (C) 2020 Adam Charvát
+    
+    A-Periment is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    A-Periment is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+    
+    You should have received a copy of the GNU General Public License
+    along with a-periment. If not, see <https://www.gnu.org/licenses/>.
+    
+-->
+
+<!DOCTYPE html>
+
+<html>
+
+    <head>
+
+        <meta charset="utf-8">
+
+        <link rel="stylesheet" href="../resources/styles/global.css">
+        <link rel="stylesheet" href="../resources/styles/login.css">
+
+        <script src="./renderer/global.js"></script>
+        <script src="./renderer/login.js"></script>
+
+    </head>
+
+    <body>
+
+        <div class="title-bar">
+            
+            <div class="window-about">
+                <img src="../icon.png">
+                <p>A-Periment | Login</p>
+            </div>
+
+            <div id="window-controls" class="window-controls">
+                <svg width="24" height="24" name="minimize">
+                    <line x1="30%" y1="50%" x2="70%" y2="50%"/>
+                </svg>
+                <svg width="24" height="24" name="close">
+                    <line x1="30%" y1="30%" x2="70%" y2="70%"/>
+                    <line x1="70%" y1="30%" x2="30%" y2="70%"/>
+                </svg>
+            </div>
+
+        </div>
+        
+        <div class="content">
+            <input type="text" id="username" class="textbox" placeholder="Username" maxlength="100" autocomplete="off"><br>
+            <input type="password" id="password" class="textbox" placeholder="Password" maxlength="100" autocomplete="off"><br>
+            <select id="mode-menu" style="width: 50%; margin: 10px; font-size: 20px;">
+                <option value="online">ONLINE</option>
+                <option value="offline">OFFLINE</option>
+            </select>
+            <button id="submit">LOGIN</button>
+        </div>
+
+    </body>
+
+</html>

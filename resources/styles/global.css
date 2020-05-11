@@ -1,0 +1,79 @@
+/*
+ *
+ *   A-Periment - Custom minecraft launcher
+ *   Copyright (C) 2020 Adam Charvát
+ *
+ *   A-Periment is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   A-Periment is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with a-periment. If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    color: rgb(230, 230, 230);
+    font-family: Arial, Helvetica, sans-serif;
+    height: 100%;
+}
+
+.title-bar {
+    position: relative;
+    width: 100%;
+    height: 24px;
+    background-color: rgb(44, 62, 80);
+    -webkit-app-region: drag;
+    -webkit-user-select: none;
+}
+.window-about {
+    float: left;
+}
+.window-about p {
+    display: inline-block;
+    vertical-align: top;
+    line-height: 24px;
+    font-size: 14px;
+    margin-left: 5px;
+}
+.window-about img {
+    display: inline-block;
+    margin: 3px 0 0 3px;
+    width: 18px;
+    height: 18px;
+}
+.window-controls {
+    float: right;
+    height: 100%;
+    -webkit-app-region: no-drag;
+}
+.window-controls svg > * {
+    shape-rendering: crispEdges;
+    stroke: rgb(230, 230, 230);
+}
+.window-controls svg:hover {
+    background-color: rgba(200, 200, 200, 0.4);
+}
+.window-controls :last-child:hover {
+    background-color: rgb(253, 45, 45);
+}
+
+.content {
+    position: absolute;
+    top: 24px;
+    width: 100%;
+    height: calc(100% - 24px);
+    background-color: rgb(79, 87, 124);
+}
