@@ -20,7 +20,7 @@
     },
     "extraFiles": [
       "README.md",
-      "LICENSE.txt",
+      "COPYRIGHT.txt",
       "LICENSE"
     ],
     "win": {
@@ -36,18 +36,18 @@
     }
   },
   "devDependencies": {
-    "electron": "^7.2.3",
-    "electron-builder": "^22.3.2"
+    "electron": "^7.3.2",
+    "electron-builder": "^22.8.0"
   },
   "dependencies": {
-    "arch": "^2.1.1",
+    "arch": "^2.1.2",
     "axios": "^0.19.2",
     "compare-versions": "^3.6.0",
-    "electron-log": "^4.1.2",
-    "electron-updater": "^4.3.1",
+    "electron-log": "^4.2.2",
+    "electron-updater": "^4.3.4",
     "node-machine-id": "^1.1.12",
     "rimraf": "^3.0.2",
-    "unzipper": "^0.10.10",
+    "unzipper": "^0.10.11",
     "valid-url": "^1.0.9"
   },
   "repository": {
