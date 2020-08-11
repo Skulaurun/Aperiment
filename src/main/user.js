@@ -40,7 +40,7 @@ class User { // TODO: Improve error messages.
         let nickname = this.storage.get("nickname");
         let accessToken = this.storage.get("accessToken");
 
-        this.id = id || this.offlineId;
+        this.id = id;
         this.nickname = nickname;
         this.accessToken = accessToken;
         this.clientToken = machineIdSync(true);
