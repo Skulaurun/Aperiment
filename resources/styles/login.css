@@ -23,38 +23,65 @@
 }
 
 .textbox {
+    text-align: center;
     margin-top: 50px;
     padding: 3px 6px 3px 6px;
-    border: 1px solid #a0b3b0;
+    color: rgb(230, 230, 230);
+    border: 1px solid rgb(230, 230, 230);
     background: none;
-    color: #ffffff;
     font-size: 20px;
     transition-duration: 0.5s;
     outline: none;
     width: 50%;
 }
 .textbox:focus {
-    border: 1px solid #267aff;
+    border: 1px solid rgb(60, 207, 92);
+}
+.textbox::placeholder {
+    color: rgb(150, 150, 150);
+}
+
+#mode-menu {
+    color: inherit;
+    background-color: rgb(35, 35, 35);
+    width: 50%;
+    margin: 50px;
+    padding: 6px 50px 6px 50px;
+    font-size: 20px;
+    text-align-last: center;
+    outline: none;
+    border: none;
 }
 
 #submit {
     position: absolute;
-    right: 0px; left: 0px;
     bottom: 50px;
+    right: 0; left: 0;
     margin: auto;
-    color: #ffffff;
-    background-color: #267aff;
-    border: none;
-    padding: 6px 50px 6px 50px;
-    font-weight: bold;
-    font-size: 20px;
-    transition-duration: 0.3s;
+    color: inherit;
     width: 50%;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 6px 50px 6px 50px;
+    overflow: hidden;
     outline: none;
+    border: none;
+    background-color: rgb(60, 207, 92);
 }
-#submit:hover {
-    background-color: #2269db;
+#submit::before {
+	content: '';
+	height: 90px;
+	width: 400px;
+	left: -450px;
+	position: absolute;
+	top: 0; bottom: 0;
+	transform: skew(-45deg);
+	transition: 0.8s;
+	background-image: linear-gradient(to left, rgba(255, 255, 255, 0.2) 0%, rgba(255,255,255, 0.2) 50%, transparent 50%);
 }
-#submit:focus {
-    background-color: #2269db;
+#submit:hover::before {
+    left: 450px;
+}
+#submit:active {
+    background-color: rgb(22, 224, 66);
 }

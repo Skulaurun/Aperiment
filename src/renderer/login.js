@@ -37,4 +37,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
+    let process = function(event) {
+
+        switch (event.key) {
+
+            case "ArrowDown":
+                if (event.target.id == "username") {
+                    password.focus();
+                }
+                break;
+
+            case "ArrowUp":
+                if (event.target.id == "password") {
+                    username.focus();
+                }
+                break;
+
+            case "Enter":
+                submit.click();
+                break;
+        }
+
+    };
+
+    username.addEventListener("keydown", process);
+    password.addEventListener("keydown", process);
+
+    username.focus();
+
 });

@@ -24,14 +24,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ipcRenderer.send("app-version");
 
-    // TODO: REWORK CODE BELOW
-    var modpackUrl = document.getElementById("modpack-url");
-    var addButton = document.getElementById("add-modpack");
-    addButton.addEventListener("click", () => {
-        ipcRenderer.send("add-modpack", modpackUrl.value);
+    let modpackSearchBar = document.getElementById("modpack-search-bar");
+    document.getElementById("add-modpack-button").addEventListener("click", () => {
+
+        if (modpackSearchBar.value != "") {
+            ipcRenderer.send("add-modpack", modpackSearchBar.value);
+        }
+
     });
 
-    document.getElementById("save-button").addEventListener("click", () => {
+    document.getElementById("save-settings-button").addEventListener("click", () => {
 
         let settings = {};
         let settingsTable = document.getElementById("settings-table").querySelector("tbody");

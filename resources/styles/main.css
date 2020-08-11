@@ -118,6 +118,24 @@
     padding: 8px;
 }
 
+.modpack-search-bar {
+    color: inherit;
+    width: 100%;
+    border: none;
+    outline: none;
+    background: none;
+    font-size: 18px;
+    padding: 6px 10px 6px 10px;
+    transition-duration: 0.5s;
+    border: 1px solid rgb(230, 230, 230);
+}
+.modpack-search-bar:focus {
+    border: 1px solid rgb(60, 207, 92);
+}
+.modpack-search-bar::placeholder {
+    color: rgb(150, 150, 150);
+}
+
 .modpack-container {
     width: 100%;
     height: 100%;
@@ -211,9 +229,50 @@
 
 .settings-table {
     width: 100%;
+    border-collapse: collapse;
 }
-.settings-table input {
+.settings-table tr:nth-child(even) {
+    background-color: rgb(50, 50, 50);
+}
+.settings-table tr:hover {
+    background-color: rgb(55, 55, 55);
+}
+.settings-table td, .settings-table th {
+    border: 1px solid rgb(40, 40, 40);
+    padding: 8px;
+}
+.settings-table thead th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: center;
+    background-color: rgb(40, 40, 40);
+}
+.settings-table tbody input {
     width: 100%;
+    padding: 3px 6px 3px 6px;
+    color: rgb(230, 230, 230);
+    border: none;
+    outline: none;
+    background: none;
+    transition-duration: 0.5s;
+}
+.settings-button {
+    margin-top: 8px;
+    float: right;
+    color: inherit;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 6px 50px 6px 50px;
+    overflow: hidden;
+    outline: none;
+    border: none;
+    background-color: rgb(68, 180, 93);
+}
+.settings-button:hover {
+    background-color: rgb(56, 209, 89);
+}
+.settings-button:active {
+    background-color: rgb(68, 228, 102);
 }
 
 @keyframes increase {

@@ -86,8 +86,8 @@
 
                     <div class="page-content">
 
-                        <input type="text" id="modpack-url" style="padding: 5px 10px 5px 10px; width: 50%;" placeholder="Enter manifest URL">
-                        <button id="add-modpack" style="padding: 5px 10px 5px 10px;">ADD</button>
+                        <input type="text" id="modpack-search-bar" class="modpack-search-bar" placeholder="Enter manifest URL here...">
+                        <button id="add-modpack-button" class="settings-button">ADD</button>
 
                     </div>
 
@@ -103,22 +103,30 @@
                         <div id="modpack-context-menu" class="context-menu"></div>
                         <p id="modpack-count" class="modpack-count"></p>
 
-
                     </div>
 
                 </div>
 
                 <div class="page-item" name="settings">
-                    <table id="settings-table" class="settings-table">
-                        <thead>
-                            <tr>
-                                <th>Key</th>
-                                <th>Value</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                    <button id="save-button" style="width: calc(100% - 20px); margin: 10px; padding: 5px 10px 5px 10px;">SAVE</button>
+
+                    <div class="page-title">A-Periment Settings</div>
+
+                    <div class="page-content">
+
+                        <table id="settings-table" class="settings-table">
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
+                        <button id="save-settings-button" class="settings-button">SAVE</button>
+
+                    </div>
+
                 </div>
 
             </div>
