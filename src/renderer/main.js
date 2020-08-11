@@ -20,29 +20,28 @@
 
 const { ipcRenderer } = electron;
 
-var modpackRunning = false;
 document.addEventListener("DOMContentLoaded", () => {
 
     ipcRenderer.send("app-version");
 
+    // TODO: REWORK CODE BELOW
     var modpackUrl = document.getElementById("modpack-url");
     var addButton = document.getElementById("add-modpack");
     addButton.addEventListener("click", () => {
         ipcRenderer.send("add-modpack", modpackUrl.value);
     });
 
-    var saveButton = document.getElementById("save-button");
-    saveButton.addEventListener("click", () => {
+    document.getElementById("save-button").addEventListener("click", () => {
 
-        var settings = {};
-        var settingsTable = document.getElementById("settings-table").querySelector("tbody");
+        let settings = {};
+        let settingsTable = document.getElementById("settings-table").querySelector("tbody");
 
-        for (var i = 0; i < settingsTable.children.length; i++) {
+        for (let i = 0; i < settingsTable.children.length; i++) {
 
-            var setting = settingsTable.children[i];
+            let setting = settingsTable.children[i];
 
-            var key = setting.children[0].textContent;
-            var value = setting.querySelector("input").value;
+            let key = setting.children[0].textContent;
+            let value = setting.querySelector("input").value;
 
             settings[key] = value;
 
@@ -52,45 +51,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
-    var launchButton = document.getElementById("launch-button");
-    launchButton.addEventListener("click", () => {
-
-        if (!modpackRunning) {
-
-            let selectedModpack = document.querySelector(".library-item.selected");
-            
-            if (selectedModpack) {
-
-                modpackRunning = true;
-    
-                var debugProgress = document.getElementById("debug-progress");
-                debugProgress.textContent = "PREPARING";
-                launchButton.textContent = "CANCEL";
-                launchButton.disabled = true;
-        
-                ipcRenderer.send("launch-modpack", {
-                    vma: selectedModpack.getAttribute("vma"),
-                    url: selectedModpack.getAttribute("url"),
-                    directory: selectedModpack.getAttribute("directory")
-                });
-                
-            }
-
-        } else {
-            ipcRenderer.send("terminate-modpack");
-        }
-
-    });
-
-    var logoutButton = document.getElementById("logout-button");
-    logoutButton.addEventListener("click", () => {
+    document.getElementById("logout-button").addEventListener("click", () => {
         ipcRenderer.send("user-logout");
     });
 
-    var menuContainer = document.getElementById("menu-container");
-    menuContainer.querySelectorAll(".menu-item").forEach((node) => {
-
-        node.children[0].setAttribute("draggable", false);
+    document.getElementById("menu-container").querySelectorAll(".menu-item").forEach((node) => {
 
         node.addEventListener("click", () => {
 
@@ -114,69 +79,201 @@ document.addEventListener("DOMContentLoaded", () => {
 
 ipcRenderer.on("app-version", (event, version) => {
 
-    var versionElement = document.getElementById("app-version");
+    let versionElement = document.getElementById("app-version");
     versionElement.textContent += version;
 
 });
 
 ipcRenderer.on("load-modpacks", (event, modpacks) => {
 
-    var libraryContainer = document.getElementById("library-container");
-    libraryContainer.innerHTML = "";
+    let modpackContainer = document.getElementById("modpack-container");
+    let modpackContextMenu = document.getElementById("modpack-context-menu");
+    modpackContainer.innerHTML = "";
 
-    for (var i = 0; i < modpacks.length; i++) {
+    window.addEventListener("click", () => {
+
+        let item = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
+        if (item) {
+            item.setAttribute("hover", false);
+            item.setAttribute("contextmenu", false);
+        }
+
+        modpackContextMenu.classList.remove("active");
+
+    });
+
+    for (let i = 0; i < modpacks.length; i++) {
 
         let modpack = modpacks[i];
 
-        var item = document.createElement("div");
+        let item = document.createElement("div");
         item.setAttribute("name", modpack.name);
         item.setAttribute("creators", modpack.creators.join(", "));
         item.setAttribute("description", modpack.description);
         item.setAttribute("directory", modpack.name.trim().toLowerCase().replace(/ /g, "-"));
         item.setAttribute("url", modpack.url);
         item.setAttribute("vma", modpack.vma);
-        item.classList.add("library-item");
+        item.setAttribute("hover", false);
+        item.setAttribute("running", false);
+        item.setAttribute("contextmenu", false);
+        item.classList.add("modpack-item");
     
-        var icon = document.createElement("img");
-        icon.setAttribute("draggable", false);
+        let icon = document.createElement("img");
         icon.src = "../icon.png";
-    
-        var name = document.createElement("p");
-        name.textContent = modpack.name;
-    
         item.appendChild(icon);
-        item.appendChild(name);
-        libraryContainer.appendChild(item);
 
-    }
+        let statusBar = document.createElement("div");
+        statusBar.classList.add("status-bar");
+        statusBar.appendChild(document.createElement("div")).classList.add("line", "progress");
+        statusBar.appendChild(document.createElement("div")).classList.add("line", "infinite-increase");
+        statusBar.appendChild(document.createElement("div")).classList.add("line", "infinite-decrease");
+        statusBar.setMode = function(mode) {
 
-    libraryContainer.childNodes[0].classList.add("selected");
+            if (this.getAttribute("mode") === mode) return;
+        
+            switch (mode) {
+    
+                case "NONE":
+                    this.style.display = "none";
+                    this.children[0].style.display = "none";
+                    this.children[1].style.display = "none";
+                    this.children[2].style.display = "none";
+                    break;
+    
+                case "PROGRESS":
+                    this.style.display = "block";
+                    this.children[0].style.display = "block";
+                    this.children[1].style.display = "none";
+                    this.children[2].style.display = "none";
+                    break;
+    
+                case "INFINITE":
+                    this.style.display = "block";
+                    this.children[0].style.display = "none";
+                    this.children[1].style.display = "block";
+                    this.children[2].style.display = "block";
+                    break;
+    
+                default:
+                    return;
+    
+            }
+    
+            this.setAttribute("mode", mode);
 
-    var modpackName = document.getElementById("modpack-name");
-    var modpackCreators = document.getElementById("modpack-creators");
-    var modpackDescription = document.getElementById("modpack-description");
-    modpackName.textContent = "Name: " + libraryContainer.childNodes[0].getAttribute("name");
-    modpackCreators.textContent = "Creators: " + libraryContainer.childNodes[0].getAttribute("creators");
-    modpackDescription.textContent = "Description: " + libraryContainer.childNodes[0].getAttribute("description");
+        };
+        statusBar.setValue = function(value) {
+            this.children[0].style.width = `${value}%`;
+        }
+        statusBar.setMode("NONE");
+        item.appendChild(statusBar);
 
-    libraryContainer.childNodes.forEach((node) => {
+        let statusCircle = document.createElement("div");
+        statusCircle.classList.add("status-circle");
+        item.appendChild(statusCircle);
+    
+        item.addEventListener("click", (event) => {
 
-        node.addEventListener("click", () => {
+            let target = event.currentTarget;
 
-            if (!node.classList.contains("selected")) {
+            if (target.getAttribute("running") === "false") {
+        
+                target.querySelector(".status-bar").setMode("INFINITE");
+                target.setAttribute("running", true);
+    
+                ipcRenderer.send("launch-modpack", {
+                    vma: target.getAttribute("vma"),
+                    url: target.getAttribute("url"),
+                    directory: target.getAttribute("directory")
+                });
+    
+            } else {
+                ipcRenderer.send("terminate-modpack");
+            }
 
-                document.querySelector(".library-item.selected").classList.remove("selected");
-                node.classList.add("selected");
+        });
 
-                modpackName.textContent = "Name: " + node.getAttribute("name");
-                modpackCreators.textContent = "Creators: " + node.getAttribute("creators");
-                modpackDescription.textContent = "Description: " + node.getAttribute("description");
+        item.addEventListener("mouseenter", () => {
+
+            item.setAttribute("hover", true);
+
+        });
+        item.addEventListener("mouseleave", () => {
+
+            if (item.getAttribute("contextmenu") === "false") {
+
+                item.setAttribute("hover", false);
 
             }
 
         });
 
+        item.addEventListener("contextmenu", (event) => {
+
+            event.preventDefault();
+
+            let last = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
+            if (last) {
+                last.setAttribute("hover", false);
+                last.setAttribute("contextmenu", false);
+            }
+
+            item.setAttribute("contextmenu", true);
+            modpackContextMenu.classList.add("active");
+            modpackContextMenu.style.top = `${item.offsetTop + event.offsetY + 1}px`;
+            modpackContextMenu.style.left = `${item.offsetLeft + event.offsetX + 1}px`;
+
+        });
+
+        modpackContainer.appendChild(item);
+
+    }
+
+    [
+        {
+            "name": "Start",
+            "action": function(modpack) {
+                modpack.click();
+            }
+        },
+        {
+            "name": "View Console [WIP]",
+            "action": function(modpack) {}
+        },
+        {
+            "name": "Go To Store Page [WIP]",
+            "action": function(modpack) {}
+        },
+        {
+            "name": "Open Minecraft Folder [WIP]",
+            "action": function(modpack) {}
+        },
+        {
+            "name": "Properties [WIP]",
+            "action": function(modpack) {}
+        }
+    ].forEach((object) => {
+
+        let item = document.createElement("div");
+        item.classList.add("context-menu-item");
+        item.textContent = object.name;
+        item.onclick = () => {
+
+            let modpack = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
+            
+            if (modpack) {
+                object.action(modpack);
+            }
+
+        };
+
+
+        modpackContextMenu.appendChild(item);
+
     });
+
+    let modpackCount = document.getElementById("modpack-count");
+    modpackCount.textContent = modpacks.length + (modpacks.length === 1 ? " modpack" : " modpacks");
 
 });
 
@@ -184,18 +281,18 @@ ipcRenderer.on("load-settings", (event, settings) => {
 
     settings = helper.flattenObject(settings);
 
-    var settingsTable = document.getElementById("settings-table").querySelector("tbody");
+    let settingsTable = document.getElementById("settings-table").querySelector("tbody");
 
-    for (var key in settings) {
+    for (let key in settings) {
 
-        var value = settings[key];
+        let value = settings[key];
 
-        var setting = document.createElement("tr");
-        var keyElement = document.createElement("td");
+        let setting = document.createElement("tr");
+        let keyElement = document.createElement("td");
         keyElement.textContent = key;
 
-        var valueElement = document.createElement("td");
-        var valueInputBox = document.createElement("input");
+        let valueElement = document.createElement("td");
+        let valueInputBox = document.createElement("input");
         valueInputBox.value = value;
 
         valueElement.appendChild(valueInputBox);
@@ -209,64 +306,59 @@ ipcRenderer.on("load-settings", (event, settings) => {
 
 ipcRenderer.on("download-progress", (event, progress) => {
 
-    var percentage = (progress.loaded.size / progress.total.size) * 100;
+    let percentage = (progress.loaded.size / progress.total.size) * 100;
 
-    var progressBar = document.getElementById("download-progress").querySelector(".line.progress");
-    var debugProgress = document.getElementById("debug-progress");
-
-    progressBar.style.width = `${percentage}%`;
-    debugProgress.textContent = `DOWNLOADING: ${progress.file}`;
+    /*progressBar.setMode("PROGRESS");
+    progressBar.setValue(percentage);
+    progressBar.setText(`DOWNLOADING: ${progress.file}`);*/
 
 });
 
 ipcRenderer.on("modpack-start", () => {
 
-    var debugProgress = document.getElementById("debug-progress");
-    debugProgress.textContent = "RUNNING";
+    // STARTING CIRCLE, BLINK BETWEEN GREEN AND BLUE
 
-    var launchButton = document.getElementById("launch-button");
-    launchButton.textContent = "STOP";
-    launchButton.disabled = false;
+    /*progressBar.setText("");
+    progressBar.setMode("NONE");
+    launchButton.textContent = "STOP";*/
 
 });
 
 ipcRenderer.on("modpack-stdout", (event, data) => {
 
-    var debugOutput = document.getElementById("debug-output");
+    if (data.indexOf("[FML]: Forge Mod Loader has successfully loaded") !== -1) {
+        // FML LOAD FINISHED
+        // SET STATUS CIRCLE TO GREEN
+    }
+
+    /*var debugOutput = document.getElementById("debug-output");
     debugOutput.textContent += data;
-    debugOutput.scrollTop = debugOutput.scrollHeight;
+    debugOutput.scrollTop = debugOutput.scrollHeight;*/
 
 });
 
 ipcRenderer.on("modpack-stderr", (event, data) => {
 
-    var debugOutput = document.getElementById("debug-output");
+    /*var debugOutput = document.getElementById("debug-output");
     debugOutput.textContent += data;
-    debugOutput.scrollTop = debugOutput.scrollHeight;
+    debugOutput.scrollTop = debugOutput.scrollHeight;*/
 
 });
 
 ipcRenderer.on("modpack-error", (event, error) => {
 
-    modpackRunning = false;
+    /*launchButton.setAttribute("running", false);
+    launchButton.textContent = "LAUNCH";*/
 
-    var launchButton = document.getElementById("launch-button");
-    launchButton.disabled = false;
+    // PRINT ERROR INFO
 
 });
 
 ipcRenderer.on("modpack-exit", (event, code) => {
 
-    modpackRunning = false;
+    /*launchButton.setAttribute("running", false);
+    launchButton.textContent = "LAUNCH";*/
 
-    var debugProgress = document.getElementById("debug-progress");
-    debugProgress.textContent = "EXITED: " + code.toString();
-
-    var debugOutput = document.getElementById("debug-output");
-    debugOutput.textContent = "";
-
-    var launchButton = document.getElementById("launch-button");
-    launchButton.textContent = "LAUNCH";
-    launchButton.disabled = false;
+    // PRINT EXIT CODE
 
 });

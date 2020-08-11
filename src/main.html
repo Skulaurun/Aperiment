@@ -25,6 +25,7 @@
     <head>
 
         <meta charset="utf-8">
+        <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
 
         <link rel="stylesheet" href="../resources/styles/global.css">
         <link rel="stylesheet" href="../resources/styles/main.css">
@@ -80,27 +81,29 @@
                 </div>
 
                 <div class="page-item" name="browse">
-                    <input type="text" id="modpack-url" style="margin: 10px; padding: 5px 10px 5px 10px; width: 50%;" placeholder="Enter manifest URL">
-                    <button id="add-modpack" style="margin: 10px; padding: 5px 10px 5px 10px;">ADD</button>
+
+                    <div class="page-title">Browse Modpacks</div>
+
+                    <div class="page-content">
+
+                        <input type="text" id="modpack-url" style="padding: 5px 10px 5px 10px; width: 50%;" placeholder="Enter manifest URL">
+                        <button id="add-modpack" style="padding: 5px 10px 5px 10px;">ADD</button>
+
+                    </div>
+
                 </div>
 
                 <div class="page-item" name="library">
-                    
-                    <div id="library-container" class="library-container"></div>
 
-                    <div class="modpack-container">
-                        <textarea readonly id="debug-output" style="resize: none; width: 100%; height: 40%; border: none; background-color: black; color: white; outline: none; overflow-y: scroll;"></textarea>
-                        <button id="launch-button" class="button-default" style="margin: 10px; padding: 5px 10px 5px 10px;">LAUNCH</button>
-                        <p id="debug-progress" style="margin: 10px; padding: 5px 10px 5px 10px; display: inline-block;">IDLE</p>
-                        <div id="download-progress" class="progress-bar">
-                            <div class="background"></div>
-                            <div class="line progress"></div>
-                            <div class="line infinite-increase"></div>
-                            <div class="line infinite-decrease"></div>
-                      </div>
-                      <p id="modpack-name" style="margin: 10px; padding: 5px 10px 5px 10px;"></p>
-                      <p id="modpack-creators" style="margin: 10px; padding: 0px 10px 5px 10px;"></p>
-                      <p id="modpack-description" style="margin: 10px; padding: 0px 10px 5px 10px;"></p>
+                    <div class="page-title">Modpack Library</div>
+
+                    <div class="page-content">
+
+                        <div id="modpack-container" class="modpack-container"></div>
+                        <div id="modpack-context-menu" class="context-menu"></div>
+                        <p id="modpack-count" class="modpack-count"></p>
+
+
                     </div>
 
                 </div>

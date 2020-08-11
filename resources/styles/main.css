@@ -22,14 +22,13 @@
     position: relative;
     width: 64px;
     height: 100%;
-    background-color: rgb(52, 73, 94);
+    background-color: rgb(35, 35, 35);
 }
 .menu-item {
     position: relative;
     width: 100%;
     height: 64px;
-    border-left: 3px solid rgb(52, 73, 94);
-    -webkit-user-select: none;
+    border-left: 3px solid rgb(35, 35, 35);
     transition-duration: 0.2s;
 }
 .menu-item.selected {
@@ -42,7 +41,6 @@
     top: 0; right: 0;
     bottom: 0; left: -3px;
     margin: auto;
-    -webkit-user-select: none;
     filter: brightness(60%);
 }
 .menu-item.selected img {
@@ -71,7 +69,7 @@
     left: 64px;
     width: calc(100% - 64px);
     height: 100%;
-    background-color: rgb(60, 79, 97);
+    background-color: rgb(45, 45, 45);
 }
 .page-item {
     display: none;
@@ -87,74 +85,128 @@
     opacity: 1;
     display: block;
 }
-
-.library-container {
-    width: 20%;
-    height: 100%;
+.page-title {
     overflow: hidden;
-    background-color: rgb(59, 90, 119);
-    -webkit-user-select: none;
+    text-align: center;
+    margin-top: 5px;
+    margin-left: 8px;
+    width: calc(100% - 16px);
+    user-select: none;
 }
-.library-item {
+.page-title:before, .page-title:after {
+  background-color: rgb(230, 230, 230);
+  content: "";
+  width: 50%;
+  height: 1px;
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+.page-title:before {
+  right: 0.5em;
+  margin-left: -50%;
+}
+.page-title:after {
+  left: 0.5em;
+  margin-right: -50%;
+}
+.page-content {
+    position: absolute;
+    top: 20px; left: 0;
     width: 100%;
-    height: 32px;
-    margin-bottom: 6px;
-    padding-left: 6px;
-    overflow: hidden;
-    white-space: nowrap;
+    height: calc(100% - 20px);
+    padding: 8px;
 }
-.library-item img {
-    display: inline-block;
-    width: 26px;
-    height: 26px;
-    margin-top: 2.5px;
-}
-.library-item p {
-    display: inline-block;
-    vertical-align: top;
-    line-height: 32px;
-    margin-left: 6px;
-    font-size: 25px;
-}
-.library-item.selected {
-    background-color: rgb(68, 106, 141);
-}
+
 .modpack-container {
-    position: absolute;
-    top: 0;
-    left: 20%;
-    width: 80%;
-    height: 100%;
-}
-
-.progress-bar {
-    position: absolute;
     width: 100%;
-    height: 5px;
+    height: 100%;
     overflow-x: hidden;
 }
-.progress-bar .background {
+.modpack-item {
+    position: relative;
+    display: inline-block;
+    margin: 8px;
+    width: 64px;
+    height: 64px;
+}
+.modpack-item[hover=true] {
+    transform: scale(1.1);
+}
+.modpack-item img {
+    width: 100%;
+    height: 100%;
+}
+.modpack-item .status-bar {
     position: absolute;
-    opacity: 0.4;
-    background: #4a8df8;
-    width: 150%;
+    left: 0; right: 0;
+    bottom: 10px;
+    width: 70%;
     height: 5px;
+    margin: auto;
+    overflow-x: hidden;
+    border: 1px solid rgb(30, 30, 30);
 }
-.progress-bar .line {
+.modpack-item .status-bar::after {
+    content: "";
     position: absolute;
-    background: #4a8df8;
-    height: 5px; 
+    background: rgb(30, 30, 30);
+    width: 100%;
+    height: 100%;
 }
-.line.progress {
+.modpack-item .status-bar .line {
+    z-index: 1;
+    position: absolute;
+    display: none;
+    background: rgb(17, 255, 69);
+    height: 100%;
+}
+.modpack-item .status-bar .line.progress {
     transition-duration: 0.2s;
 }
-.line.infinite-increase {
-    display: none;
+.modpack-item .status-bar .line.infinite-increase {
     animation: increase 2s infinite;
 }
-.line.infinite-decrease {
-    display: none;
+.modpack-item .status-bar .line.infinite-decrease {
     animation: decrease 2s 0.5s infinite;
+}
+.modpack-item .status-circle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    border: 2.5px solid rgb(45, 45, 45);
+    border-radius: 8px;
+    background-color: rgb(54, 181, 255);
+}
+.modpack-count {
+    position: absolute;
+    bottom: 8px;
+    right: 20px;
+}
+
+.context-menu {
+    z-index: 9999;
+    position: absolute;
+    transform: scale(0);
+    transform-origin: top left;
+    background-color: rgb(30, 30, 30);
+}
+.context-menu.active {
+    transform: scale(1);
+    transition: transform 150ms ease-in-out;
+}
+.context-menu-item {
+    font-size: 15px;
+    padding: 8px 10px;
+    user-select: none;
+    border-left: 0px;
+    transition-duration: 0.1s;
+}
+.context-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left: 3px solid rgb(40, 255, 75);
 }
 
 .settings-table {

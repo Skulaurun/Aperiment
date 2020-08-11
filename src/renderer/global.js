@@ -23,9 +23,9 @@ const { remote } = electron;
 
 function removeEmptyNodes(node) {
 
-    for(var i = 0; i < node.childNodes.length; i++) {
+    for(let i = 0; i < node.childNodes.length; i++) {
 
-        var child = node.childNodes[i];
+        let child = node.childNodes[i];
 
         if (child.nodeType === 8 || (child.nodeType === 3 && !/\S/.test(child.nodeValue))) {
             node.removeChild(child);

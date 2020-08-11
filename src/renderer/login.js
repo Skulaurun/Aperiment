@@ -22,14 +22,14 @@ const { ipcRenderer } = electron;
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    var username = document.getElementById("username");
-    var password = document.getElementById("password");
-    var submit = document.getElementById("submit");
-    var modeMenu = document.getElementById("mode-menu");
+    let username = document.getElementById("username");
+    let password = document.getElementById("password");
+    let submit = document.getElementById("submit");
+    let modeMenu = document.getElementById("mode-menu");
 
     submit.addEventListener("click", () => {
 
-        var online = modeMenu.selectedIndex === 0 ? true : false;
+        let online = modeMenu.selectedIndex === 0 ? true : false;
         
         if (username.value != "" && (password.value != "" || !online)) {
             ipcRenderer.send("user-login", online, username.value, password.value);
