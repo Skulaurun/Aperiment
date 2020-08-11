@@ -21,10 +21,9 @@
 const os = require("os");
 const axios = require("axios").default;
 const validUrl = require("valid-url");
-const electron = require("electron");
 const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
-const { app, screen, ipcMain, BrowserWindow } = electron;
+const { app, screen, ipcMain, BrowserWindow } = require("electron");
 
 const Storage = require("./storage.js");
 const User = require("./user.js");
@@ -381,13 +380,10 @@ ipcMain.on("launch-modpack", (event, options) => { // TODO: Add logging.
 
 ipcMain.on("save-settings", (event, settings) => {
 
-    for (var key in settings) {
-
-        var value = settings[key];
-
-        config.set(key, value);
-        config.save();
-
+    for (let key in settings) {
+        config.set(key, settings[key]);
     }
+
+    config.save();
 
 });
