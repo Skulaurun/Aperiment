@@ -922,6 +922,7 @@ class MinecraftModpack extends MinecraftForge {
 
     update() {
         this._forceUpdate = true;
+        this.modpackVersion = this._modpackManifest["versions"][0];
     }
 
 }
