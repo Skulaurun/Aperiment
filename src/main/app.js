@@ -133,8 +133,8 @@ app.once("ready", () => {
 
         config = new Storage({
             data: {
-                java: "java",
-                minecraft: `${USER_DATA}/minecraft`
+                "java": "java",
+                "minecraft": `${USER_DATA}/minecraft`
             },
             path: `${USER_DATA}/config.json`
         });
@@ -166,6 +166,7 @@ app.once("ready", () => {
         });
 
         if (!DEVELOPER_MODE) {
+            autoUpdater.allowPrerelease = true;
             autoUpdater.checkForUpdates().catch((error) => {
                 log.error(`Could not check for updates.\n ${error.loggify()}`);
                 ipcMain.emit("app-start");
