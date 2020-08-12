@@ -121,7 +121,7 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
         item.classList.add("modpack-item");
     
         let icon = document.createElement("img");
-        icon.src = "../icon.png";
+        icon.src = "../resources/images/skultech.png";
         item.appendChild(icon);
 
         let statusBar = document.createElement("div");
