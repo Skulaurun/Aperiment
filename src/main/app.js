@@ -335,7 +335,7 @@ ipcMain.on("launch-modpack", (event, options) => { // TODO: Add logging.
         if (!modpack.running) {
 
             modpack.removeAllListeners();
-            event.sender.send("modpack-exit", "job-cancelled");
+            event.sender.send("modpack-exit", options.id, "job-cancelled");
             
         } else {
             modpack.terminate("SIGKILL");
@@ -352,29 +352,29 @@ ipcMain.on("launch-modpack", (event, options) => { // TODO: Add logging.
         }
     
         modpack.download((progress) => {
-            event.sender.send("download-progress", progress);
+            event.sender.send("modpack-download-progress", options.id, progress);
         }).then(() => {
             modpack.launch().then(() => {
-                event.sender.send("modpack-start");
+                event.sender.send("modpack-start", options.id);
             });
         });
     
     });
 
     modpack.on("error", (error) => {
-        event.sender.send("modpack-error", error);
+        event.sender.send("modpack-error", options.id, error);
     });
     
     modpack.on("stdout-data", (data) => {
-        event.sender.send("modpack-stdout", data.toString());
+        event.sender.send("modpack-stdout", options.id, data.toString());
     });
     
     modpack.on("stderr-data", (data) => {
-        event.sender.send("modpack-stderr", data.toString());
+        event.sender.send("modpack-stderr", options.id, data.toString());
     });
     
     modpack.on("exit", (code) => {
-        event.sender.send("modpack-exit", code);
+        event.sender.send("modpack-exit", options.id, code);
     });
 
 });

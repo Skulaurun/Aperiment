@@ -18,6 +18,7 @@
  *
  */
 
+const uuid4 = require("uuid").v4;
 const { ipcRenderer } = electron;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -109,6 +110,7 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
         let modpack = modpacks[i];
 
         let item = document.createElement("div");
+        item.setAttribute("id", uuid4().replace(/-/g, ""));
         item.setAttribute("name", modpack.name);
         item.setAttribute("creators", modpack.creators.join(", "));
         item.setAttribute("description", modpack.description);
@@ -172,6 +174,7 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
 
         let statusCircle = document.createElement("div");
         statusCircle.classList.add("status-circle");
+        statusCircle.setAttribute("state", "DEFAULT");
         item.appendChild(statusCircle);
     
         item.addEventListener("click", (event) => {
@@ -184,6 +187,7 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
                 target.setAttribute("running", true);
     
                 ipcRenderer.send("launch-modpack", {
+                    id: target.getAttribute("id"),
                     vma: target.getAttribute("vma"),
                     url: target.getAttribute("url"),
                     directory: target.getAttribute("directory")
@@ -269,7 +273,6 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
 
         };
 
-
         modpackContextMenu.appendChild(item);
 
     });
@@ -306,31 +309,32 @@ ipcRenderer.on("load-settings", (event, settings) => {
 
 });
 
-ipcRenderer.on("download-progress", (event, progress) => {
+ipcRenderer.on("modpack-download-progress", (event, id, progress) => {
 
+    let modpack = document.getElementById(id);
     let percentage = (progress.loaded.size / progress.total.size) * 100;
 
-    /*progressBar.setMode("PROGRESS");
-    progressBar.setValue(percentage);
-    progressBar.setText(`DOWNLOADING: ${progress.file}`);*/
+    modpack.children[1].setMode("PROGRESS");
+    modpack.children[1].setValue(percentage);
 
 });
 
-ipcRenderer.on("modpack-start", () => {
+ipcRenderer.on("modpack-start", (event, id) => {
 
-    // STARTING CIRCLE, BLINK BETWEEN GREEN AND BLUE
+    let modpack = document.getElementById(id);
 
-    /*progressBar.setText("");
-    progressBar.setMode("NONE");
-    launchButton.textContent = "STOP";*/
+    modpack.children[1].setMode("INFINITE");
+    modpack.children[2].setAttribute("state", "STARTING");
 
 });
 
-ipcRenderer.on("modpack-stdout", (event, data) => {
+ipcRenderer.on("modpack-stdout", (event, id, data) => {
+
+    let modpack = document.getElementById(id);
 
     if (data.indexOf("[FML]: Forge Mod Loader has successfully loaded") !== -1) {
-        // FML LOAD FINISHED
-        // SET STATUS CIRCLE TO GREEN
+        modpack.children[1].setMode("NONE");
+        modpack.children[2].setAttribute("state", "RUNNING");
     }
 
     /*var debugOutput = document.getElementById("debug-output");
@@ -347,19 +351,23 @@ ipcRenderer.on("modpack-stderr", (event, data) => {
 
 });
 
-ipcRenderer.on("modpack-error", (event, error) => {
+ipcRenderer.on("modpack-error", (event, id, error) => {
 
-    /*launchButton.setAttribute("running", false);
-    launchButton.textContent = "LAUNCH";*/
+    let modpack = document.getElementById(id);
+
+    modpack.children[1].setMode("NONE");
+    modpack.children[2].setAttribute("state", "DEFAULT");
 
     // PRINT ERROR INFO
 
 });
 
-ipcRenderer.on("modpack-exit", (event, code) => {
+ipcRenderer.on("modpack-exit", (event, id, code) => {
 
-    /*launchButton.setAttribute("running", false);
-    launchButton.textContent = "LAUNCH";*/
+    let modpack = document.getElementById(id);
+
+    modpack.children[1].setMode("NONE");
+    modpack.children[2].setAttribute("state", "DEFAULT");
 
     // PRINT EXIT CODE
 
