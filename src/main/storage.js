@@ -98,15 +98,13 @@ class Storage {
     }
 
     get(path, value) {
-
-        if (!path) {
-            return this.data;
-        }
         
         if (typeof path === "string") {
             path = path.split(".");
         } else if (Number.isInteger(path) && path >= 0) {
             path = [path];
+        } else {
+            return this.data;
         }
 
         var currentObject = this.data;
