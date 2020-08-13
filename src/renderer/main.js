@@ -355,6 +355,7 @@ ipcRenderer.on("modpack-error", (event, id, error) => {
 
     let modpack = document.getElementById(id);
 
+    modpack.setAttribute("running", false);
     modpack.children[1].setMode("NONE");
     modpack.children[2].setAttribute("state", "DEFAULT");
 
@@ -366,6 +367,7 @@ ipcRenderer.on("modpack-exit", (event, id, code) => {
 
     let modpack = document.getElementById(id);
 
+    modpack.setAttribute("running", false);
     modpack.children[1].setMode("NONE");
     modpack.children[2].setAttribute("state", "DEFAULT");
 
