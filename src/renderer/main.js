@@ -34,6 +34,74 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
+    let modpackContainer = document.getElementById("modpack-container");
+    let modpackContextMenu = document.getElementById("modpack-context-menu");
+    window.addEventListener("click", () => {
+
+        let item = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
+        if (item) {
+            item.setAttribute("hover", false);
+            item.setAttribute("contextmenu", false);
+        }
+
+        modpackContextMenu.classList.remove("active");
+
+    });
+
+    [
+        {
+            "name": "Start",
+            "action": function(modpack) {
+                modpack.click();
+            }
+        },
+        {
+            "name": "View Console [WIP]",
+            "action": function(modpack) {}
+        },
+        {
+            "name": "Go To Store Page [WIP]",
+            "action": function(modpack) {}
+        },
+        {
+            "name": "Open Minecraft Folder [WIP]",
+            "action": function(modpack) {}
+        },
+        {
+            "name": "Properties [WIP]",
+            "action": function(modpack) {}
+        },
+        {
+            "name": "Remove",
+            "action": function(modpack) {
+                ipcRenderer.send("remove-modpack", modpack.getAttribute("url"));
+            }
+        },
+        {
+            "name": "Uninstall",
+            "action": function(modpack) {
+                ipcRenderer.send("uninstall-modpack", modpack.getAttribute("directory"));
+            }
+        }
+    ].forEach((object) => {
+
+        let item = document.createElement("div");
+        item.classList.add("context-menu-item");
+        item.textContent = object.name;
+        item.onclick = () => {
+
+            let modpack = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
+            
+            if (modpack) {
+                object.action(modpack);
+            }
+
+        };
+
+        modpackContextMenu.appendChild(item);
+
+    });
+
     document.getElementById("save-settings-button").addEventListener("click", () => {
 
         let settings = {};
@@ -92,18 +160,6 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
     let modpackContainer = document.getElementById("modpack-container");
     let modpackContextMenu = document.getElementById("modpack-context-menu");
     modpackContainer.innerHTML = "";
-
-    window.addEventListener("click", () => {
-
-        let item = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
-        if (item) {
-            item.setAttribute("hover", false);
-            item.setAttribute("contextmenu", false);
-        }
-
-        modpackContextMenu.classList.remove("active");
-
-    });
 
     for (let i = 0; i < modpacks.length; i++) {
 
@@ -234,48 +290,6 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
         modpackContainer.appendChild(item);
 
     }
-
-    [
-        {
-            "name": "Start",
-            "action": function(modpack) {
-                modpack.click();
-            }
-        },
-        {
-            "name": "View Console [WIP]",
-            "action": function(modpack) {}
-        },
-        {
-            "name": "Go To Store Page [WIP]",
-            "action": function(modpack) {}
-        },
-        {
-            "name": "Open Minecraft Folder [WIP]",
-            "action": function(modpack) {}
-        },
-        {
-            "name": "Properties [WIP]",
-            "action": function(modpack) {}
-        }
-    ].forEach((object) => {
-
-        let item = document.createElement("div");
-        item.classList.add("context-menu-item");
-        item.textContent = object.name;
-        item.onclick = () => {
-
-            let modpack = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
-            
-            if (modpack) {
-                object.action(modpack);
-            }
-
-        };
-
-        modpackContextMenu.appendChild(item);
-
-    });
 
     let modpackCount = document.getElementById("modpack-count");
     modpackCount.textContent = modpacks.length + (modpacks.length === 1 ? " modpack" : " modpacks");
