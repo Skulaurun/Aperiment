@@ -99,9 +99,42 @@
 
                     <div class="page-content">
 
+                        <p id="modpack-count" class="modpack-count"></p>
                         <div id="modpack-container" class="modpack-container"></div>
                         <div id="modpack-context-menu" class="context-menu"></div>
-                        <p id="modpack-count" class="modpack-count"></p>
+
+                        <div id="modpack-properties" class="modpack-properties">
+                            
+                            <div class="modpack-properties-header">
+                                <p>Properties</p>
+                                <svg width="18" height="18">
+                                    <line x1="30%" y1="30%" x2="70%" y2="70%"/>
+                                    <line x1="70%" y1="30%" x2="30%" y2="70%"/>
+                                </svg>
+                            </div>
+
+                            <table id="modpack-properties-table" class="modpack-properties-table">
+                                <tbody>
+                                    <tr key="name">
+                                        <td>Name: </td>
+                                        <td><input type="text" readonly></td>
+                                    </tr>
+                                    <tr key="creators">
+                                        <td>Creators: </td>
+                                        <td><input type="text" readonly></td>
+                                    </tr>
+                                    <tr key="description">
+                                        <td>Description: </td>
+                                        <td><input type="text" readonly></td>
+                                    </tr>
+                                    <tr key="vma">
+                                        <td>VMA: </td>
+                                        <td><input type="text"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
 
                     </div>
 

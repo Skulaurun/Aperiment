@@ -227,7 +227,7 @@
 }
 
 .context-menu {
-    z-index: 9999;
+    z-index: 1000;
     position: absolute;
     transform: scale(0);
     transform-origin: top left;
@@ -295,6 +295,59 @@
 }
 .settings-button:active {
     background-color: rgb(68, 228, 102);
+}
+
+.modpack-properties {
+    z-index: 600;
+    position: absolute;
+    top: 0; left: 0;
+    margin: auto;
+    display: none;
+    width: 500px;
+    background-color: rgb(40, 40, 40);
+    box-shadow: 0 -6px 0 transparent, 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+.modpack-properties-header {
+    z-index: 10;
+    user-select: none;
+    text-align: center;
+    border-bottom: 1px solid rgb(230, 230, 230);
+}
+.modpack-properties-header p {
+    display: inline-block;
+    font-size: 18px;
+    line-height: 30px;
+}
+.modpack-properties-header svg {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+}
+.modpack-properties-header svg > * {
+    shape-rendering: crispEdges;
+    stroke: rgb(230, 230, 230);
+}
+.modpack-properties-header svg:hover {
+    background-color: rgb(100, 100, 100);
+}
+.modpack-properties-table {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+    font-weight: normal;
+}
+.modpack-properties-table td {
+    padding: 8px;
+}
+.modpack-properties-table td input {
+    width: 100%;
+    padding: 3px 6px 3px 6px;
+    color: rgb(230, 230, 230);
+    border: none;
+    outline: none;
+    background: none;
+    transition-duration: 0.5s;
+    font-size: 16px;
 }
 
 @keyframes increase {

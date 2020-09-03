@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let modpackContainer = document.getElementById("modpack-container");
     let modpackContextMenu = document.getElementById("modpack-context-menu");
-    window.addEventListener("click", () => {
+    document.addEventListener("click", () => {
 
         let item = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
         if (item) {
@@ -48,6 +48,125 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
+    let modpackProperties = document.getElementById("modpack-properties");
+    let modpackPropertiesTable = document.getElementById("modpack-properties-table");
+    modpackProperties.show = function() {
+        this.style.display = "block";
+    }
+    modpackProperties.hide = function() {
+        this.style.display = "none";
+    }
+    modpackProperties.querySelector("svg").addEventListener("click", () => {
+        modpackProperties.hide();
+    });
+    modpackProperties.querySelector(".modpack-properties-header").addEventListener("mousedown", (event) => {
+
+        event.preventDefault();
+        let element = event.currentTarget.parentElement;
+
+        var internalWindowDrag = function(event) {
+
+            event.preventDefault();
+
+            let posY = element.offsetTop + event.movementY;
+            let posX = element.offsetLeft + event.movementX;
+
+            let rect1 = element.getBoundingClientRect();
+            let rect2 = element.parentElement.getBoundingClientRect();
+
+            if (posY >= 0) {
+
+                let maxHeight = rect2.height - rect1.height;
+
+                if (posY <= maxHeight) {
+                    element.style.top = `${posY}px`;
+                } else {
+                    element.style.top = maxHeight;
+                }
+
+            } else {
+                element.style.top = 0;
+            }
+
+            if (posX >= 0) {
+
+                let maxWidth = rect2.width - rect1.width;
+
+                if (posX <= maxWidth) {
+                    element.style.left = `${posX}px`;
+                } else {
+                    element.style.left = maxWidth;
+                }
+
+            } else {
+                element.style.left = 0;
+            }
+
+        };
+
+        var stopInternalWindowDrag = function(event) {
+
+            document.removeEventListener("mouseup", stopInternalWindowDrag);
+            document.removeEventListener("mousemove", internalWindowDrag);
+
+        };
+
+        document.addEventListener("mouseup", stopInternalWindowDrag);
+        document.addEventListener("mousemove", internalWindowDrag);
+
+    });
+
+    let lastWidth = window.innerWidth, lastHeight = window.innerHeight;
+    window.addEventListener("resize", (event) => {
+
+        let x = lastWidth - event.target.innerWidth;
+        let y = lastHeight - event.target.innerHeight;
+        let top = parseInt(modpackProperties.style.top);
+        let left = parseInt(modpackProperties.style.left);
+
+        lastWidth = event.target.innerWidth;
+        lastHeight = event.target.innerHeight;
+
+        let rect1 = modpackProperties.getBoundingClientRect();
+        let rect2 = modpackProperties.parentElement.getBoundingClientRect();
+
+        let maxWidth = rect2.width - rect1.width;
+        let maxHeight = rect2.height - rect1.height;
+
+        if (top >= maxHeight) {
+            modpackProperties.style.top = `${top - y}px`;
+        }
+
+        if (left >= maxWidth) {
+            modpackProperties.style.left = `${left - x}px`;
+        }
+
+    });
+
+    Array.from(modpackPropertiesTable.querySelectorAll("input:not([readonly])")).forEach((element) => {
+
+        let tr = (element.parentElement).parentElement;
+
+        element.addEventListener("focusout", () => {
+
+            let modpack = document.getElementById(tr.parentElement.getAttribute("modpack"));
+
+            if (modpack.getAttribute("vma") != element.value) {
+
+                ipcRenderer.send("save-modpacks", {
+                    url: modpack.getAttribute("url"),
+                    key: tr.getAttribute("key"),
+                    value: element.value
+                });
+
+                modpack.setAttribute("vma", element.value);
+
+            }
+
+        });
+
+    });
+
     [
         {
             "name": "Start",
@@ -56,31 +175,18 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         },
         {
-            "name": "View Console [WIP]",
-            "action": function(modpack) {}
-        },
-        {
-            "name": "Go To Store Page [WIP]",
-            "action": function(modpack) {}
-        },
-        {
-            "name": "Open Minecraft Folder [WIP]",
-            "action": function(modpack) {}
-        },
-        {
-            "name": "Properties [WIP]",
-            "action": function(modpack) {}
-        },
-        {
-            "name": "Remove",
+            "name": "Properties",
             "action": function(modpack) {
-                ipcRenderer.send("remove-modpack", modpack.getAttribute("url"));
-            }
-        },
-        {
-            "name": "Uninstall",
-            "action": function(modpack) {
-                ipcRenderer.send("uninstall-modpack", modpack.getAttribute("directory"));
+
+                Array.from(modpackPropertiesTable.children[0].children).forEach((element) => {
+
+                    modpackPropertiesTable.children[0].setAttribute("modpack", modpack.getAttribute("id"));
+                    element.children[1].children[0].value = modpack.getAttribute(element.getAttribute("key"));
+
+                });
+
+                modpackProperties.show();
+
             }
         }
     ].forEach((object) => {

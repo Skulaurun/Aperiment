@@ -388,3 +388,22 @@ ipcMain.on("save-settings", (event, settings) => {
     config.save();
 
 });
+
+ipcMain.on("save-modpacks", (event, object) => {
+
+    for (let i = 0; i < modpacks.size(); i++) {
+
+        let item = modpacks.get(i);
+        if (item.url === object.url) {
+
+            item[object.key] = object.value;
+
+            modpacks.set(i, item);
+
+        }
+
+    }
+
+    modpacks.save();
+
+});
