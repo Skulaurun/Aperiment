@@ -18,43 +18,25 @@
  *
  */
 
-.logo {
-    width: 256px;
-    height: 256px;
-    animation: fadeIn 1s;
-    -webkit-app-region: drag;
-    -webkit-user-select: none;
-}
+const { ipcRenderer } = electron;
 
-.status-bar {
-    display: none;
-    position: absolute;
-    left: 0; right: 0;
-    top: 266px;
-    width: 195px;
-    height: 10px;
-    margin: auto;
-    overflow-x: hidden;
-    border: 2px solid white;
-    border-radius: 4px;
-}
-.status-bar::after {
-    content: "";
-    position: absolute;
-    background: transparent;
-    width: 100%;
-    height: 100%;
-}
-.status-bar-line {
-    z-index: 1;
-    width: 0%;
-    height: 100%;
-    position: absolute;
-    background: rgb(17, 255, 255);
-    transition-duration: 0.2s;
-}
+let statusBar = null;
+document.addEventListener("DOMContentLoaded", () => {
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
+    statusBar = document.getElementById("status-bar").children[0];
+    statusBar.setValue = function(value) {
+        this.style.width = `${value}%`;
+    }
+    statusBar.show() = function() {
+        this.style.display = "block";
+    }
+
+});
+
+ipcRenderer.on("update-available", () => {
+    statusBar.show();
+});
+
+ipcRenderer.on("update-download-progress", (event, progress) => {
+    statusBar.setValue(progress.percent);
+});

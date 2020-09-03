@@ -110,13 +110,15 @@ app.once("ready", () => {
     
     loadWindow = new BrowserWindow({
         width: 256,
-        height: 256,
+        height: 276,
         frame: false,
         show: false,
         resizable: false,
+        minimizable: false,
+        maximizable: false,
         transparent: true,
-        alwaysOnTop: true,
         webPreferences: {
+            nodeIntegration: true,
             devTools: DEVELOPER_MODE
         }
     });
@@ -163,6 +165,14 @@ app.once("ready", () => {
 
         autoUpdater.once("update-not-available", () => {
             ipcMain.emit("app-start");
+        });
+
+        autoUpdater.once("update-available", () => {
+            loadWindow.send("update-available");
+        });
+
+        autoUpdater.on("download-progress", (progress) => {
+            loadWindow.send("update-download-progress", progress);
         });
 
         if (!DEVELOPER_MODE) {
