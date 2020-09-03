@@ -409,7 +409,7 @@ class Minecraft extends EventEmitter {
             }
 
             if (i != libraries.length - 1) {
-                string += ";";
+                string += process.platform === "win32" ? ";" : ":";
             }
 
         }
