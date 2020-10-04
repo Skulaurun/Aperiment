@@ -23,11 +23,11 @@ const { ipcRenderer } = electron;
 let statusBar = null;
 document.addEventListener("DOMContentLoaded", () => {
 
-    statusBar = document.getElementById("status-bar").children[0];
+    statusBar = document.getElementById("status-bar");
     statusBar.setValue = function(value) {
-        this.style.width = `${value}%`;
+        this.children[0].style.width = `${value}%`;
     }
-    statusBar.show() = function() {
+    statusBar.show = function() {
         this.style.display = "block";
     }
 
@@ -37,6 +37,10 @@ ipcRenderer.on("update-available", () => {
     statusBar.show();
 });
 
+ipcRenderer.on("update-downloaded", () => {
+    statusBar.setValue(100);
+});
+
 ipcRenderer.on("update-download-progress", (event, progress) => {
-    statusBar.setValue(progress.percent);
+    statusBar.setValue(Math.round(progress.percent));
 });

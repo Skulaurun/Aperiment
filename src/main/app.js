@@ -160,6 +160,7 @@ app.once("ready", () => {
         });
         
         autoUpdater.once("update-downloaded", () => {
+            event.sender.send("update-downloaded");
             autoUpdater.quitAndInstall(true, true);
         });
 
@@ -168,11 +169,11 @@ app.once("ready", () => {
         });
 
         autoUpdater.once("update-available", () => {
-            loadWindow.send("update-available");
+            event.sender.send("update-available");
         });
 
         autoUpdater.on("download-progress", (progress) => {
-            loadWindow.send("update-download-progress", progress);
+            event.sender.send("update-download-progress", progress);
         });
 
         if (!DEVELOPER_MODE) {
