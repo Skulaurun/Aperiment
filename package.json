@@ -36,15 +36,15 @@
     }
   },
   "devDependencies": {
-    "electron": "^7.3.2",
-    "electron-builder": "^22.8.0"
+    "electron": "^7.3.3",
+    "electron-builder": "^22.8.1"
   },
   "dependencies": {
     "arch": "^2.1.2",
     "axios": "^0.19.2",
     "compare-versions": "^3.6.0",
-    "electron-log": "^4.2.2",
-    "electron-updater": "^4.3.4",
+    "electron-log": "^4.2.4",
+    "electron-updater": "^4.3.5",
     "node-machine-id": "^1.1.12",
     "rimraf": "^3.0.2",
     "unzipper": "^0.10.11",
