@@ -787,12 +787,10 @@ class MinecraftModpack extends MinecraftForge {
 
         if (this._forceUpdate) {
 
-            let name = `${this._modpackManifest.name.trim().toLowerCase().replace(/ /g, "-")}-${this.modpackVersion.id}.zip`;
-
             queue.push({
-                name: name,
+                name: "modpack.zip",
                 size: this.modpackVersion.size,
-                path: `${this.path}/${name}`,
+                path: `${this.path}/modpack.zip`,
                 url: this.modpackVersion.url,
                 extract: true
             });
@@ -829,8 +827,7 @@ class MinecraftModpack extends MinecraftForge {
 
     async _extractModpack() {
 
-        let name = path.basename(url.parse(this.modpackVersion.url).pathname);
-        let file = `${this.path}/${name}`;
+        let file = `${this.path}/modpack.zip`;
         let reader = fs.createReadStream(file);
         let zip = reader.pipe(unzipper.Parse({forceStream: true}));
         let actions = await this._getActions(file);
