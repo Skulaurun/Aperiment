@@ -416,6 +416,7 @@ ipcRenderer.on("load-settings", (event, settings) => {
     settings = helper.flattenObject(settings);
 
     let settingsTable = document.getElementById("settings-table").querySelector("tbody");
+    settingsTable.innerHTML = "";
 
     for (let key in settings) {
 

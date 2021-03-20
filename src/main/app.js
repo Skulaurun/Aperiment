@@ -401,6 +401,7 @@ ipcMain.on("save-settings", (event, settings) => {
     }
 
     config.save();
+    event.sender.send("load-settings", config.get());
 
 });
 
