@@ -225,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     value = Number(value);
                     break;
                 case "boolean":
-                    value = Boolean(value);
+                    value = (value === "true");
                     break;
             }
 
