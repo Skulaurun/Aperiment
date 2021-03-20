@@ -220,6 +220,15 @@ document.addEventListener("DOMContentLoaded", () => {
             let key = setting.children[0].textContent;
             let value = setting.querySelector("input").value;
 
+            switch (setting.getAttribute("data-type")) {
+                case "number":
+                    value = Number(value);
+                    break;
+                case "boolean":
+                    value = Boolean(value);
+                    break;
+            }
+
             settings[key] = value;
 
         }
@@ -413,6 +422,8 @@ ipcRenderer.on("load-settings", (event, settings) => {
         let value = settings[key];
 
         let setting = document.createElement("tr");
+        setting.setAttribute("data-type", typeof value);
+
         let keyElement = document.createElement("td");
         keyElement.textContent = key;
 
