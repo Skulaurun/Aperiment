@@ -135,6 +135,10 @@ app.once("ready", () => {
 
         config = new Storage({
             data: {
+                "aper": {
+                    "autoUpdate": true,
+                    "allowPrerelease": true
+                },
                 "java": "java",
                 "minecraft": `${USER_DATA}/minecraft`
             },
@@ -176,8 +180,8 @@ app.once("ready", () => {
             event.sender.send("update-download-progress", progress);
         });
 
-        if (!DEVELOPER_MODE) {
-            autoUpdater.allowPrerelease = true;
+        if (!DEVELOPER_MODE && config.get("aper.autoUpdate", true)) {
+            autoUpdater.allowPrerelease = config.get("aper.allowPrerelease", true);
             autoUpdater.checkForUpdates().catch((error) => {
                 log.error(`Could not check for updates.\n ${error.loggify()}`);
                 ipcMain.emit("app-start");
