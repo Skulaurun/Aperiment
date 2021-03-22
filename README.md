@@ -7,6 +7,15 @@ A-Periment is a custom minecraft launcher.
 | :---------: | :------------: | :--------: |
 | 🟢<br> Yes  | 🟠<br> Partial | 🔴<br> No |
 
+## Build
+You need to have Node.js (>= v15.5.0) installed on your system and be able to use `npm`.
+
+#### Windows
+```
+npm install
+npm run build
+```
+
 ## Minecraft version support
 
 | Minecraft version | Aper version | Supported |
