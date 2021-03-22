@@ -16,6 +16,12 @@ npm install
 npm run build
 ```
 
+#### Linux
+```
+npm install
+npm run build-linux
+```
+
 ## Minecraft version support
 
 | Minecraft version | Aper version | Supported |
