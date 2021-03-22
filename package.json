@@ -6,6 +6,7 @@
   "scripts": {
     "start": "electron . --dev",
     "build": "electron-builder --win --ia32 --publish never",
+    "build-linux": "electron-builder --linux --publish never",
     "deploy": "electron-builder --win --ia32 --publish always"
   },
   "build": {
