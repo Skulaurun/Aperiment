@@ -20,7 +20,6 @@
 
 const os = require("os");
 const fs = require("fs");
-const url = require("url");
 const path = require("path");
 const { EventEmitter } = require("events");
 const arch = require("arch");
@@ -74,7 +73,7 @@ class Minecraft extends EventEmitter {
 
     _init(path, name, version, user, java) {
 
-        if (compareVersions(version, "1.7.2") !== 1 || compareVersions(version, "1.13") !== -1) {
+        if (compareVersions(version, "1.5.2") !== 1) {
             throw new Error("Unsupported version!");
         }
         
@@ -395,6 +394,19 @@ class Minecraft extends EventEmitter {
 
     }
 
+    async _grabAssets(directory) {
+
+        await fs.promises.rmdir(directory, { recursive: true });
+        await fs.promises.mkdir(directory, { recursive: true });
+
+        for (const [ filepath, { hash } ] of Object.entries(this._manifest["assetIndex"]["objects"])) {
+            const destination = `${directory}/${filepath}`;
+            await fs.promises.mkdir(path.dirname(destination), { recursive: true });
+            await fs.promises.copyFile(`${this.cache}/assets/objects/${hash.substr(0, 2)}/${hash}`, destination);
+        }
+
+    }
+
     _buildLibraryString() {
 
         let string = "";
@@ -425,6 +437,7 @@ class Minecraft extends EventEmitter {
             "auth_player_name": this.user.nickname,
             "auth_access_token": this.user.accessToken,
             "assets_root": `${this.cache}/assets`,
+            "game_assets": `${this.cache}/assets/virtual/legacy`,
             "assets_index_name": this._manifest["assetIndex"].id,
             "version_name": this._manifest["id"],
             "version_type": this._manifest["type"],
@@ -483,6 +496,10 @@ class Minecraft extends EventEmitter {
 
         await fs.promises.mkdir(this.path, { recursive: true });
         await this._grabNatives(`${this.path}/natives`);
+
+        if (compareVersions(this.version, "1.7.2") !== 1) {
+            await this._grabAssets(`${this.cache}/assets/virtual/legacy`);
+        }
 
         this.running = true;
         this.java.exec(launchArguments, { cwd: this.path });
