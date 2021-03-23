@@ -509,6 +509,10 @@ class Minecraft extends EventEmitter {
 
         try {
 
+            if (compareVersions(this.version, "1.13") !== -1) {
+                this._manifest["minecraftArguments"] = this._manifest["arguments"]["game"].filter(x => typeof x === "string").join(" ");
+            }
+
             let launchArguments = this._buildLaunchArguments(this._manifest["minecraftArguments"]);
 
             await this._launch(launchArguments);
