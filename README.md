@@ -1,5 +1,7 @@
 # A-Periment (Aper)
-A-Periment is a custom minecraft launcher.
+A-Periment is a custom minecraft launcher.<br>
+In fact this is the project's 7th generation. First version released on 18 July 2018.<br>
+Previous languages aper was written in: VB.NET, C#, C++, Batchfile, JScript, JavaScript.
 
 ## Platform support
 
