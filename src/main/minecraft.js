@@ -24,10 +24,11 @@ const url = require("url");
 const path = require("path");
 const { EventEmitter } = require("events");
 const arch = require("arch");
-const axios = require("axios").default;
 const rimraf = require("rimraf");
 const unzipper = require("unzipper");
 const compareVersions = require("compare-versions");
+
+const request = require("./request.js");
 
 const VANILLA_ASSETS_URL = "https://resources.download.minecraft.net";
 const VANILLA_LIBRARIES_URL = "https://libraries.minecraft.net";
@@ -108,7 +109,7 @@ class Minecraft extends EventEmitter {
         }
         catch (error) {
 
-            let content = (await axios.get(versionManifest["assetIndex"].url)).data;
+            let content = (await request.get(versionManifest["assetIndex"].url)).data;
             await fs.promises.mkdir(path.dirname(assetIndex), { recursive: true });
             await fs.promises.writeFile(assetIndex, JSON.stringify(content, null, 4));
             
@@ -131,7 +132,7 @@ class Minecraft extends EventEmitter {
 
         } catch (error) {
 
-            let response = await axios.get(VERSION_MANIFEST_URL);
+            let response = await request.get(VERSION_MANIFEST_URL);
             let versions = response.data["versions"];
 
             for (let i = 0; i < versions.length; i++) {
@@ -140,7 +141,7 @@ class Minecraft extends EventEmitter {
 
                 if (version.id == this.version) {
 
-                    let content = (await axios.get(version.url)).data;
+                    let content = (await request.get(version.url)).data;
                     await fs.promises.mkdir(path.dirname(versionManifest), { recursive: true });
                     await fs.promises.writeFile(versionManifest, JSON.stringify(content, null, 4));
                     content["assetIndex"]["objects"] = (await this._getAssetIndex(content))["objects"];
@@ -333,7 +334,7 @@ class Minecraft extends EventEmitter {
     
                 await fs.promises.mkdir(path.dirname(file.path), { recursive: true });
 
-                let response = await axios({
+                let response = await request({
                     url: file.url,
                     method: "GET",
                     responseType: "stream"
@@ -665,7 +666,7 @@ class MinecraftForge extends Minecraft {
             }
 
             if (url) {
-                let response = await axios.request({
+                let response = await request.request({
                     url: url,
                     method: "HEAD"
                 });
@@ -692,9 +693,9 @@ class MinecraftForge extends Minecraft {
         catch (error) {
 
             // Edited to run Forge 1.13 and higher, this is a temporary solution!
-            let response = compareVersions(this.version, "1.13") !== -1 ? await axios.get(`${FORGE_LIBRARIES_URL}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`, {
+            let response = compareVersions(this.version, "1.13") !== -1 ? await request.get(`${FORGE_LIBRARIES_URL}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`, {
                 responseType: "arraybuffer"
-            }) : await axios.get(`${FORGE_LIBRARIES_URL}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-universal.jar`, {
+            }) : await request.get(`${FORGE_LIBRARIES_URL}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-universal.jar`, {
                 responseType: "arraybuffer"
             });
 
@@ -895,7 +896,7 @@ class MinecraftModpack extends MinecraftForge {
 
         try {
 
-            var content = (await axios.get(url)).data;
+            var content = (await request.get(url)).data;
 
         } catch (error) {
 
