@@ -18,7 +18,7 @@
  *
  */
 
-const request = require("./request.js");
+const axios = require("axios").default;
 
 function defaultErrorHandler(error, callback) {
 
@@ -51,7 +51,7 @@ const auth = {
 
         return new Promise((resolve, reject) => {
 
-            request({
+            axios({
                 method: "GET",
                 url: this.server
             }).then((response) => {
@@ -73,7 +73,7 @@ const auth = {
 
         return new Promise((resolve, reject) => {
 
-            request({
+            axios({
                 method: "POST",
                 url: this.server + "/authenticate",
                 data: {
@@ -107,7 +107,7 @@ const auth = {
 
         return new Promise((resolve, reject) => {
 
-            request({
+            axios({
                 method: "POST",
                 url: this.server + "/signout",
                 data: {
@@ -129,7 +129,7 @@ const auth = {
 
         return new Promise((resolve, reject) => {
 
-            request({
+            axios({
                 method: "POST",
                 url: this.server + "/validate",
                 data: {
@@ -151,7 +151,7 @@ const auth = {
 
         return new Promise((resolve, reject) => {
 
-            request({
+            axios({
                 method: "POST",
                 url: this.server + "/invalidate",
                 data: {
@@ -173,7 +173,7 @@ const auth = {
 
         return new Promise((resolve, reject) => {
 
-            request({
+            axios({
                 method: "POST",
                 url: this.server + "/refresh",
                 data: {

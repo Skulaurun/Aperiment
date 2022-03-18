@@ -19,12 +19,11 @@
  */
 
 const os = require("os");
+const axios = require("axios").default;
 const validUrl = require("valid-url");
 const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
 const { app, screen, ipcMain, BrowserWindow } = require("electron");
-
-const request = require("./request.js");
 
 const Storage = require("./storage.js");
 const User = require("./user.js");
@@ -314,7 +313,7 @@ ipcMain.on("add-modpack", async (event, url) => { // TODO: Stricter rules for va
         return; // TODO: Show messagebox. [INVALID URL]
     }
 
-    let manifest = (await request.get(url)).data;
+    let manifest = (await axios.get(url)).data;
 
     if ((typeof manifest !== "object" || !manifest.hasOwnProperties("name", "creators", "description", "versions", "vma")) ||
         (!Array.isArray(manifest.versions) || manifest.versions.length === 0 || typeof manifest.versions[0] !== "object") ||
