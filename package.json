@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "arch": "^2.1.2",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "compare-versions": "^3.6.0",
     "electron-log": "^4.2.4",
     "electron-updater": "^4.3.5",
