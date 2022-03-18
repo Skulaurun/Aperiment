@@ -18,8 +18,6 @@
  *
  */
 
-const { ipcRenderer } = electron;
-
 document.addEventListener("DOMContentLoaded", () => {
 
     let username = document.getElementById("username");

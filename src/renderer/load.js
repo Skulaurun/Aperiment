@@ -18,8 +18,6 @@
  *
  */
 
-const { ipcRenderer } = electron;
-
 let statusBar = null;
 document.addEventListener("DOMContentLoaded", () => {
 

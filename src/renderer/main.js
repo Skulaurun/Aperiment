@@ -19,7 +19,6 @@
  */
 
 const uuid4 = require("uuid").v4;
-const { ipcRenderer } = electron;
 
 document.addEventListener("DOMContentLoaded", () => {
 

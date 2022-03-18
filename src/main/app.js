@@ -80,6 +80,18 @@ process.on("unhandledRejection", crashHandler);
 let config, user, java, modpacks;
 let loadWindow, loginWindow, mainWindow;
 
+function findWindow(id) {
+    if (mainWindow.webContents.id === id) {
+        return mainWindow;
+    } else if (loginWindow.webContents.id === id) {
+        return loginWindow;
+    } else if (loadWindow.webContents.id === id) {
+        return loadWindow;
+    } else {
+        return null;
+    }
+}
+
 if (!app.requestSingleInstanceLock()) {
     app.quit();
 }
@@ -118,8 +130,9 @@ app.once("ready", () => {
         maximizable: false,
         transparent: true,
         webPreferences: {
-            nodeIntegration: true,
-            devTools: DEVELOPER_MODE
+            devTools: DEVELOPER_MODE,
+            contextIsolation: false,
+            nodeIntegration: true
         }
     });
     
@@ -206,6 +219,7 @@ ipcMain.once("app-start", (event) => {
         resizable: false,
         webPreferences: {
             devTools: DEVELOPER_MODE,
+            contextIsolation: false,
             nodeIntegration: true
         }
     });
@@ -219,16 +233,17 @@ ipcMain.once("app-start", (event) => {
         frame: false,
         webPreferences: {
             devTools: DEVELOPER_MODE,
+            contextIsolation: false,
             nodeIntegration: true
         }
     });
     
-    loginWindow.once("ready-to-show", (event) => {
+    loginWindow.once("ready-to-show", () => {
 
-        mainWindow.once("ready-to-show", (event) => {
+        mainWindow.once("ready-to-show", () => {
 
-            event.sender.send("load-settings", config.get());
-            event.sender.send("load-modpacks", modpacks.get());
+            mainWindow.send("load-settings", config.get());
+            mainWindow.send("load-modpacks", modpacks.get());
 
             if (modpacks.size() > 0) log.info(`Successfully loaded ${modpacks.size()} modpacks.`);
             else log.info("No modpacks to load.");
@@ -279,6 +294,21 @@ ipcMain.on("app-version", (event) => {
 
     sender.send("app-version", app.getVersion());
 
+});
+
+ipcMain.on("window-close", (event) => {
+    findWindow(event.sender.id).close();
+});
+ipcMain.on("window-minimize", (event) => {
+    findWindow(event.sender.id).minimize();
+});
+ipcMain.on("window-maximize", (event) => {
+    const currentWindow = findWindow(event.sender.id);
+    if (currentWindow.isMaximized()) {
+        currentWindow.unmaximize();
+    } else {
+        currentWindow.maximize();
+    }
 });
 
 ipcMain.on("user-login", (event, online, username, password) => {

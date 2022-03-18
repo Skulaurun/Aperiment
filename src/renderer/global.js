@@ -19,7 +19,7 @@
  */
 
 const electron = require("electron");
-const { remote } = electron;
+const { ipcRenderer } = electron;
 
 function removeEmptyNodes(node) {
 
@@ -43,30 +43,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     removeEmptyNodes(document);
 
-    const currentWindow = remote.getCurrentWindow();
-
     let minimizeButton = document.querySelector(".window-controls > svg[name=minimize]");
     if (minimizeButton) {
         minimizeButton.addEventListener("click", () => {
-            currentWindow.minimize();
+            ipcRenderer.send("window-minimize");
         });
     }
 
     let maximizeButton = document.querySelector(".window-controls > svg[name=maximize]");
     if (maximizeButton) {
         maximizeButton.addEventListener("click", () => {
-            if (currentWindow.isMaximized()) {
-                currentWindow.unmaximize();
-            } else {
-                currentWindow.maximize();
-            }
+            ipcRenderer.send("window-maximize");
         });
     }
 
     let closeButton = document.querySelector(".window-controls > svg[name=close]");
     if (closeButton) {
         closeButton.addEventListener("click", () => {
-            currentWindow.close();
+            ipcRenderer.send("window-close");
         });
     }
 
