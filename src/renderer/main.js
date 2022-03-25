@@ -20,7 +20,49 @@
 
 const uuid4 = require("uuid").v4;
 
+let consoleOutput = null;
+
+function encodeWhiteSpaces(string) {
+
+    return string.split("").map(function(c) {
+
+        if (c === " ") return "\u00A0"
+        else return c;
+
+    }).join('');
+
+}
+
+function appendConsole(handle, content) {
+
+    const message = document.createElement("div");
+
+    content.split("\n").forEach((text) => {
+
+        let line = null;
+
+        if (text != "") {
+
+            line = document.createElement("p");
+            line.textContent = encodeWhiteSpaces(text);
+
+        } else {
+            line = document.createElement("br");
+        }
+
+        message.appendChild(line);
+
+    });
+
+    handle.appendChild(message);
+    handle.scrollTo(0, handle.scrollHeight);
+
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+    
+    consoleOutput = document.getElementById("console-output");
+    appendConsole(consoleOutput, ">>> Console output window, the JVM logs messages here.\n");
 
     ipcRenderer.send("app-version");
 
@@ -260,6 +302,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
     
+    const resizeHandle = document.getElementById("console-resize-handle");
+    const toggleConsole = document.getElementById("toggle-console");
+
+    let consoleVisible = false;
+    toggleConsole.addEventListener("click", () => {
+        if (!consoleVisible) {
+            consoleOutput.parentElement.style.height = `${window.innerHeight / 3}px`;
+        } else {
+            consoleOutput.parentElement.style.height = "0px";
+        }
+        consoleVisible = !consoleVisible;
+    });
+
+    let onConsoleResize = (e) => {
+        let newHeight = consoleOutput.parentElement.offsetHeight - e.movementY;
+        if (modpackContainer.offsetHeight + 16 >= newHeight) {
+            consoleOutput.parentElement.style.height = `${newHeight}px`;
+            if (newHeight <= 0) {
+                consoleVisible = false;
+            } else if (newHeight > 0) {
+                consoleVisible = true;
+            }
+        }
+    };
+
+    resizeHandle.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        consoleOutput.style.userSelect = "none";
+        window.addEventListener("mousemove", onConsoleResize);
+    });
+    window.addEventListener("mouseup", (e) => {
+        e.preventDefault();
+        consoleOutput.style.userSelect = "text";
+        window.removeEventListener("mousemove", onConsoleResize);
+    });
+
+    let lastY = window.innerHeight;
+    window.addEventListener("resize", (e) => {
+        let difference = window.innerHeight - lastY;
+        if (difference < 0) {
+            if (modpackContainer.offsetHeight + 16 < consoleOutput.parentElement.offsetHeight - difference) {
+                let newHeight = consoleOutput.parentElement.offsetHeight + difference;
+                consoleOutput.parentElement.style.height = `${newHeight}px`;
+            }
+        }
+        lastY = window.innerHeight;
+    });
+
 });
 
 ipcRenderer.on("app-version", (event, version) => {
@@ -457,6 +547,8 @@ ipcRenderer.on("modpack-start", (event, id) => {
     modpack.children[1].setMode("INFINITE");
     modpack.children[2].setAttribute("state", "STARTING");
 
+    appendConsole(consoleOutput, ">>> Modpack '" + modpack.getAttribute("name") + "' is starting ...\n");
+
 });
 
 ipcRenderer.on("modpack-stdout", (event, id, data) => {
@@ -468,18 +560,12 @@ ipcRenderer.on("modpack-stdout", (event, id, data) => {
         modpack.children[2].setAttribute("state", "RUNNING");
     }
 
-    /*var debugOutput = document.getElementById("debug-output");
-    debugOutput.textContent += data;
-    debugOutput.scrollTop = debugOutput.scrollHeight;*/
+    appendConsole(consoleOutput, new String(data));
 
 });
 
 ipcRenderer.on("modpack-stderr", (event, data) => {
-
-    /*var debugOutput = document.getElementById("debug-output");
-    debugOutput.textContent += data;
-    debugOutput.scrollTop = debugOutput.scrollHeight;*/
-
+    appendConsole(consoleOutput, new String(data));
 });
 
 ipcRenderer.on("modpack-error", (event, id, error) => {
@@ -490,7 +576,7 @@ ipcRenderer.on("modpack-error", (event, id, error) => {
     modpack.children[1].setMode("NONE");
     modpack.children[2].setAttribute("state", "DEFAULT");
 
-    // PRINT ERROR INFO
+    appendConsole(consoleOutput, new String(error));
 
 });
 
@@ -502,6 +588,6 @@ ipcRenderer.on("modpack-exit", (event, id, code) => {
     modpack.children[1].setMode("NONE");
     modpack.children[2].setAttribute("state", "DEFAULT");
 
-    // PRINT EXIT CODE
+    appendConsole(consoleOutput, ">>> Exited with code: " + new String(code));
 
 });
