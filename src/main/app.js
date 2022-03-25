@@ -142,7 +142,7 @@ app.once("ready", () => {
 
     loadWindow.loadFile("src/load.html");
 
-    loadWindow.once("ready-to-show", (event) => {
+    loadWindow.once("ready-to-show", () => {
 
         loadWindow.show();
 
@@ -177,7 +177,7 @@ app.once("ready", () => {
         });
         
         autoUpdater.once("update-downloaded", () => {
-            event.sender.send("update-downloaded");
+            loadWindow.send("update-downloaded");
             autoUpdater.quitAndInstall(true, true);
         });
 
@@ -186,11 +186,11 @@ app.once("ready", () => {
         });
 
         autoUpdater.once("update-available", () => {
-            event.sender.send("update-available");
+            loadWindow.send("update-available");
         });
 
         autoUpdater.on("download-progress", (progress) => {
-            event.sender.send("update-download-progress", progress);
+            loadWindow.send("update-download-progress", progress);
         });
 
         if (!DEVELOPER_MODE && config.get("aper.autoUpdate", true)) {
@@ -207,7 +207,7 @@ app.once("ready", () => {
 
 });
 
-ipcMain.once("app-start", (event) => {
+ipcMain.once("app-start", () => {
 
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
