@@ -509,7 +509,7 @@ ipcRenderer.on("load-icons", (event, icons) => {
     let modpackContainer = document.getElementById("modpack-container");
     for (const [id, icon] of Object.entries(icons)) {
         const modpackIcon = modpackContainer.querySelector(`.modpack-item[directory=${id}] img`);
-        modpackIcon.src = icon;
+        modpackIcon.src = `${icon}?${new Date().getTime()}`;
     }
 
 });
