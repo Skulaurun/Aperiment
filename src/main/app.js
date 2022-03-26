@@ -22,6 +22,7 @@ const os = require("os");
 const fs = require("fs");
 const crypto = require("crypto");
 const { Readable } = require("stream");
+const fileType = require("file-type");
 const { default: axios } = require("axios");
 const validUrl = require("valid-url");
 const log = require("electron-log");
@@ -467,9 +468,7 @@ ipcMain.on("save-modpacks", (event, object) => {
 
 ipcMain.on("load-icons", async (event, modpacks) => {
 
-    const { fileTypeFromFile } = await import("file-type");
     const iconDirectory = `${config.get("minecraft")}/cache/icons`;
-
     const supportedMimeTypes = [
         "image/png",
         "image/jpeg",
@@ -484,7 +483,7 @@ ipcMain.on("load-icons", async (event, modpacks) => {
         let icons = {};
         for (const modpack of modpacks) {
             try {
-                const type = await fileTypeFromFile(`${iconDirectory}/${modpack}`);
+                const type = await fileType.fromFile(`${iconDirectory}/${modpack}`);
                 if (supportedMimeTypes.includes(type.mime)) {
                     icons[modpack] = `${iconDirectory}/${modpack}`;
                 }
