@@ -365,6 +365,7 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
     let modpackContextMenu = document.getElementById("modpack-context-menu");
     modpackContainer.innerHTML = "";
 
+    let modpackIDs = [];
     for (let i = 0; i < modpacks.length; i++) {
 
         let modpack = modpacks[i];
@@ -492,11 +493,24 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
         });
 
         modpackContainer.appendChild(item);
+        modpackIDs.push(item.getAttribute("directory"));
 
     }
 
     let modpackCount = document.getElementById("modpack-count");
     modpackCount.textContent = modpacks.length + (modpacks.length === 1 ? " modpack" : " modpacks");
+
+    ipcRenderer.send("load-icons", modpackIDs);
+
+});
+
+ipcRenderer.on("load-icons", (event, icons) => {
+
+    let modpackContainer = document.getElementById("modpack-container");
+    for (const [id, icon] of Object.entries(icons)) {
+        const modpackIcon = modpackContainer.querySelector(`.modpack-item[directory=${id}] img`);
+        modpackIcon.src = icon;
+    }
 
 });
 

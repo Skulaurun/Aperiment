@@ -1080,6 +1080,10 @@ class MinecraftModpack extends MinecraftForge {
         this.modpackVersion = this._modpackManifest["versions"][0];
     }
 
+    getIconUrl() {
+        return this._modpackManifest["icon"];
+    }
+
 }
 
 module.exports = { Minecraft, MinecraftForge, MinecraftModpack };

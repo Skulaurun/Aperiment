@@ -19,7 +19,10 @@
  */
 
 const os = require("os");
-const axios = require("axios").default;
+const fs = require("fs");
+const crypto = require("crypto");
+const { Readable } = require("stream");
+const { default: axios } = require("axios");
 const validUrl = require("valid-url");
 const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
@@ -362,6 +365,11 @@ ipcMain.on("add-modpack", async (event, url) => { // TODO: Stricter rules for va
     if (modpacks.get().some(m => m.url === url)) {
         return; // TODO: Show messagebox. [ALREADY EXISTS]
     }
+    
+    if (manifest.hasOwnProperty("icon") && validUrl.isUri(manifest["icon"])) {
+        let directory = modpack.name.trim().toLowerCase().replace(/ /g, "-");
+        fetchIcon(manifest["icon"], directory).catch(()=>{});
+    }
 
     modpacks.set(modpacks.size(), modpack);
     modpacks.save();
@@ -395,6 +403,9 @@ ipcMain.on("launch-modpack", (event, options) => { // TODO: Add logging.
         if (!modpack.isUpToDate()) {
             modpack.update();
         }
+
+        let iconUrl = modpack.getIconUrl();
+        if (iconUrl) { fetchIcon(iconUrl, modpack.name).catch(()=>{}); }
     
         modpack.download((progress) => {
             event.sender.send("modpack-download-progress", options.id, progress);
@@ -453,3 +464,97 @@ ipcMain.on("save-modpacks", (event, object) => {
     modpacks.save();
 
 });
+
+ipcMain.on("load-icons", async (event, modpacks) => {
+
+    const { fileTypeFromFile } = await import("file-type");
+    const iconDirectory = `${config.get("minecraft")}/cache/icons`;
+
+    const supportedMimeTypes = [
+        "image/png",
+        "image/jpeg",
+        "image/webp",
+        "image/gif"
+    ];
+
+    try {
+
+        await fs.promises.access(iconDirectory);
+
+        let icons = {};
+        for (const modpack of modpacks) {
+            try {
+                const type = await fileTypeFromFile(`${iconDirectory}/${modpack}`);
+                if (supportedMimeTypes.includes(type.mime)) {
+                    icons[modpack] = `${iconDirectory}/${modpack}`;
+                }
+            } catch {}
+        }
+
+        event.sender.send("load-icons", icons);
+
+    } catch {}
+
+});
+
+async function fetchIcon(url, modpack) {
+
+    const computeHash = (hash, stream) => {
+        return new Promise((resolve, reject) => {
+            stream.pipe(crypto.createHash(hash).setEncoding("hex"))
+                .on("finish", function() {
+                    resolve(this.read());
+                }).on("error", reject);
+        });
+    };
+
+    const streamToBuffer = (stream) => {
+        return new Promise((resolve, reject) => {
+            let buffer = [];
+            stream.on("data", (chunk) => { buffer.push(chunk); });
+            stream.on("end", () => resolve(Buffer.concat(buffer)));
+            stream.on("error", reject);
+        });
+    };
+
+    let fileHash = null;
+    let remoteHash = null;
+    let streamBuffer = null;
+
+    const iconDirectory = `${config.get("minecraft")}/cache/icons`;
+    const iconPath = `${iconDirectory}/${modpack}`;
+
+    try {
+        let { data: stream } = await axios({
+            url: url,
+            method: "GET",
+            responseType: "stream"
+        });
+        streamBuffer = await streamToBuffer(stream);
+        remoteHash = await computeHash("sha256", Readable.from(streamBuffer));
+    } catch { return; }
+
+    try {
+        await fs.promises.access(iconPath);
+        fileHash = await computeHash("sha256", fs.createReadStream(iconPath));
+    } catch {}
+
+    if (remoteHash != null && fileHash != remoteHash) {
+
+        await fs.promises.mkdir(iconDirectory, { recursive: true });
+
+        try {
+
+            const writeStream = Readable.from(streamBuffer);
+            const writer = fs.createWriteStream(iconPath);
+            writeStream.pipe(writer);
+
+            writer.on("finish", () => {
+                ipcMain.emit("load-icons", { sender: mainWindow }, [modpack]);
+            });
+
+        } catch {}
+
+    }
+
+}
