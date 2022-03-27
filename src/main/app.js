@@ -125,6 +125,7 @@ app.once("ready", () => {
     log.info(`A-Periment v.${app.getVersion()} started.`);
     
     loadWindow = new BrowserWindow({
+        title: "A-Periment",
         width: 256,
         height: 276,
         frame: false,
@@ -216,6 +217,7 @@ ipcMain.once("app-start", () => {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
     loginWindow = new BrowserWindow({
+        title: "A-Periment",
         width: Math.round(width / 4),
         height: Math.round(height / 2),
         show: false,
@@ -229,6 +231,7 @@ ipcMain.once("app-start", () => {
     });
 
     mainWindow = new BrowserWindow({
+        title: "A-Periment",
         width: Math.round(width / 1.5),
         height: Math.round(height / 1.5),
         minWidth: 800,
