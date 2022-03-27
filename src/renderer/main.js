@@ -60,6 +60,29 @@ function appendConsole(handle, content) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    const modpackStoreList = document.getElementById("modpack-store-list");
+    const officialModpacks = {
+        "SkulTech": "https://www.skulaurun.eu/skultech/manifest.json"
+    };
+
+    for (const [name, url] of Object.entries(officialModpacks)) {
+        let title = document.createElement("div");
+        title.classList.add("entry-name");
+        title.textContent = name;
+        let button = document.createElement("button");
+        button.classList.add("settings-button", "store-add-button");
+        button.textContent = "+";
+        button.setAttribute("url", title);
+        button.addEventListener("click", () => {
+            ipcRenderer.send("add-modpack", url);
+        });
+        let entry = document.createElement("div");
+        entry.classList.add("modpack-entry");
+        entry.appendChild(title);
+        entry.appendChild(button);
+        modpackStoreList.appendChild(entry);
+    }
     
     consoleOutput = document.getElementById("console-output");
     appendConsole(consoleOutput, ">>> Console output window, the JVM logs messages here.\n");

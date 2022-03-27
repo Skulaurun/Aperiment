@@ -18,6 +18,8 @@
  *
  */
 
+/* Global */
+
 .menu-container {
     position: relative;
     width: 64px;
@@ -101,6 +103,8 @@
 }
 .page-title {
     overflow: hidden;
+    position: absolute;
+    z-index: 1;
     text-align: center;
     margin-top: 5px;
     margin-left: 8px;
@@ -132,14 +136,20 @@
     padding: 8px;
 }
 
+/* Browse Modpacks */
+
+.page-item[name=browse] .page-title {
+    color: white;
+}
+
 .modpack-search-bar {
     color: inherit;
-    width: 100%;
+    width: calc(100% - 72px);
     border: none;
     outline: none;
     background: none;
-    font-size: 18px;
-    padding: 6px 10px 6px 10px;
+    font-size: 21.5px;
+    padding: 4px 6px 4px 6px;
     transition-duration: 0.5s;
     border: 1px solid rgb(230, 230, 230);
 }
@@ -147,8 +157,75 @@
     border: 1px solid rgb(60, 207, 92);
 }
 .modpack-search-bar::placeholder {
-    color: rgb(150, 150, 150);
+    color: white;
+    font-style: italic;
 }
+
+.modpack-search-bar {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+#add-modpack-button {
+    margin: 0px;
+    margin-left: 8px;
+    width: 64px;
+    padding: 6px 6px 6px 6px;
+}
+
+.page-wrapper {
+    position: relative;
+    color: white;
+    z-index: 1;
+    width: auto;
+    max-width: 50%;
+    margin-top: 8px;
+    height: calc(100% - 8px);
+    margin-left: auto;
+    margin-right: auto;
+    background-color: rgba(0, 0, 0, 0.25);
+    box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modpack-store-header {
+    padding: 8px;
+}
+
+.modpack-store {
+    padding: 8px;
+    margin-top: 16px;
+    max-height: 100%;
+}
+.modpack-store h1 {
+    font-size: 18px;
+}
+.modpack-store .modpack-entry {
+    margin-left: 8px;
+    user-select: none;
+}
+.modpack-store .entry-name {
+    display: inline-block;
+    margin-right: 6px;
+    font-size: 18px;
+}
+.store-background {
+    position: absolute;
+    top: -20px;
+    left: 0px;
+    width: 100%;
+    height: calc(100% + 20px);
+    object-fit: cover;
+}
+
+.settings-button.store-add-button {
+    float: none;
+    padding: 8px;
+    padding-left: 6px;
+    width: 24px;
+    height: 24px;
+    line-height: 8px;
+}
+
+/* Modpack Library */
 
 .modpack-container {
     width: 100%;
@@ -250,54 +327,6 @@
 .context-menu-item:hover {
     background-color: rgba(255, 255, 255, 0.1);
     border-left: 3px solid rgb(40, 255, 75);
-}
-
-.settings-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.settings-table tr:nth-child(even) {
-    background-color: rgb(50, 50, 50);
-}
-.settings-table tr:hover {
-    background-color: rgb(55, 55, 55);
-}
-.settings-table td, .settings-table th {
-    border: 1px solid rgb(66, 66, 66);
-    padding: 8px;
-}
-.settings-table thead th {
-    padding-top: 12px;
-    padding-bottom: 12px;
-    text-align: center;
-    background-color: rgb(40, 40, 40);
-}
-.settings-table tbody input {
-    width: 100%;
-    padding: 3px 6px 3px 6px;
-    color: rgb(230, 230, 230);
-    border: none;
-    outline: none;
-    background: none;
-    transition-duration: 0.5s;
-}
-.settings-button {
-    margin-top: 8px;
-    float: right;
-    color: inherit;
-    font-size: 20px;
-    font-weight: bold;
-    padding: 6px 50px 6px 50px;
-    overflow: hidden;
-    outline: none;
-    border: none;
-    background-color: rgb(68, 180, 93);
-}
-.settings-button:hover {
-    background-color: rgb(56, 209, 89);
-}
-.settings-button:active {
-    background-color: rgb(68, 228, 102);
 }
 
 .modpack-properties {
@@ -407,6 +436,56 @@
     height: 8px;
     background-color: transparent;
     -webkit-user-drag: none;
+}
+
+/* Launcher Settings */
+
+.settings-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.settings-table tr:nth-child(even) {
+    background-color: rgb(50, 50, 50);
+}
+.settings-table tr:hover {
+    background-color: rgb(55, 55, 55);
+}
+.settings-table td, .settings-table th {
+    border: 1px solid rgb(66, 66, 66);
+    padding: 8px;
+}
+.settings-table thead th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: center;
+    background-color: rgb(40, 40, 40);
+}
+.settings-table tbody input {
+    width: 100%;
+    padding: 3px 6px 3px 6px;
+    color: rgb(230, 230, 230);
+    border: none;
+    outline: none;
+    background: none;
+    transition-duration: 0.5s;
+}
+.settings-button {
+    margin-top: 8px;
+    float: right;
+    color: inherit;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 6px 50px 6px 50px;
+    overflow: hidden;
+    outline: none;
+    border: none;
+    background-color: rgb(68, 180, 93);
+}
+.settings-button:hover {
+    background-color: rgb(56, 209, 89);
+}
+.settings-button:active {
+    background-color: rgb(68, 228, 102);
 }
 
 @keyframes increase {
