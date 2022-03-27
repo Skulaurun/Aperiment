@@ -443,6 +443,7 @@
 .settings-table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 18px;
 }
 .settings-table tr:nth-child(even) {
     background-color: rgb(50, 50, 50);
@@ -463,6 +464,7 @@
 .settings-table tbody input {
     width: 100%;
     padding: 3px 6px 3px 6px;
+    font-size: 18px;
     color: rgb(230, 230, 230);
     border: none;
     outline: none;
