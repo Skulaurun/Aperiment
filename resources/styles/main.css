@@ -420,7 +420,7 @@
 .console-output {
     position: relative;
     padding: 2px;
-    overflow-y: scroll;
+    overflow-y: hidden;
     overflow-wrap: break-word;
     height: 100%;
 }

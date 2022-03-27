@@ -344,8 +344,10 @@ document.addEventListener("DOMContentLoaded", () => {
             consoleOutput.parentElement.style.height = `${newHeight}px`;
             if (newHeight <= 0) {
                 consoleVisible = false;
+                consoleOutput.style.overflowY = "hidden";
             } else if (newHeight > 0) {
                 consoleVisible = true;
+                consoleOutput.style.overflowY = "scroll";
             }
         }
     };
