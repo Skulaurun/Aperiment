@@ -613,7 +613,12 @@ ipcRenderer.on("modpack-stdout", (event, id, data) => {
 
     let modpack = document.getElementById(id);
 
-    if (data.indexOf("[FML]: Forge Mod Loader has successfully loaded") !== -1) {
+    /*if (data.indexOf("[FML]: Forge Mod Loader has successfully loaded") !== -1) {
+        modpack.children[1].setMode("NONE");
+        modpack.children[2].setAttribute("state", "RUNNING");
+    }*/
+
+    if (data.indexOf("LWJGL") !== -1) {
         modpack.children[1].setMode("NONE");
         modpack.children[2].setAttribute("state", "RUNNING");
     }
