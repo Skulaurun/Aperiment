@@ -602,12 +602,12 @@ class MinecraftForge extends Minecraft {
 
         if (compareVersions(this.version, "1.13.2") !== -1) {
             libraries.push({
-                name: "io.github.zekerzhayard:ForgeWrapper:1.4.2",
+                name: "io.github.zekerzhayard:ForgeWrapper:1.5.5",
                 downloads: {
                     artifact: {
-                        size: 22346,
-                        path: "io/github/zekerzhayard/ForgeWrapper/1.4.2/ForgeWrapper-1.4.2.jar",
-                        url: "https://github.com/ZekerZhayard/ForgeWrapper/releases/download/1.4.2/ForgeWrapper-1.4.2.jar"
+                        size: 34331,
+                        path: "io/github/zekerzhayard/ForgeWrapper/1.5.5/ForgeWrapper-1.5.5.jar",
+                        url: "https://github.com/ZekerZhayard/ForgeWrapper/releases/download/1.5.5/ForgeWrapper-1.5.5.jar"
                     }
                 }
             });
