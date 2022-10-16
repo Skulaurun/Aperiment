@@ -382,25 +382,16 @@ ipcMain.on("add-modpack", async (event, url) => { // TODO: Stricter rules for va
 
 });
 
+let activeModpacks = {};
+
 ipcMain.on("launch-modpack", (event, options) => { // TODO: Add logging.
+
+    if (activeModpacks[options.id]) {
+        return;
+    }
     
-    java.vma = options.vma;
-    var modpack = new MinecraftModpack(config.get("minecraft"), options.directory, options.url, user, java);
-
-    ipcMain.once("terminate-modpack", () => {
-
-        if (!modpack.running) {
-
-            modpack.removeAllListeners();
-            event.sender.send("modpack-exit", options.id, "job-cancelled");
-            
-        } else {
-            modpack.terminate("SIGKILL");
-        }
-
-        modpack = null;
-        
-    });
+    let localJava = new Java(java.path, options.vma);
+    let modpack = new MinecraftModpack(config.get("minecraft"), options.directory, options.url, user, localJava);
 
     modpack.on("ready", () => {
 
@@ -434,9 +425,30 @@ ipcMain.on("launch-modpack", (event, options) => { // TODO: Add logging.
     });
     
     modpack.on("exit", (code) => {
+        if (activeModpacks[options.id]) {
+            delete activeModpacks[options.id];
+        }
         event.sender.send("modpack-exit", options.id, code);
     });
 
+    activeModpacks[options.id] = modpack;
+
+});
+
+ipcMain.on("terminate-modpack", (event, id) => {
+
+    let modpack = activeModpacks[id];
+    if (!modpack) return;
+
+    if (!modpack.running) {
+        modpack.removeAllListeners();
+        event.sender.send("modpack-exit", id, "job-cancelled");
+    } else {
+        modpack.terminate("SIGKILL");
+    }
+
+    delete activeModpacks[id];
+    
 });
 
 ipcMain.on("save-settings", (event, settings) => {

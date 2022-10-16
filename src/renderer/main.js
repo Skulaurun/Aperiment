@@ -499,7 +499,7 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
                 });
     
             } else {
-                ipcRenderer.send("terminate-modpack");
+                ipcRenderer.send("terminate-modpack", target.getAttribute("id"));
             }
 
         });
