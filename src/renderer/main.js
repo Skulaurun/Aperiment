@@ -21,6 +21,7 @@
 const uuid4 = require("uuid").v4;
 
 let consoleOutput = null;
+let isConsoleVisible = true;
 
 function encodeWhiteSpaces(string) {
 
@@ -34,6 +35,10 @@ function encodeWhiteSpaces(string) {
 }
 
 function appendConsole(handle, content) {
+
+    if (!isConsoleVisible) {
+        return;
+    }
 
     const message = document.createElement("div");
 
@@ -331,6 +336,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const resizeHandle = document.getElementById("console-resize-handle");
     const toggleConsole = document.getElementById("toggle-console");
 
+    let clearConsole = (isClosed) => {
+        if (isClosed) {
+            let clonedNode = consoleOutput.children[0].cloneNode(true);
+            consoleOutput.innerHTML = "";
+            consoleOutput.appendChild(clonedNode);
+        }
+        isConsoleVisible = !isClosed;
+    };
+
     let consoleVisible = false;
     toggleConsole.addEventListener("click", () => {
         if (!consoleVisible) {
@@ -339,6 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
             consoleOutput.parentElement.style.height = "0px";
         }
         consoleVisible = !consoleVisible;
+        clearConsole(!consoleVisible);
     });
 
     let onConsoleResize = (e) => {
@@ -353,6 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 consoleOutput.style.overflowY = "scroll";
             }
         }
+        clearConsole(!consoleVisible);
     };
 
     resizeHandle.addEventListener("mousedown", (e) => {
