@@ -94,6 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     consoleOutput = document.getElementById("console-output");
     appendConsole(consoleOutput, ">>> Console output window, the JVM logs messages here.\n");
+    isConsoleVisible = false;
 
     ipcRenderer.send("app-version");
 
