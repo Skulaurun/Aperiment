@@ -601,6 +601,7 @@ class MinecraftForge extends Minecraft {
         let installLibraries = forgeManifest["installLibraries"];
 
         if (compareVersions(this.version, "1.13.2") !== -1) {
+
             libraries.push({
                 name: "io.github.zekerzhayard:ForgeWrapper:1.5.5",
                 downloads: {
@@ -611,13 +612,36 @@ class MinecraftForge extends Minecraft {
                     }
                 }
             });
+
+            let additionalLibraries = [
+                {
+                    url: `https://files.minecraftforge.net/maven/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-launcher.jar`,
+                    size: 0
+                },
+                {
+                    url: `https://files.minecraftforge.net/maven/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-universal.jar`,
+                    size: 0
+                },
+                {
+                    url: `https://files.minecraftforge.net/maven/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`,
+                    size: 0
+                }
+            ];
+            for (const library of additionalLibraries) {
+                let response = await axios.request({
+                    url: library["url"],
+                    method: "HEAD"
+                });
+                library["size"] = parseInt(response.headers["content-length"]);
+            }
+
             libraries.push({
                 name: `net.minecraftforge:forge:${this.forgeVersion}:launcher`,
                 downloads: {
                     artifact: {
-                        size: 211758,
+                        size: additionalLibraries[0]["size"],
                         path: `net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-launcher.jar`,
-                        url: `https://files.minecraftforge.net/maven/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-launcher.jar`
+                        url: additionalLibraries[0]["url"]
                     }
                 }
             });
@@ -625,9 +649,9 @@ class MinecraftForge extends Minecraft {
                 name: `net.minecraftforge:forge:${this.forgeVersion}:universal`,
                 downloads: {
                     artifact: {
-                        size: 2399561,
+                        size: additionalLibraries[1]["size"],
                         path: `net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-universal.jar`,
-                        url: `https://files.minecraftforge.net/maven/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-universal.jar`
+                        url: additionalLibraries[1]["url"]
                     }
                 }
             });
@@ -635,13 +659,15 @@ class MinecraftForge extends Minecraft {
                 name: `net.minecraftforge:forge:${this.forgeVersion}:installer`,
                 downloads: {
                     artifact: {
-                        size: 7172099,
+                        size: additionalLibraries[2]["size"],
                         path: `net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`,
-                        url: `https://files.minecraftforge.net/maven/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`
+                        url: additionalLibraries[2]["url"]
                     }
                 }
             });
+
             forgeManifest["forgeInstaller"] = `net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`;
+
         }
 
         for (let i = 0; i < libraries.length; i++) {
