@@ -18,187 +18,194 @@
  *
  */
 
-const axios = require("axios").default;
+const { default: axios } = require("axios");
 
-function defaultErrorHandler(error, callback) {
+class Auth {
 
-    if (!error.code && error.response && error.response.data) {
+    static CLIENT_ID = "c1348caf-f18f-49d9-b63a-8e5cb0f7dd3b";
 
-        let response = error.response;
-        let data = response.data;
+    static Endpoint = {
+        "ACCESS_TOKEN": "https://login.microsoftonline.com/consumers/oauth2/v2.0/token",
+        "USER_XBOX_LIVE": "https://user.auth.xboxlive.com/user/authenticate",
+        "XSTS_XBOX_LIVE": "https://xsts.auth.xboxlive.com/xsts/authorize",
+        "MINECRAFT_TOKEN": "https://api.minecraftservices.com/authentication/login_with_xbox",
+        "MINECRAFT_PROFILE": "https://api.minecraftservices.com/minecraft/profile",
+        "MINECRAFT_STORE": "https://api.minecraftservices.com/entitlements/mcstore",
+        "REDIRECT_URI": "http://localhost:46969/"
+    };
 
-        callback({
-            code: response["status"],
-            message: data["errorMessage"]
+    /*
+    *   userCredential: Either a Refresh Token or Authorization Code
+    *   isLauncherAction: Used to switch between these two actions (true - refresh token, false - authorization code)
+    */
+    static async loginToMinecraft(userCredential, isLauncherAction) {
+
+        const [userAccessToken, userRefreshToken] = isLauncherAction ?
+            await Auth.refreshAccessToken(userCredential) :
+            await Auth.negotiateAccessToken(userCredential);
+        
+        const [userHash, xblToken] = await Auth.authenticateWithXboxLive(userAccessToken);
+        const xstsToken = await Auth.negotiateXboxLiveSecurityToken(xblToken);
+        const minecraftAccessToken = await Auth.authenticateWithMinecraft(userHash, xstsToken);
+        const { UUID, username } = await Auth.obtainMinecraftProfile(minecraftAccessToken);
+
+        return {
+            UUID: UUID,
+            username: username,
+            userRefreshToken: userRefreshToken,
+            minecraftAccessToken: minecraftAccessToken
+        };
+
+    }
+
+    static async negotiateAccessToken(userAccessCode) {
+
+        const { data: response } = await Auth._post(Auth.Endpoint["ACCESS_TOKEN"], new URLSearchParams({
+            "scope": "XboxLive.signin XboxLive.offline_access",
+            "redirect_uri": Auth.Endpoint["REDIRECT_URI"],
+            "client_id": Auth.CLIENT_ID,
+            "grant_type": "authorization_code",
+            "code": userAccessCode
+        }));
+
+        if (!response || !response["access_token"] || !response["refresh_token"]) {
+            throw new Error("The server sent a response that the client could not understand.");
+        }
+
+        return [
+            response["access_token"],
+            response["refresh_token"]
+        ];
+
+    }
+
+    static async refreshAccessToken(userRefreshToken) {
+
+        const { data: response } = await Auth._post(Auth.Endpoint["ACCESS_TOKEN"], new URLSearchParams({
+            "scope": "XboxLive.signin XboxLive.offline_access",
+            "redirect_uri": Auth.Endpoint["REDIRECT_URI"],
+            "client_id": Auth.CLIENT_ID,
+            "grant_type": "refresh_token",
+            "refresh_token": userRefreshToken
+        }));
+
+        if (!response || !response["access_token"] || !response["refresh_token"]) {
+            throw new Error("The server sent a response that the client could not understand.");
+        }
+
+        return [
+            response["access_token"],
+            response["refresh_token"]
+        ];
+
+    }
+
+    static async authenticateWithXboxLive(userAccessToken) {
+
+        const { data: response } = await Auth._post(Auth.Endpoint["USER_XBOX_LIVE"], {
+            "Properties": {
+                "AuthMethod": "RPS",
+                "SiteName": "user.auth.xboxlive.com",
+                "RpsTicket": `d=${userAccessToken}`
+            },
+            "RelyingParty": "http://auth.xboxlive.com",
+            "TokenType": "JWT"
         });
 
-    } else {
+        if (!response || !response["Token"] || !response["DisplayClaims"]) {
+            throw new Error("The server sent a response that the client could not understand.");
+        }
 
-        callback({
-            code: error.code,
-            message: error.toString()
+        return [
+            response["DisplayClaims"]["xui"][0]["uhs"],
+            response["Token"]
+        ];
+        
+    }
+
+    static async negotiateXboxLiveSecurityToken(xboxLiveToken) {
+
+        const { data: response } = await Auth._post(Auth.Endpoint["XSTS_XBOX_LIVE"], {
+            "Properties": {
+                "SandboxId": "RETAIL",
+                "UserTokens": [
+                    xboxLiveToken
+                ]
+            },
+            "RelyingParty": "rp://api.minecraftservices.com/",
+            "TokenType": "JWT"
+        });
+
+        if (!response || !response["Token"]) {
+            throw new Error("The server sent a response that the client could not understand.");
+        }
+
+        return response["Token"];
+
+    }
+
+    static async authenticateWithMinecraft(userHash, xstsToken) {
+
+        const { data: response } = await Auth._post(Auth.Endpoint["MINECRAFT_TOKEN"], {
+            "identityToken": `XBL3.0 x=${userHash};${xstsToken}`
+        });
+
+        if (!response || !response["access_token"]) {
+            throw new Error("The server sent a response that the client could not understand.");
+        }
+
+        return response["access_token"];
+
+    }
+
+    static async obtainMinecraftProfile(minecraftAccessToken) {
+
+        const { data: response } = await Auth._get(Auth.Endpoint["MINECRAFT_PROFILE"], minecraftAccessToken);
+
+        if (!response || !response["id"] || !response["name"]) {
+            throw new Error("The server sent a response that the client could not understand.");
+        }
+
+        return {
+            UUID: response["id"],
+            username: response["name"]
+        };
+
+    }
+
+    static async checkGameOwnership(minecraftAccessToken) {
+        Auth._get(Auth.Endpoint["MINECRAFT_STORE"], minecraftAccessToken);
+        // ...
+    }
+
+    static async _post(url, postData) {
+
+        let requestHeaders = {
+            "Accept": "application/json"
+        };
+
+        requestHeaders["Content-Type"] = postData instanceof URLSearchParams ?
+            "application/x-www-form-urlencoded" : "application/json";
+
+        return axios.post(url, postData, {
+            headers: requestHeaders
         });
 
     }
 
-}
+    static async _get(url, bearer) {
 
-const auth = {
+        let requestHeaders = {
+            "Accept": "application/json",
+            "Authorization": `Bearer ${bearer}`
+        };
 
-    server: "https://authserver.mojang.com",
-
-    online: function() {
-
-        return new Promise((resolve, reject) => {
-
-            axios({
-                method: "GET",
-                url: this.server
-            }).then((response) => {
-
-                let data = response.data;
-
-                resolve({
-                    status: response["status"],
-                    message: data["Status"]
-                });
-
-            }).catch((error) => { defaultErrorHandler(error, reject); });
-
-        });
-
-    },
-
-    login: function(username, password, clientToken) {
-
-        return new Promise((resolve, reject) => {
-
-            axios({
-                method: "POST",
-                url: this.server + "/authenticate",
-                data: {
-                    agent: {
-                        name: "Minecraft",
-                        version: 1
-                    },
-                    username: username,
-                    password: password,
-                    clientToken: clientToken,
-                    requestUser: true
-                }
-            }).then((response) => {
-               
-                let data = response.data;
-
-                resolve({
-                    status: response["status"],
-                    id: data["selectedProfile"]["id"],
-                    name: data["selectedProfile"]["name"],
-                    clientToken: data["clientToken"],
-                    accessToken: data["accessToken"]
-                });
-
-            }).catch((error) => { defaultErrorHandler(error, reject); });
-
-        });
-
-    },
-    logout: function(username, password) {
-
-        return new Promise((resolve, reject) => {
-
-            axios({
-                method: "POST",
-                url: this.server + "/signout",
-                data: {
-                    username: username,
-                    password: password
-                }
-            }).then((response) => {
-
-                resolve({
-                    status: response["status"]
-                });
-
-            }).catch((error) => { defaultErrorHandler(error, reject); });
-
-        });
-
-    },
-    validate: function(clientToken, accessToken) {
-
-        return new Promise((resolve, reject) => {
-
-            axios({
-                method: "POST",
-                url: this.server + "/validate",
-                data: {
-                    clientToken: clientToken,
-                    accessToken: accessToken
-                }
-            }).then((response) => {
-
-                resolve({
-                    status: response["status"]
-                });
-
-            }).catch((error) => { defaultErrorHandler(error, reject); });
-
-        });
-
-    },
-    invalidate: function(clientToken, accessToken) {
-
-        return new Promise((resolve, reject) => {
-
-            axios({
-                method: "POST",
-                url: this.server + "/invalidate",
-                data: {
-                    clientToken: clientToken,
-                    accessToken: accessToken
-                }
-            }).then((response) => {
-
-                resolve({
-                    status: response["status"]
-                });
-
-            }).catch((error) => { defaultErrorHandler(error, reject); });
-
-        });
-
-    },
-    refresh: function(clientToken, accessToken) {
-
-        return new Promise((resolve, reject) => {
-
-            axios({
-                method: "POST",
-                url: this.server + "/refresh",
-                data: {
-                    clientToken: clientToken,
-                    accessToken: accessToken,
-                    requestUser: true
-                }
-            }).then((response) => {
-
-                let data = response.data;
-
-                resolve({
-                    status: response["status"],
-                    id: data["selectedProfile"]["id"],
-                    name: data["selectedProfile"]["name"],
-                    clientToken: data["clientToken"],
-                    accessToken: data["accessToken"]
-                });
-
-            }).catch((error) => { defaultErrorHandler(error, reject); });
-
+        return axios.get(url, {
+            headers: requestHeaders
         });
 
     }
 
-}
+};
 
-module.exports = auth;
+module.exports = Auth;

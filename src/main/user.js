@@ -1,7 +1,7 @@
 /*
  *
  *   A-Periment - Custom minecraft launcher
- *   Copyright (C) 2020 Adam Charvát
+ *   Copyright (C) 2020 - 2022 Adam Charvát
  *
  *   A-Periment is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -14,16 +14,15 @@
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with a-periment. If not, see <https://www.gnu.org/licenses/>.
+ *   along with A-Periment. If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
-const { machineIdSync } = require("node-machine-id");
-const auth = require("./auth.js");
 const helper = require("../common/helper.js");
 const Storage = require("./storage.js");
+const Auth = require("./auth.js");
 
-class User { // TODO: Improve error messages.
+class User {
 
     constructor(path) {
 
@@ -31,156 +30,78 @@ class User { // TODO: Improve error messages.
             data: {
                 id: null,
                 nickname: null,
-                accessToken: null
+                accessToken: null,
+                refreshToken: null
             },
             path: path
         });
 
-        let id = this.storage.get("id");
-        let nickname = this.storage.get("nickname");
-        let accessToken = this.storage.get("accessToken");
+        this.id = this.storage.get("id");
+        this.nickname = this.storage.get("nickname");
+        this.accessToken = this.storage.get("accessToken");
+        this.refreshToken = this.storage.get("refreshToken");
 
-        this.id = id;
-        this.nickname = nickname;
-        this.accessToken = accessToken;
-        this.clientToken = machineIdSync(true);
-        this.online = helper.uuid3(`OfflinePlayer:${nickname}`) !== id;
+        this.isAuthenticated = false;
+        this.online = this.offlineUUID(this.nickname) !== this.id;
 
     }
 
-    save() {
+    saveToFile() {
 
         this.storage.set("id", this.id);
         this.storage.set("nickname", this.nickname);
         this.storage.set("accessToken", this.accessToken);
+        this.storage.set("refreshToken", this.refreshToken);
 
         this.storage.save();
 
     }
 
-    load(data) {
+    async login(userCredential, isOnline, isFromMemory) {
 
-        if (data["status"] === 200) {
+        if (isOnline) {
 
-            if (data.hasOwnProperty("id") && data.hasOwnProperty("name") && data.hasOwnProperty("clientToken") && data.hasOwnProperty("accessToken")) {
+            const authObject = await Auth.loginToMinecraft(userCredential, isFromMemory);
 
-                this.id = data["id"];
-                this.nickname = data["name"];
-                this.clientToken = data["clientToken"];
-                this.accessToken = data["accessToken"];
+            this.id = authObject.UUID;
+            this.nickname = authObject.username;
+            this.refreshToken = authObject.userRefreshToken;
+            this.accessToken = authObject.minecraftAccessToken;
 
-                this.save();
+        } else {
 
+            if (!userCredential || userCredential.length < 3) {
+                throw new Error("The username is too short.");
             }
-    
+
+            this.nickname = userCredential;
+            this.id = this.offlineUUID(userCredential);
+
         }
 
-    }
-
-    authenticate(username, password) {
-
-        return new Promise((resolve, reject) => {
-
-            if (this.online) {
-
-                if (username && password) {
-                
-                    auth.login(username, password, this.clientToken).then((response) => { this.load(response); resolve(response); }).catch(reject);
-    
-                } else {
-                    reject({
-                        code: "ENOCRED",
-                        message: "Credentials cannot be empty!"
-                    });
-                }
-
-            } else {
-
-                if (typeof username === "string" && username.length >= 3) {
-                    
-                    this.nickname = username;
-                    this.id = helper.uuid3(`OfflinePlayer:${username}`);
-
-                    this.save();
-
-                    resolve();
-                    
-                } else {
-                    reject({
-                        code: "EINCRED",
-                        message: "Invalid credentials!"
-                    });
-                }
-
-            }
-
-        });
+        this.isAuthenticated = true;
+        this.saveToFile();
 
     }
 
-    reauthenticate() {
-
-        return new Promise((resolve, reject) => {
-
-            if (this.online) {
-
-                if (this.clientToken && this.accessToken) {
-                
-                    auth.validate(this.clientToken, this.accessToken).then((response) => { this.load(response); resolve(response); }).catch((error) => {
-                        
-                        auth.refresh(this.clientToken, this.accessToken).then((response) => { this.load(response); resolve(response); }).catch((error) => {
-    
-                            this.id = null;
-                            this.nickname = null;
-                            this.clientToken = null;
-                            this.accessToken = null;
-
-                            this.save();
-    
-                            reject(error);
-    
-                        });
-        
-                    });
-    
-                } else {
-                    reject({
-                        code: "ENOCRED",
-                        message: "Credentials cannot be empty!"
-                    });
-                }
-
-            } else {
-
-                if (this.nickname && this.nickname.length >= 3) {
-
-                    resolve();
-                    
-                } else {
-                    reject({
-                        code: "EINCRED",
-                        message: "Invalid credentials!"
-                    });
-                }
-
-            }
-
-        });
-
+    async loginFromMemory() {
+        return await this.login(this.online ? this.refreshToken : this.nickname, this.online, true);
     }
 
-    invalidate() {
-
-        if (this.online) {
-            auth.invalidate(this.clientToken, this.accessToken);
-        }
+    logout() {
 
         this.id = null;
         this.nickname = null;
         this.accessToken = null;
+        this.refreshToken = null;
 
-        this.save();
+        this.isAuthenticated = false;
+        this.saveToFile();
 
+    }
+
+    offlineUUID(username) {
+        return helper.uuid3(`OfflinePlayer:${username}`);
     }
 
 }
