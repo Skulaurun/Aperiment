@@ -57,13 +57,29 @@
         </div>
         
         <div class="content">
-            <input type="text" id="username" class="textbox" placeholder="Username" maxlength="100" autocomplete="off"><br>
-            <input type="password" id="password" class="textbox" placeholder="Password" maxlength="100" autocomplete="off"><br>
-            <select id="mode-menu">
-                <option value="online">ONLINE</option>
-                <option value="offline">OFFLINE</option>
-            </select>
-            <button id="submit" class="default-button">LOGIN</button>
+
+            <div class="login-introduction" id="login-introduction">
+
+                <h1>LOGIN OPTIONS</h1>
+    
+                <button id="login-with-microsoft">LOGIN WITH MICROSOFT ACCOUNT</button>
+                <button id="i-dont-have-internet">I DON'T HAVE INTERNET</button>
+
+            </div>
+
+            <div class="login-option option-hidden" id="option-1">
+                <div class="background-content">
+                    <h1>THE WIZARD IS TRYING TO LOAD A PAGE ...</h1>
+                    <img src="../resources/images/kouzelnicek.png">
+                    <p>This may take a while...</p>
+                </div>
+            </div>
+
+            <div class="login-option option-hidden" id="option-2">
+                <input type="text" id="username" class="textbox" placeholder="Username" maxlength="100" autocomplete="off"><br>
+                <button id="submit" class="default-button">LOGIN</button>
+            </div>
+
         </div>
 
     </body>

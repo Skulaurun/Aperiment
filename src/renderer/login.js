@@ -21,46 +21,69 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     let username = document.getElementById("username");
-    let password = document.getElementById("password");
     let submit = document.getElementById("submit");
-    let modeMenu = document.getElementById("mode-menu");
 
-    submit.addEventListener("click", () => {
+    let microsoftButton = document.getElementById("login-with-microsoft");
+    let internetButton = document.getElementById("i-dont-have-internet");
 
-        let online = modeMenu.selectedIndex === 0 ? true : false;
-        
-        if (username.value != "" && (password.value != "" || !online)) {
-            ipcRenderer.send("user-login", online, username.value, password.value);
+    let loginIntroduction = document.getElementById("login-introduction");
+
+    let option1 = document.getElementById("option-1");
+    let option2 = document.getElementById("option-2");
+
+    microsoftButton.addEventListener("click", () => {
+
+        loginIntroduction.classList.add("option-hidden");
+        option1.classList.remove("option-hidden");
+
+        const element = option1.querySelector("webview");
+        if (element) {
+            element.remove();
         }
+
+        const webview = document.createElement("webview");
+        webview.classList.add("microsoft-web");
+        webview.src = "https://login.live.com/oauth20_authorize.srf?client_id=c1348caf-f18f-49d9-b63a-8e5cb0f7dd3b&redirect_uri=http://localhost:46969/&response_type=code&scope=XboxLive.signin%20XboxLive.offline_access&prompt=select_account&cobrandid=8058f65d-ce06-4c30-9559-473c9275a65d";
+
+        option1.appendChild(webview);
 
     });
 
+    internetButton.addEventListener("click", () => {
+        loginIntroduction.classList.add("option-hidden");
+        option2.classList.remove("option-hidden");
+        username.focus();
+    });
+
+    microsoftButton.focus();
+
+    submit.addEventListener("click", () => {
+        if (username.value) {
+            ipcRenderer.send("user-login", username.value);
+            loginIntroduction.classList.remove("option-hidden");
+            option1.classList.add("option-hidden");
+            option2.classList.add("option-hidden");
+        }
+    });
+
     let process = function(event) {
-
         switch (event.key) {
-
-            case "ArrowDown":
-                if (event.target.id == "username") {
-                    password.focus();
-                }
-                break;
-
-            case "ArrowUp":
-                if (event.target.id == "password") {
-                    username.focus();
-                }
-                break;
-
             case "Enter":
                 submit.click();
                 break;
         }
-
     };
 
     username.addEventListener("keydown", process);
-    password.addEventListener("keydown", process);
 
-    username.focus();
+    ipcRenderer.on("auth-cancel", (event, error) => {
+        loginIntroduction.classList.remove("option-hidden");
+        option1.classList.add("option-hidden");
+        option2.classList.add("option-hidden");
+    });
+
+    ipcRenderer.on("auth-begin", () => {
+
+    });
 
 });
