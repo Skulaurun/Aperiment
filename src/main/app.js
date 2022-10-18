@@ -20,9 +20,11 @@
 
 const os = require("os");
 const fs = require("fs");
+const http = require("http");
 const crypto = require("crypto");
 const { Readable } = require("stream");
 const fileType = require("file-type");
+const { parse: parseUrl } = require("url");
 const { default: axios } = require("axios");
 const validUrl = require("valid-url");
 const log = require("electron-log");
@@ -226,9 +228,39 @@ ipcMain.once("app-start", () => {
         webPreferences: {
             devTools: DEVELOPER_MODE,
             contextIsolation: false,
-            nodeIntegration: true
+            nodeIntegration: true,
+            webviewTag: true
         }
     });
+
+    const server = http.createServer(async (req, res) => {
+
+        if (user.isAuthenticated) {
+            return;
+        }
+
+        const query = parseUrl(req.url, true).query;
+        if (query["code"]) {
+            try {
+
+                await user.login(query["code"], true);
+
+                mainWindow.show();
+                loginWindow.hide();
+                log.info(`Successfully authenticated as ${user.nickname}.`);
+
+            } catch (error) {
+                loginWindow.send("auth-error", error);
+            }
+        } else if (query["error"]) {
+            loginWindow.send("auth-cancel", query["error"]);
+        }
+
+        res.writeHead(200);
+        res.end();
+
+    });
+    server.listen(46969);
 
     mainWindow = new BrowserWindow({
         title: "A-Periment",
@@ -255,22 +287,14 @@ ipcMain.once("app-start", () => {
             if (modpacks.size() > 0) log.info(`Successfully loaded ${modpacks.size()} modpacks.`);
             else log.info("No modpacks to load.");
 
-            user.reauthenticate().then(() => {
-    
+            user.loginFromMemory().then(() => {
                 mainWindow.show();
-
-                log.info(`Successfully reauthenticated as ${user.nickname}.`);
-        
+                log.info(`Successfully reauthenticated as '${user.nickname}'.`);
             }).catch((error) => {
-    
                 loginWindow.show();
-    
-                log.error(`Could not reauthenticate user.\n ${error.code}: ${error.message}`);
-    
+                log.error(`Could not reauthenticate user. ${error}`);
             }).finally(() => {
-    
                 loadWindow.destroy();
-    
             });
 
         });
@@ -318,26 +342,25 @@ ipcMain.on("window-maximize", (event) => {
     }
 });
 
-ipcMain.on("user-login", (event, online, username, password) => {
+ipcMain.on("user-login", async (event, username) => {
 
-    user.online = online;
+    try {
 
-    user.authenticate(username, password).then(() => {
+        await user.login(username, false);
 
         mainWindow.show();
         loginWindow.hide();
-
         log.info(`Successfully authenticated as ${user.nickname}.`);
 
-    }).catch((error) => {
-        log.error(`Could not authenticate user.\n ${error.code}: ${error.message}`);
-    });
+    } catch (error) {
+        log.error(`Could not authenticate user. ${error}`);
+    }
 
 });
 
 ipcMain.on("user-logout", (event) => {
 
-    user.invalidate();
+    user.logout();
 
     loginWindow.show();
     mainWindow.hide();
