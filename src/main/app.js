@@ -244,6 +244,7 @@ ipcMain.once("app-start", () => {
             try {
 
                 await user.login(query["code"], true);
+                loginWindow.send("auth-success");
 
                 mainWindow.show();
                 loginWindow.hide();
@@ -347,6 +348,7 @@ ipcMain.on("user-login", async (event, username) => {
     try {
 
         await user.login(username, false);
+        loginWindow.send("auth-success");
 
         mainWindow.show();
         loginWindow.hide();

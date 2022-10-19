@@ -20,8 +20,8 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    let username = document.getElementById("username");
-    let submit = document.getElementById("submit");
+    let username = document.getElementById("name-field");
+    let submit = document.getElementById("submit-button");
 
     let microsoftButton = document.getElementById("login-with-microsoft");
     let internetButton = document.getElementById("i-dont-have-internet");
@@ -30,6 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let option1 = document.getElementById("option-1");
     let option2 = document.getElementById("option-2");
+
+    let goBack = () => {
+        loginIntroduction.classList.remove("option-hidden");
+        option1.classList.add("option-hidden");
+        option2.classList.add("option-hidden");
+    };
+
+    document.getElementById("back-button").addEventListener("click", goBack);
 
     microsoftButton.addEventListener("click", () => {
 
@@ -60,9 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
     submit.addEventListener("click", () => {
         if (username.value) {
             ipcRenderer.send("user-login", username.value);
-            loginIntroduction.classList.remove("option-hidden");
-            option1.classList.add("option-hidden");
-            option2.classList.add("option-hidden");
         }
     });
 
@@ -77,13 +82,11 @@ document.addEventListener("DOMContentLoaded", () => {
     username.addEventListener("keydown", process);
 
     ipcRenderer.on("auth-cancel", (event, error) => {
-        loginIntroduction.classList.remove("option-hidden");
-        option1.classList.add("option-hidden");
-        option2.classList.add("option-hidden");
+        goBack();
     });
 
-    ipcRenderer.on("auth-begin", () => {
-
+    ipcRenderer.on("auth-success", () => {
+        goBack();
     });
 
 });

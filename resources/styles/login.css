@@ -53,10 +53,7 @@
     border: none;
 }
 
-#submit {
-    position: absolute;
-    bottom: 50px;
-    right: 0; left: 0;
+.default-button {
     margin: auto;
     color: inherit;
     width: 50%;
@@ -68,7 +65,7 @@
     border: none;
     background-color: rgb(60, 207, 92);
 }
-#submit::before {
+.default-button::before {
 	content: '';
 	height: 90px;
 	width: 400px;
@@ -79,11 +76,26 @@
 	transition: 0.8s;
 	background-image: linear-gradient(to left, rgba(255, 255, 255, 0.2) 0%, rgba(255,255,255, 0.2) 50%, transparent 50%);
 }
-#submit:hover::before {
+.default-button:hover::before {
     left: 450px;
 }
-#submit:active {
+.default-button:active {
     background-color: rgb(22, 224, 66);
+}
+
+#submit-button {
+    position: relative;
+    margin-top: 32px;
+}
+
+#back-button {
+    position: absolute;
+    bottom: 50px;
+    right: 0; left: 0;
+    background-color: rgb(147, 147, 147);
+}
+#back-button:active {
+    background-color: rgb(157, 157, 157);
 }
 
 button {
