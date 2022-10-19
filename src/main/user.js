@@ -85,7 +85,13 @@ class User {
     }
 
     async loginFromMemory() {
+
+        if (!this.nickname && !this.refreshToken) {
+            throw new Error("No credentials to load.");
+        }
+
         return await this.login(this.online ? this.refreshToken : this.nickname, this.online, true);
+
     }
 
     logout() {
