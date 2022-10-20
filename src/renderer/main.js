@@ -240,47 +240,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
-    [
-        {
-            "name": "Start",
-            "action": function(modpack) {
-                modpack.click();
-            }
-        },
-        {
-            "name": "Properties",
-            "action": function(modpack) {
-
-                Array.from(modpackPropertiesTable.children[0].children).forEach((element) => {
-
-                    modpackPropertiesTable.children[0].setAttribute("modpack", modpack.getAttribute("id"));
-                    element.children[1].children[0].value = modpack.getAttribute(element.getAttribute("key"));
-
-                });
-
-                modpackProperties.show();
-
-            }
-        }
-    ].forEach((object) => {
-
-        let item = document.createElement("div");
-        item.classList.add("context-menu-item");
-        item.textContent = object.name;
-        item.onclick = () => {
-
-            let modpack = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
-            
-            if (modpack) {
-                object.action(modpack);
-            }
-
-        };
-
-        modpackContextMenu.appendChild(item);
-
-    });
-
     document.getElementById("save-settings-button").addEventListener("click", () => {
 
         let settings = {};
@@ -408,6 +367,10 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
 
     let modpackContainer = document.getElementById("modpack-container");
     let modpackContextMenu = document.getElementById("modpack-context-menu");
+
+    let modpackProperties = document.getElementById("modpack-properties");
+    let modpackPropertiesTable = document.getElementById("modpack-properties-table");
+    
     modpackContainer.innerHTML = "";
 
     let modpackIDs = [];
@@ -486,7 +449,6 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
         item.addEventListener("click", (event) => {
 
             let target = event.currentTarget;
-
             if (target.getAttribute("running") === "false") {
         
                 target.querySelector(".status-bar").setMode("INFINITE");
@@ -499,8 +461,6 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
                     directory: target.getAttribute("directory")
                 });
     
-            } else {
-                ipcRenderer.send("terminate-modpack", target.getAttribute("id"));
             }
 
         });
@@ -529,6 +489,46 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
                 last.setAttribute("hover", false);
                 last.setAttribute("contextmenu", false);
             }
+
+            modpackContextMenu.innerHTML = "";
+            [
+                {
+                    "name": item.getAttribute("running") === "true" ? "Stop" : "Start",
+                    "action": function(modpack) {
+                        if (item.getAttribute("running") === "true") {
+                            ipcRenderer.send("terminate-modpack", item.getAttribute("id"));
+                        } else {
+                            modpack.click();
+                        }
+                    }
+                },
+                {
+                    "name": "Properties",
+                    "action": function(modpack) {
+                        Array.from(modpackPropertiesTable.children[0].children).forEach((element) => {
+                            modpackPropertiesTable.children[0].setAttribute("modpack", modpack.getAttribute("id"));
+                            element.children[1].children[0].value = modpack.getAttribute(element.getAttribute("key"));
+                        });
+                        modpackProperties.show();
+                    }
+                }
+            ].forEach((object) => {
+        
+                let item = document.createElement("div");
+                item.classList.add("context-menu-item");
+                item.textContent = object.name;
+                item.onclick = () => {
+        
+                    let modpack = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
+                    if (modpack) {
+                        object.action(modpack);
+                    }
+        
+                };
+        
+                modpackContextMenu.appendChild(item);
+        
+            });
 
             item.setAttribute("contextmenu", true);
             modpackContextMenu.classList.add("active");
