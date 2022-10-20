@@ -466,6 +466,7 @@ ipcMain.on("terminate-modpack", (event, id) => {
     if (!modpack) return;
 
     if (!modpack.running) {
+        modpack.kill();
         modpack.removeAllListeners();
         event.sender.send("modpack-exit", id, "job-cancelled");
     } else {

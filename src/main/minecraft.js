@@ -81,6 +81,7 @@ class Minecraft extends EventEmitter {
         this.user = user;
         this.java = java;
         this.name = name;
+        this.alive = true;
         this.running = false;
         this.version = version;
 
@@ -502,6 +503,10 @@ class Minecraft extends EventEmitter {
             await this._grabAssets(`${this.cache}/assets/virtual/legacy`);
         }
 
+        if (!this.alive) {
+            return;
+        }
+
         this.running = true;
         this.java.exec(launchArguments, { cwd: this.path });
 
@@ -556,6 +561,10 @@ class Minecraft extends EventEmitter {
             this.emit("error", error);
         }
 
+    }
+
+    kill() {
+        this.alive = false;
     }
 
 }
