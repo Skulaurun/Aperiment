@@ -231,14 +231,16 @@
     width: 100%;
     height: 100%;
     overflow-x: hidden;
+    padding: 8px;
+    text-align: center;
 }
 .modpack-item {
     position: relative;
     display: inline-block;
-    margin: 4px;
+    margin: 8px;
     width: 72px;
     height: 72px;
-    transform: scale(0.9);
+    transform: scale(0.95);
 }
 .modpack-item[hover=true] {
     transform: scale(1.0);
@@ -299,6 +301,34 @@
 }
 .modpack-item .status-circle[state=RUNNING] {
     background-color: rgb(54, 214, 89);
+}
+.modpack-item:hover::before {
+    content: attr(name);
+    position: absolute;
+    top: 80px;
+    margin: auto;
+    text-align: center;
+    border-radius: 4px;
+    background-color: rgb(66, 66, 66);
+    overflow: hidden;
+    width: 72px;
+    padding: 8px;
+    left: -8px;
+    word-break: break-word;
+    vertical-align: middle;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modpack-item:hover::after {
+    content: "";
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent rgb(66, 66, 66) transparent;
 }
 .modpack-count {
     position: absolute;
