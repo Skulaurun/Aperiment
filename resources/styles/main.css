@@ -235,12 +235,13 @@
 .modpack-item {
     position: relative;
     display: inline-block;
-    margin: 8px;
-    width: 64px;
-    height: 64px;
+    margin: 4px;
+    width: 72px;
+    height: 72px;
+    transform: scale(0.9);
 }
 .modpack-item[hover=true] {
-    transform: scale(1.1);
+    transform: scale(1.0);
 }
 .modpack-item img {
     width: 100%;
