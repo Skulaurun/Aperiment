@@ -66,6 +66,8 @@ function appendConsole(handle, content) {
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    Popup.parent = document.querySelector(".page-item[name=browse]");
+
     const modpackStoreList = document.getElementById("modpack-store-list");
     const officialModpacks = {
         "SkulTech": "https://www.skulaurun.eu/skultech/manifest.json",
@@ -654,4 +656,12 @@ ipcRenderer.on("modpack-exit", (event, id, code) => {
 
     appendConsole(consoleOutput, ">>> Exited with code: " + new String(code));
 
+});
+
+ipcRenderer.on("modpack-add", (event, modpack, error) => {
+    if (!error) {
+        Popup.alert(`Added '${modpack.name}' to library. 📚`, Popup.type.SUCCESS);
+    } else {
+        Popup.alert(error, Popup.type.ERROR);
+    }
 });

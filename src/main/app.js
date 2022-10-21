@@ -372,7 +372,8 @@ ipcMain.on("user-logout", (event) => {
 ipcMain.on("add-modpack", async (event, url) => { // TODO: Stricter rules for valid url.
 
     if (!validUrl.isUri(url)) {
-        return; // TODO: Show messagebox. [INVALID URL]
+        mainWindow.send("modpack-add", null, `Failed to add modpack, invalid manifest URL!`);
+        return;
     }
 
     let manifest = (await axios.get(url)).data;
@@ -380,7 +381,8 @@ ipcMain.on("add-modpack", async (event, url) => { // TODO: Stricter rules for va
     if ((typeof manifest !== "object" || !manifest.hasOwnProperties("name", "creators", "description", "versions", "vma")) ||
         (!Array.isArray(manifest.versions) || manifest.versions.length === 0 || typeof manifest.versions[0] !== "object") ||
         (!manifest.versions[0].hasOwnProperties("id", "size", "forge", "url") || !validUrl.isUri(manifest.versions[0].url))) {
-        return; // TODO: Show messagebox. [INVALID MANIFEST]
+            mainWindow.send("modpack-add", null, `Failed to add modpack, invalid manifest JSON!`);
+            return;
     }
 
     let modpack = {
@@ -392,7 +394,8 @@ ipcMain.on("add-modpack", async (event, url) => { // TODO: Stricter rules for va
     }
 
     if (modpacks.get().some(m => m.url === url)) {
-        return; // TODO: Show messagebox. [ALREADY EXISTS]
+        mainWindow.send("modpack-add", null, `The modpack '${modpack.name}' already exists in the library!`);
+        return;
     }
     
     if (manifest.hasOwnProperty("icon") && validUrl.isUri(manifest["icon"])) {
@@ -403,6 +406,7 @@ ipcMain.on("add-modpack", async (event, url) => { // TODO: Stricter rules for va
     modpacks.set(modpacks.size(), modpack);
     modpacks.save();
 
+    mainWindow.send("modpack-add", modpack);
     mainWindow.send("load-modpacks", modpacks.get());
 
 });
