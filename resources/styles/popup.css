@@ -1,0 +1,66 @@
+/*
+ *
+ *   A-Periment - Custom minecraft launcher
+ *   Copyright (C) 2020 - 2022 Adam Charvát
+ *
+ *   A-Periment is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   A-Periment is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with A-Periment. If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+
+/*
+ *  This code was taken from Gamebook 2 (2019),
+ *  I honor this project with all my mighty power!
+ *  - https://www.skulaurun.eu/gamebook2
+ */
+
+.popup-queue {
+    position: absolute;
+    right: 0; left: 0;
+    bottom: 5%;
+    margin: auto;
+    width: 35%;
+    word-wrap: break-word;
+    text-align: center;
+}
+.popup-alert {
+    position: relative;
+    margin-top: 5px;
+    padding: 10px 15px 10px 15px;
+    background-color: #172040c5;
+    border-bottom: 2px solid;
+    transition: ease 0.25s;
+    z-index: 9999;
+    user-select: none;
+}
+.popup-alert:hover {
+    background-color: #1a2447c5;
+}
+.popup-alert.shown {
+    transform: scale(1);
+}
+.popup-alert.hidden {
+    transform: scale(0);
+}
+.popup-info {
+    border-color: #267aff;
+}
+.popup-success {
+    border-color: rgb(0, 200, 0);
+}
+.popup-warning {
+    border-color: rgb(200, 200, 0);
+}
+.popup-error {
+    border-color: rgb(200, 0, 0);
+}
