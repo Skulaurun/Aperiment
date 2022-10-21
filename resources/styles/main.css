@@ -232,7 +232,6 @@
     height: 100%;
     overflow-x: hidden;
     padding: 8px;
-    text-align: center;
 }
 .modpack-item {
     position: relative;
@@ -240,10 +239,9 @@
     margin: 8px;
     width: 72px;
     height: 72px;
-    transform: scale(0.95);
 }
-.modpack-item[hover=true] {
-    transform: scale(1.0);
+.modpack-item[hover=true] > * {
+    transform: translateY(-4px);
 }
 .modpack-item img {
     width: 100%;
@@ -309,16 +307,19 @@
     margin: auto;
     text-align: center;
     border-radius: 4px;
-    background-color: rgb(66, 66, 66);
+    background-color: rgb(30, 30, 30);
     overflow: hidden;
     width: 72px;
     padding: 8px;
-    left: -8px;
+    left: -10px;
     word-break: break-word;
     vertical-align: middle;
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 10;
+    border: 2px solid rgb(69, 234, 105);
+    box-shadow: 0 0 2px rgb(69, 234, 105);
 }
 .modpack-item:hover::after {
     content: "";
@@ -328,7 +329,7 @@
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: transparent transparent rgb(66, 66, 66) transparent;
+    border-color: transparent transparent rgb(60, 207, 92) transparent;
 }
 .modpack-count {
     position: absolute;
