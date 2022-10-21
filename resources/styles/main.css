@@ -241,6 +241,7 @@
     height: 72px;
 }
 .modpack-item[hover=true] > * {
+    transition-duration: 0.2s;
     transform: translateY(-4px);
 }
 .modpack-item img {
