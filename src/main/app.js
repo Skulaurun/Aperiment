@@ -29,7 +29,7 @@ const { default: axios } = require("axios");
 const validUrl = require("valid-url");
 const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
-const { app, screen, ipcMain, BrowserWindow } = require("electron");
+const { app, screen, ipcMain, shell, BrowserWindow } = require("electron");
 
 const Storage = require("./storage.js");
 const User = require("./user.js");
@@ -602,3 +602,7 @@ async function fetchIcon(url, modpack) {
     }
 
 }
+
+ipcMain.on("open-link", (event, link) => {
+    shell.openExternal(link);
+});
