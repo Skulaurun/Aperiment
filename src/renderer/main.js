@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
         button.addEventListener("click", (event) => {
             ipcRenderer.send("open-link", event.target.getAttribute("href"));
         });
-    })
+    });
 
     Popup.parent = document.querySelector(".page-item[name=browse]");
 
