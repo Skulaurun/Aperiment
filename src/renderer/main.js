@@ -66,6 +66,12 @@ function appendConsole(handle, content) {
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    Array.from(document.querySelectorAll(".footer-button.href")).forEach((button) => {
+        button.addEventListener("click", (event) => {
+            ipcRenderer.send("open-link", event.target.getAttribute("href"));
+        });
+    })
+
     Popup.parent = document.querySelector(".page-item[name=browse]");
 
     const modpackStoreList = document.getElementById("modpack-store-list");

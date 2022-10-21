@@ -136,6 +136,71 @@
     padding: 8px;
 }
 
+/* Home */
+
+.home-title {
+    text-align: center;
+    font-size: 36px;
+    margin: 12px;
+    padding-top: 32px;
+    padding-bottom: 32px;
+    border-top: 1px solid white;
+    border-bottom: 1px solid white;
+    font-weight: bold;
+}
+.home-title .copyright {
+    font-size: 18px;
+}
+.home-section-wrapper {
+    position: relative;
+    gap: 16px;
+    margin: 16px;
+    display: flex;
+    flex-direction: row;
+    height: calc(100% - 160px - 32px - 26px);
+}
+.home-section {
+    position: relative;
+    flex: 1 0 0;
+    padding: 16px;
+    overflow-y: scroll;
+    font-size: 18px;
+}
+.home-section h4 {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid white;
+}
+.page-footer #app-version {
+    float: right;
+    margin-right: 8px;
+    line-height: 24px;
+}
+.footer-button.href:not(:last-of-type) {
+    border-right: 1px solid white;
+}
+.paragraph-author {
+    margin-left: 16px;
+    font-weight: bold;
+}
+.paragraph-author::before {
+    content: "";
+    margin-right: 8px;
+    border: 2px solid white;
+}
+.credit-list, .credit-list li {
+    margin-left: 16px;
+}
+.credit-list li {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+.special-thanks {
+    margin-top: 16px;
+    font-weight: bold;
+}
+
 /* Browse Modpacks */
 
 .page-item[name=browse] .page-title {
