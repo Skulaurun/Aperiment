@@ -454,8 +454,8 @@
     position: absolute;
     top: 0; left: 0;
     margin: auto;
-    display: none;
     width: 500px;
+    visibility: hidden;
     background-color: rgb(40, 40, 40);
     box-shadow: 0 -6px 0 transparent, 0 1px 6px rgba(0, 0, 0, 0.35);
 }
@@ -498,7 +498,6 @@
     border: none;
     outline: none;
     background: none;
-    transition-duration: 0.5s;
     font-size: 16px;
 }
 

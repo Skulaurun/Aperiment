@@ -132,10 +132,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let modpackProperties = document.getElementById("modpack-properties");
     let modpackPropertiesTable = document.getElementById("modpack-properties-table");
     modpackProperties.show = function() {
-        this.style.display = "block";
+        this.style.visibility = "visible";
     }
     modpackProperties.hide = function() {
-        this.style.display = "none";
+        this.style.visibility = "hidden";
     }
     modpackProperties.querySelector("svg").addEventListener("click", () => {
         modpackProperties.hide();
@@ -215,11 +215,19 @@ document.addEventListener("DOMContentLoaded", () => {
         let maxHeight = rect2.height - rect1.height;
 
         if (top >= maxHeight) {
-            modpackProperties.style.top = `${top - y}px`;
+            if ((top - y) < 0) {
+                modpackProperties.style.top = 0;
+            } else {
+                modpackProperties.style.top = `${top - y}px`;
+            }
         }
 
         if (left >= maxWidth) {
-            modpackProperties.style.left = `${left - x}px`;
+            if ((left - x) < 0) {
+                modpackProperties.style.left = 0;
+            } else {
+                modpackProperties.style.left = `${left - x}px`;
+            }
         }
 
     });
