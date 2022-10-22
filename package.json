@@ -22,6 +22,7 @@
     "extraFiles": [
       "README.md",
       "COPYRIGHT.txt",
+      "CHANGELOG.txt",
       "LICENSE"
     ],
     "win": {

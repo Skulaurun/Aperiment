@@ -277,6 +277,8 @@ ipcMain.once("app-start", () => {
             nodeIntegration: true
         }
     });
+
+    loadChangelog();
     
     loginWindow.once("ready-to-show", () => {
 
@@ -606,3 +608,43 @@ async function fetchIcon(url, modpack) {
 ipcMain.on("open-link", (event, link) => {
     shell.openExternal(link);
 });
+
+async function loadChangelog() {
+    try {
+
+        let listOpen = false;
+        let outputHTMLBuffer = "";
+        const changelog = (await fs.promises.readFile("./CHANGELOG.txt")).toString();
+
+        for (let line of changelog.split("\n")) {
+            line = line.trim();
+            if (line) {
+                if (line.startsWith("#")) {
+                    line = line.substring(1).trim();
+                    if (listOpen) { outputHTMLBuffer += "</div>"; }
+                    outputHTMLBuffer += `<h5 class='version-title'>${line}</h5>`;
+                    outputHTMLBuffer += `<div class='version-changelog'>`;
+                    listOpen = true;
+                } else if (line.startsWith("-")) {
+                    line = line.substring(1).trim();
+                    let commitHTMLBuffer = "";
+                    let commits = line.match(/\b([a-f0-9]{40})\b/g);
+                    for (const commit of commits) {
+                        line = line.replace(commit, "");
+                        commitHTMLBuffer += `<a href='https://github.com/Skulaurun/a-periment/commit/${commit}'>${commit.substring(0, 7)}</a>`;
+                    }
+                    line = line.trim();
+                    outputHTMLBuffer += `<div class='changelog-line'>${line}${commitHTMLBuffer}</div>`;
+                }
+            }
+        }
+
+        if (listOpen) { outputHTMLBuffer += "</div>"; }
+        mainWindow.once("ready-to-show", () => {
+            mainWindow.send("load-changelog", outputHTMLBuffer);
+        });
+        
+    } catch (error) {
+        log.error(`Failed to load a changelog. ${error}`);
+    }
+}

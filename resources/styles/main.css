@@ -200,6 +200,27 @@
     margin-top: 16px;
     font-weight: bold;
 }
+.changelog-content .version-title {
+    margin-bottom: 10px;
+}
+.changelog-content .changelog-line {
+    margin-bottom: 10px;
+}
+.changelog-content .changelog-line::before {
+    content: "-";
+    margin-right: 16px;
+}
+.changelog-content .changelog-line a {
+    color: rgb(60, 207, 92);
+    margin-left: 4px;
+    text-decoration: none;
+    padding: 4px;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.25);
+}
+.changelog-content .version-changelog {
+    margin-bottom: 16px;
+}
 
 /* Browse Modpacks */
 

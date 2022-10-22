@@ -671,3 +671,16 @@ ipcRenderer.on("modpack-add", (event, modpack, error) => {
         Popup.alert(error, Popup.type.ERROR);
     }
 });
+
+ipcRenderer.on("load-changelog", (event, html) => {
+
+    document.getElementById("changelog-content").innerHTML = html;
+
+    Array.from(document.querySelectorAll(".changelog-content a")).forEach((button) => {
+        button.addEventListener("click", (event) => {
+            event.preventDefault();
+            ipcRenderer.send("open-link", event.target.getAttribute("href"));
+        });
+    });
+
+});
