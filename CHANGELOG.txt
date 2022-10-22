@@ -1,0 +1,97 @@
+# 0.12.0
+- Implement changelog load and parse 0159d6546434a75ecc570e4038b3aca073314af3
+- Fix icon querySelector on attribute directory a3709b4dad00d8963e4807fd8f9f5de39ffb18f4
+- Improve home page, add credits and changelog 63283608d44543a7e26acd2bfa5a33ea0a1d291f
+- Add open-link listener to open href in browser 8f9baa431d7aaf0060f737b038f62e059fc0d311
+- Add error reporting to modpack store d39222da7071bae34e26f504fbb190c8f0341bb9
+- Add Popup class from Gamebook 2 (2019) c8cde974606360421018b6993fecd05adbd8958e
+- Improve modpack hover and tooltip animation fde9a3fa8346c863fe115f37fda01c591ef88f0b
+- Rework context menu and modpack termination GUI 84e288043487b96e14db3f0b8d5c0a4ff7e56ee5
+- Fix starting multiple ghost MC instances e847372c243be7b5f6e2cb8e29b9226c877e5598
+
+# 0.11.0
+- Rewrite Auth backend to Microsoft OAuth2 60cd0bf2bf52dae1a5f54b8a96ac5d71938e8298
+- Rewrite Auth/Login frontend to allow Microsoft 5980cfedb6a00775b7eadfa534e28781d1e4341a
+- Adapt launcher core to login changes a229fe12028ee4af5ab81f9e8169a6a08c2c0248
+- Finalize Auth/Login frontend 56ab524b1271c711c21a2d0880c9969aa6846deb
+- Remove redundant packages 2d760339e7d021091c317f26d9869542e54451ae
+- Update copyright a0e0d4f083208d2f5075998da6434ae861c59016 788819922366fb327ef02f5370246cab335693ac
+- Fix loginFromMemory() with null credentials 0bb827c3b2bef5bc78cf56cc79ce4fbfeeb07589
+
+# 0.10.1
+- Fix redownloading forge each start 5c411bbf5327bc05070b4614579768a9272bd437
+- Fix minecraft window detection 439b78cc8cb75ea372ca41422f24f296b40e0edc
+- Fix concurrent modpack start and termination e021975cc9769bfd9917a659982670c8c754db8f
+- Fix console enabled by default 0cb710cfcc6edf70c3ac024baec5f8928c6ddf82
+
+# 0.10.0
+- Fix window title showing in lowercase 66777f2a90862b9305e4ab5926c7b4e8c60b921e
+- Update modpack store page with legacy skultech 62d206f3d73559d8e986819c450d07d96c4174a6
+- Fix console performance issues - too many elements 130184dee219ea24b4f8a1b2268148a2f359f73d
+- Update ForgeWrapper to run forge above 36.1.4 9677a62a311a3ef3ad3fe94af4c16df0f91ac509
+- Update node packages 70eac0b2229683e407b42c2f8faad2ae775a3888 234e5d06fea7455396bf285467c18285da8b95f5
+
+# 0.9.0
+- Improve modpack store page ae40cafc8df2a4bdcde9932bebe06cded51ddf01
+- Make settings table text easier to read d37a9d5ad14f27b7bb48123262f10218aa8cc82d
+- Fix console scrollbar bug b69a2274ec9ff5137f3571c23210112d68d6a7a0
+
+# 0.8.2
+- Fix browser icon caching 15f5e7de8ffcd5b8b12682f8d31849d25da7c4e9
+
+# 0.8.1
+- Fix a-periment crash on startup 5dfa678e28e5b0ba74766971946eb22794b30b2c
+
+# 0.8.0
+- Add support for custom modpack icons 56ac2f4c321782e6d956d9f4b9b84cb09da035fa
+
+# 0.7.1
+- Fix auto-update bug due to electron upgrade 8ae06712df7361287072a6c392a21759eb0f4998
+
+# 0.7.0
+- Implement modpack console for JVM 6e2be63bdb6f551a437035f35dd555ca60d71b2f
+
+# 0.6.1
+- Update electron -> fix certificate expired error 5939553fa18309242fa8facb972a3969d629964d
+- Update axios and electron-builder 3bc342252ffadecae5cf4200cce3c11e635c05d4
+
+# 0.6.0
+- Add support for minecraft(1.6.x - 1.7.2). 24840d37e10677e3d32f9e27eadab892d2b400e9
+- Add support for minecraft(1.13.x - 1.16.x). 990116f031248979c167df8a2d942495a2e2b7c5
+- Add forge support for minecraft(1.13.x - 1.16.x). dd8b9546008ddfdff4def6500f5059d4f58a66bb
+
+# 0.5.0
+- Add reload settings after save. 67023c9fe57c2878004d395b7cfb52e9d10d4c0a
+- Fix save-settings boolean handling. a6fc0550dfb0651a2144842a349272948dd2c3bc
+
+# 0.4.0
+- Update electron(7.3.3 -> 9.4.4). 8bcaf0642509ed05a7776c01520ffa37100f1bb3
+- Update axios(0.19.2 -> 0.21.1). 8b9bad6df30dc1d417abf282db1455b31e299759
+- Add option to disable auto-update. a064f3ae5e87def3ce35ae2db378ad0156fb0a0b
+- Fix renderer treating every setting as string. f80f0c93e285fec89065ab4f8437e8af2d89ec65
+
+# 0.3.2
+- Fix modpack zip not found. 41deeb0a34b40de6098a9a207e369f94af53571d
+
+# 0.3.1
+- Update node packages. 2347e6518c94d0712c59e8c85a2beb46655e4738
+- Fix update download progress bar. 85680ad1fbe7505cbd4683d21996940598093a8d
+
+# 0.3.0
+- Round modpack status-bar. 4856a8f009d67a48b731abee263ed028d8ae4a02
+- Add update download progress bar. 4d26d9bb729afd104a2c7004ac161c5a9ce40a32
+
+# 0.2.0
+- Add compatibility for unix-like operating systems. 42084dfbe97b510a1b6b1b7d164560e3ea95e8de
+- Add modpack properties window. 1ce25ea5997f11d7609fcf07907c5c45645f9529
+- Make modpack icons responsive. e82951a41d13d38764bd62c122af5dc65edc330e
+- Change title bar. 2bdd5d67e2372cb651365ff6c968f7162c43e022
+- Reworked images/icons/graphics. 709860bf618276d386ae70653d5ce605dbe233d4
+- Fix a-periment auto update, allow pre-releases. 35c3b552373c2fec83761e857b6a5370ea1212a8
+- Completely reworked design. 699372dfb2a3b5b31bcfc01f52181ed16d75faa0 d41d85a1c3ac3a6f6b5fa3a78f268476fe34b76c 6bb8270b5f69cf6d40200de7e8d3c6e8de700b7b
+- Fixed modpack auto update. 1f863279a3c99e7f1ae3ed31b5c38f4832d966d2
+- Optimized code. 1f9d45f783fb61a92a3b1285decbe48562f3ee07 4f549323003501d860473bd402b52599eedac3fd
+- Updated packages. 0358d4ba949bfeda17cb85fe9de5fe2b8e132964
+
+# 0.1.0
+- First official a-periment pre-release, it's intended for testing purposes only. ba179094f4b1cc223c8e54eacf92fca75f2cd6c8
