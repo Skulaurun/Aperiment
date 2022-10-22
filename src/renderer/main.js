@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (posY <= maxHeight) {
                     element.style.top = `${posY}px`;
                 } else {
-                    element.style.top = maxHeight;
+                    element.style.top = `${maxHeight}px`;
                 }
 
             } else {
@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (posX <= maxWidth) {
                     element.style.left = `${posX}px`;
                 } else {
-                    element.style.left = maxWidth;
+                    element.style.left = `${maxWidth}px`;
                 }
 
             } else {
