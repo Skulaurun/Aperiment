@@ -510,6 +510,7 @@
 }
 
 #modpack-page {
+    overflow-x: hidden;
     height: calc(100% - 52px);
 }
 
