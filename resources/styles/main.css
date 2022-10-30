@@ -488,6 +488,11 @@
     border-collapse: collapse;
     font-weight: normal;
 }
+.modpack-properties-table tr td:first-child {
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
 .modpack-properties-table td {
     padding: 8px;
 }
