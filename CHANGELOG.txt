@@ -1,3 +1,12 @@
+# 0.13.0
+- Rework settings - add file dialog and select box b084ba23c23bd2fc255c6e3e28ad0fb4bcb7f81f
+- Change style of 'modpack-properties-table' keys acc4b25b0042f69be763196f3818c9e1064e1519 944da3bd2bbc02e8d39010b3d32a705123d10a1f
+- Make text inputs in modpack properties visible 838ea00d4ab0d96205de6935bdd87f36d8bd1700
+- Fix modpack properties window sizing bug ab5e0200aa37d83afb9e419c956d4f2ee4a18125
+- Fix modpack properties window movement bug f8aec304a0827e7325ca06bc8d7015d5240def1d
+- Fix overflow bugs caused by modpack tooltip 2cb2e95051df5350222388d7d3d49111f71eca87
+- Fix context-menu overflow modpack library page b4e307fde0054ee7aa7f46ce890e81d5d1c7ad88
+
 # 0.12.0
 - Implement changelog load and parse 0159d6546434a75ecc570e4038b3aca073314af3
 - Fix icon querySelector on attribute directory a3709b4dad00d8963e4807fd8f9f5de39ffb18f4
