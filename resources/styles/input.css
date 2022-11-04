@@ -1,0 +1,72 @@
+/*
+ *
+ *   A-Periment - Custom minecraft launcher
+ *   Copyright (C) 2020 - 2022 Adam Charvát
+ *
+ *   A-Periment is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   A-Periment is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with A-Periment. If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+
+.input-parent-element {
+    position: relative;
+}
+
+.input-select-box .input-box {
+    cursor: pointer;
+}
+.input-select-box .arrow-down {
+    position: absolute;
+    top: 8px;
+    right: 4px;
+    display: inline-block;
+    padding: 3px;
+    border-style: solid;
+    border-color: white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+}
+.input-select-box .select-menu {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    padding: 8px;
+    visibility: hidden;
+    user-select: none;
+    background-color: rgb(40, 40, 40);
+    border: 1px solid white;
+}
+.input-select-box .menu-option:not(:first-child) {
+    margin-top: 4px;
+}
+.input-select-box .menu-option:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.input-select-box .select-visible {
+    visibility: visible;
+}
+
+.input-path-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.input-path-box .browse-button {
+    padding: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.input-path-box .browse-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}

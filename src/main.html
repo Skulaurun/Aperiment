@@ -29,11 +29,13 @@
 
         <link rel="stylesheet" href="../resources/styles/global.css">
         <link rel="stylesheet" href="../resources/styles/popup.css">
+        <link rel="stylesheet" href="../resources/styles/input.css">
         <link rel="stylesheet" href="../resources/styles/main.css">
         
         <script src="./renderer/global.js"></script>
         <script src="./common/helper.js"></script>
         <script src="./renderer/popup.js"></script>
+        <script src="./renderer/input.js"></script>
         <script src="./renderer/main.js"></script>
 
     </head>
@@ -170,6 +172,13 @@
                                         <td>JVM Arguments</td>
                                         <td><input type="text"></td>
                                     </tr>
+                                    <!--<tr>
+                                        <td>Java Executable</td>
+                                        <td class="input-open-dialog" dialog-type="java">
+                                            <input type="text">
+                                            <span class="open-dialog-button">...</span>
+                                        </td>
+                                    </tr>-->
                                 </tbody>
                             </table>
 
@@ -194,19 +203,11 @@
                     <div class="page-title">A-Periment Settings</div>
 
                     <div class="page-content">
-
-                        <table id="settings-table" class="settings-table">
-                            <thead>
-                                <tr>
-                                    <th>Key</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-
-                        <button id="save-settings-button" class="settings-button">SAVE</button>
-
+                        <div class="page-content-wrapper">
+                            <table id="settings-table" class="settings-table">
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
 
                 </div>

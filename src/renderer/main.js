@@ -20,6 +20,35 @@
 
 const uuid4 = require("uuid").v4;
 
+const InputValue = Object.freeze({"FILE": 0, "DIRECTORY": 1, "BOOLEAN": 2, "TEXT": 3});
+const InputType = {
+
+    /* A-Periment Settings */
+    "aper.autoUpdate": {
+        name: "Auto Update",
+        value: InputValue.BOOLEAN
+    },
+    "aper.allowPrerelease": {
+        name: "Beta Versions",
+        value: InputValue.BOOLEAN
+    },
+    "java": {
+        name: "Java Executable",
+        value: InputValue.FILE,
+        fileTypes: [
+            { name: "Java Executable", extensions: ["exe"] }
+        ]
+    },
+    "minecraft": {
+        name: "Minecraft Directory",
+        value: InputValue.DIRECTORY
+    },
+
+    /* Modpack Properties */
+    "jvmArguments": { value: InputValue.TEXT }
+
+};
+
 let consoleOutput = null;
 let isConsoleVisible = true;
 
@@ -253,35 +282,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
         });
-
-    });
-
-    document.getElementById("save-settings-button").addEventListener("click", () => {
-
-        let settings = {};
-        let settingsTable = document.getElementById("settings-table").querySelector("tbody");
-
-        for (let i = 0; i < settingsTable.children.length; i++) {
-
-            let setting = settingsTable.children[i];
-
-            let key = setting.children[0].textContent;
-            let value = setting.querySelector("input").value;
-
-            switch (setting.getAttribute("data-type")) {
-                case "number":
-                    value = Number(value);
-                    break;
-                case "boolean":
-                    value = (value === "true");
-                    break;
-            }
-
-            settings[key] = value;
-
-        }
-
-        ipcRenderer.send("save-settings", settings);
 
     });
 
@@ -576,6 +576,12 @@ ipcRenderer.on("load-icons", (event, icons) => {
 });
 
 ipcRenderer.on("load-settings", (event, settings) => {
+    
+    let settingCategory = {
+        "general": "General",
+        "aper": "Launcher"
+    };
+    let inputList = [];
 
     settings = helper.flattenObject(settings);
 
@@ -587,21 +593,85 @@ ipcRenderer.on("load-settings", (event, settings) => {
         let value = settings[key];
 
         let setting = document.createElement("tr");
+        setting.setAttribute("setting-name", key);
         setting.setAttribute("data-type", typeof value);
 
+        /*
+            Be aware: Doesn't support nested categories!
+            This piece of code is dependent on setting order.
+        */
+        let category = key.indexOf(".") != -1 ? key.split(".")[0] : "general";
+        if (settingCategory.hasOwnProperty(category)) {
+            let categoryRow = document.createElement("tr");
+            categoryRow.classList.add("category-row");
+            let categoryLabel = document.createElement("td");
+            categoryLabel.textContent = settingCategory[category];
+            categoryLabel.setAttribute("colspan", 2);
+            categoryRow.appendChild(categoryLabel);
+            settingsTable.appendChild(categoryRow);
+            delete settingCategory[category];
+        }
+
         let keyElement = document.createElement("td");
-        keyElement.textContent = key;
+        keyElement.textContent = InputType.hasOwnProperty(key) ? InputType[key]["name"] : key;
 
+        let valueInputBox = null;
         let valueElement = document.createElement("td");
-        let valueInputBox = document.createElement("input");
-        valueInputBox.value = value;
 
-        valueElement.appendChild(valueInputBox);
+        if (InputType.hasOwnProperty(key)) {
+            if (InputType[key]["value"] === InputValue.BOOLEAN) {
+                valueInputBox = new SelectBox({
+                    default: value,
+                    options: {
+                        "Enabled": true,
+                        "Disabled": false
+                    }
+                });
+            } else if (InputType[key]["value"] === InputValue.DIRECTORY || InputType[key]["value"] === InputValue.FILE) {
+                valueInputBox = new PathBox({
+                    default: value,
+                    isDirectory: InputType[key]["value"] === InputValue.DIRECTORY,
+                    fileTypes: InputType[key]["fileTypes"]
+                });
+            }
+        } else {
+            valueInputBox = new InputElement("text", { default: value });
+        }
+
+        valueInputBox.put(valueElement);
         setting.appendChild(keyElement);
         setting.appendChild(valueElement);
         settingsTable.appendChild(setting);
 
+        inputList.push(valueInputBox);
+        valueInputBox.save();
+
     }
+
+    let saveButton = document.createElement("button");
+    saveButton.classList.add("save-button");
+    saveButton.textContent = "Save";
+    saveButton.addEventListener("click", onSaveSettings);
+
+    let revertButton = document.createElement("button");
+    revertButton.classList.add("revert-button");
+    revertButton.textContent = "Revert";
+    revertButton.addEventListener("click", () => {
+        onRevertSettings(inputList);
+    });
+
+    let buttonRow = document.createElement("tr");
+    buttonRow.classList.add("button-row");
+
+    let buttonContainer = document.createElement("td");
+    buttonContainer.setAttribute("colspan", 2);
+    buttonContainer.appendChild(saveButton);
+    buttonContainer.appendChild(revertButton);
+
+    buttonRow.appendChild(buttonContainer);
+    settingsTable.appendChild(buttonRow);
+
+    onSaveSettings();
 
 });
 
@@ -692,3 +762,40 @@ ipcRenderer.on("load-changelog", (event, html) => {
     });
 
 });
+
+function onSaveSettings() {
+
+    let settings = {};
+    let settingsTable = document.getElementById("settings-table").querySelector("tbody");
+
+    for (const setting of Array.from(settingsTable.querySelectorAll("tr[data-type]"))) {
+
+        let key = setting.getAttribute("setting-name");
+        let inputId = setting.querySelector("input")?.getAttribute("input-id");
+        let inputElement = InputElement.registry.find(x => inputId && x.id == inputId);
+
+        if (inputElement) {
+            let value = inputElement.value();
+            inputElement.save();
+            /*switch (setting.getAttribute("data-type")) {
+                case "number":
+                    value = Number(value);
+                    break;
+                case "boolean":
+                    value = (value === "true");
+                    break;
+            }*/
+            settings[key] = value;
+        }
+
+    }
+
+    ipcRenderer.send("save-settings", settings);
+    
+}
+
+function onRevertSettings(inputList) {
+    for (const input of inputList) {
+        input.revert();
+    }
+}

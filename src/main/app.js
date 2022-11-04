@@ -29,7 +29,7 @@ const { default: axios } = require("axios");
 const validUrl = require("valid-url");
 const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
-const { app, screen, ipcMain, shell, BrowserWindow } = require("electron");
+const { app, screen, ipcMain, shell, dialog, BrowserWindow } = require("electron");
 
 const Storage = require("./storage.js");
 const User = require("./user.js");
@@ -490,7 +490,7 @@ ipcMain.on("save-settings", (event, settings) => {
     }
 
     config.save();
-    event.sender.send("load-settings", config.get());
+    //event.sender.send("load-settings", config.get());
 
 });
 
@@ -607,6 +607,18 @@ async function fetchIcon(url, modpack) {
 
 ipcMain.on("open-link", (event, link) => {
     shell.openExternal(link);
+});
+
+ipcMain.on("open-file", async (event, inputId, dialogType, fileTypes) => {
+    const result = await dialog.showOpenDialog(findWindow(event.sender.id), {
+        title: `A-Periment Select ${dialogType ? "Folder" : "File"}`,
+        properties: [dialogType ? "openDirectory" : "openFile"],
+        buttonLabel: "Select",
+        filters: !dialogType ? fileTypes : []
+    });
+    if (!result.canceled) {
+        event.sender.send("open-file", inputId, result.filePaths[0]);
+    }
 });
 
 async function loadChangelog() {
