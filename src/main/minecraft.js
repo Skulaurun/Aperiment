@@ -412,21 +412,15 @@ class Minecraft extends EventEmitter {
     _buildLibraryString() {
 
         let string = "";
-
         let libraries = this._getLibraries();
-        for (let i = 0; i < libraries.length; i++) {
+        libraries = libraries.filter(l => !l.hasOwnProperty("extract") && !l.extract);
 
-            let library = libraries[i];
-
-            if (!library.hasOwnProperty("extract") && !library.extract) {
-                string += library.path;
-            }
-
-            if (i != libraries.length - 1) {
+        libraries.forEach((library, index) => {
+            string += library.path;
+            if (index != libraries.length - 1) {
                 string += process.platform === "win32" ? ";" : ":";
             }
-
-        }
+        });
 
         return string;
 
