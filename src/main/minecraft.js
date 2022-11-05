@@ -609,7 +609,7 @@ class MinecraftForge extends Minecraft {
         let libraries = forgeManifest["libraries"];
         let installLibraries = forgeManifest["installLibraries"];
 
-        if (compareVersions(this.version, "1.13.2") !== -1) {
+        if (compareVersions(this.version, "1.13.2") !== -1 || compareVersions(this.forgeVersion, "1.12.2-14.23.5.2851") !== -1) {
 
             libraries.push({
                 name: "io.github.zekerzhayard:ForgeWrapper:1.5.5",
@@ -622,21 +622,24 @@ class MinecraftForge extends Minecraft {
                 }
             });
 
-            let additionalLibraries = [
-                {
+            let additionalLibraries = {
+                launcher: {
                     url: `https://files.minecraftforge.net/maven/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-launcher.jar`,
                     size: 0
                 },
-                {
+                universal: {
                     url: `https://files.minecraftforge.net/maven/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-universal.jar`,
                     size: 0
                 },
-                {
+                installer: {
                     url: `https://files.minecraftforge.net/maven/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`,
                     size: 0
                 }
-            ];
-            for (const library of additionalLibraries) {
+            };
+            for (const [name, library] of Object.entries(additionalLibraries)) {
+                if (compareVersions(this.version, "1.13.2") === -1 || compareVersions(this.version, "1.16.5") === 1) {
+                    if (name == "launcher") continue;
+                }
                 let response = await axios.request({
                     url: library["url"],
                     method: "HEAD"
@@ -644,23 +647,25 @@ class MinecraftForge extends Minecraft {
                 library["size"] = parseInt(response.headers["content-length"]);
             }
 
-            libraries.push({
-                name: `net.minecraftforge:forge:${this.forgeVersion}:launcher`,
-                downloads: {
-                    artifact: {
-                        size: additionalLibraries[0]["size"],
-                        path: `net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-launcher.jar`,
-                        url: additionalLibraries[0]["url"]
+            if (additionalLibraries["launcher"].size != 0) {
+                libraries.push({
+                    name: `net.minecraftforge:forge:${this.forgeVersion}:launcher`,
+                    downloads: {
+                        artifact: {
+                            size: additionalLibraries["launcher"]["size"],
+                            path: `net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-launcher.jar`,
+                            url: additionalLibraries["launcher"]["url"]
+                        }
                     }
-                }
-            });
+                });
+            }
             libraries.push({
                 name: `net.minecraftforge:forge:${this.forgeVersion}:universal`,
                 downloads: {
                     artifact: {
-                        size: additionalLibraries[1]["size"],
+                        size: additionalLibraries["universal"]["size"],
                         path: `net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-universal.jar`,
-                        url: additionalLibraries[1]["url"]
+                        url: additionalLibraries["universal"]["url"]
                     }
                 }
             });
@@ -668,9 +673,9 @@ class MinecraftForge extends Minecraft {
                 name: `net.minecraftforge:forge:${this.forgeVersion}:installer`,
                 downloads: {
                     artifact: {
-                        size: additionalLibraries[2]["size"],
+                        size: additionalLibraries["installer"]["size"],
                         path: `net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`,
-                        url: additionalLibraries[2]["url"]
+                        url: additionalLibraries["installer"]["url"]
                     }
                 }
             });
@@ -689,7 +694,7 @@ class MinecraftForge extends Minecraft {
             }
 
             let url = library.hasOwnProperty("url") ? `${FORGE_LIBRARIES_URL}/${path}` : `${VANILLA_LIBRARIES_URL}/${path}`;
-            if (compareVersions(this.version, "1.13.2") !== -1) {
+            if (compareVersions(this.version, "1.13.2") !== -1 || compareVersions(this.forgeVersion, "1.12.2-14.23.5.2851") !== -1) {
                 if (library.hasOwnProperty("downloads") && library["downloads"].hasOwnProperty("artifact")
                     && library.downloads.artifact.hasOwnProperty("url") && library.downloads.artifact.url != "") {
                     library["size"] = library.downloads.artifact.size;
@@ -727,7 +732,7 @@ class MinecraftForge extends Minecraft {
         catch (error) {
 
             // Edited to run Forge 1.13 and higher, this is a temporary solution!
-            let response = compareVersions(this.version, "1.13") !== -1 ? await axios.get(`${FORGE_LIBRARIES_URL}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`, {
+            let response = compareVersions(this.version, "1.13") !== -1 || compareVersions(this.forgeVersion, "1.12.2-14.23.5.2851") !== -1 ? await axios.get(`${FORGE_LIBRARIES_URL}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`, {
                 responseType: "arraybuffer"
             }) : await axios.get(`${FORGE_LIBRARIES_URL}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-universal.jar`, {
                 responseType: "arraybuffer"
@@ -739,7 +744,7 @@ class MinecraftForge extends Minecraft {
             let content = JSON.parse(await file.buffer());
 
             // Edited to run Forge 1.13 and higher, this is a temporary solution!
-            if (compareVersions(this.version, "1.13") !== -1) {
+            if (compareVersions(this.version, "1.13") !== -1 || compareVersions(this.forgeVersion, "1.12.2-14.23.5.2851") !== -1) {
                 file = directory.files.find(d => d.path === "install_profile.json");
                 let installProfile = JSON.parse(await file.buffer());
                 content["installLibraries"] = installProfile["libraries"];
@@ -838,7 +843,7 @@ class MinecraftForge extends Minecraft {
         let args = super._getJavaArguments();
 
         // Edited to run Forge 1.13 and higher, this is a temporary solution!
-        if (compareVersions(this.version, "1.13") !== -1) {
+        if (compareVersions(this.version, "1.13") !== -1 || compareVersions(this.forgeVersion, "1.12.2-14.23.5.2851") !== -1) {
             args.unshift(`-Dforgewrapper.librariesDir=${this.cache}/libraries`);
             args.unshift(`-Dforgewrapper.installer=${this.cache}/libraries/${this._forgeManifest["forgeInstaller"]}`);
             args.unshift(`-Dforgewrapper.minecraft=${this._getJars()[0].path}`);
@@ -854,7 +859,7 @@ class MinecraftForge extends Minecraft {
 
         let queue = await super._verifyFileIntegrity();
 
-        if (compareVersions(this.version, "1.13") !== -1) {
+        if (compareVersions(this.version, "1.13") !== -1 || compareVersions(this.forgeVersion, "1.12.2-14.23.5.2851") !== -1) {
 
             let files = this._getInstallLibraries();
 
