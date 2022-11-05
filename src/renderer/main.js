@@ -353,7 +353,6 @@ document.addEventListener("DOMContentLoaded", () => {
         window.addEventListener("mousemove", onConsoleResize);
     });
     window.addEventListener("mouseup", (e) => {
-        e.preventDefault();
         consoleOutput.style.userSelect = "text";
         window.removeEventListener("mousemove", onConsoleResize);
     });
