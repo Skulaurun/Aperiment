@@ -599,11 +599,17 @@
 .settings-table .button-row .save-button:hover {
     background-color: rgb(52, 195, 83);
 }
+.settings-table .button-row .save-button:active {
+    background-color: rgb(61, 218, 95);
+}
 .settings-table .button-row .revert-button {
     background-color: rgb(147, 147, 147);
 }
 .settings-table .button-row .revert-button:hover {
     background-color: rgb(157, 157, 157);
+}
+.settings-table .button-row .revert-button:active {
+    background-color: rgb(180, 180, 180);
 }
 .settings-table .category-row {
     font-weight: bold;
