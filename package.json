@@ -38,8 +38,8 @@
     }
   },
   "devDependencies": {
-    "electron": "^17.4.5",
-    "electron-builder": "^22.14.13"
+    "electron": "^21.2.2",
+    "electron-builder": "^23.6.0"
   },
   "dependencies": {
     "arch": "^2.1.2",
