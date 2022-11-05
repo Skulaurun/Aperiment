@@ -421,7 +421,7 @@ ipcMain.on("launch-modpack", (event, options) => { // TODO: Add logging.
         return;
     }
     
-    let localJava = new Java(java.path, options.vma);
+    let localJava = new Java(config.get("java"), options.vma);
     let modpack = new MinecraftModpack(config.get("minecraft"), options.directory, options.url, user, localJava);
 
     modpack.on("ready", () => {
