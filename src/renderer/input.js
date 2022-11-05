@@ -100,6 +100,7 @@ class SelectBox extends InputElement {
         this.inputBox.setAttribute("readonly", true);
 
         const arrowDown = document.createElement("div");
+        arrowDown.addEventListener("click", () => { this.hasFocus = true; });
         arrowDown.classList.add("arrow-down");
 
         this.selectMenu = document.createElement("div");

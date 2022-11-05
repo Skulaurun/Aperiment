@@ -35,6 +35,7 @@
     border-color: white;
     border-width: 0 3px 3px 0;
     transform: rotate(45deg);
+    cursor: pointer;
 }
 .input-select-box .select-menu {
     position: absolute;
