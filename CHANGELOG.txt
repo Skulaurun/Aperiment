@@ -1,3 +1,12 @@
+# 0.14.0
+- Update electron and electron-builder 8175fda38af508b296b174923de984feaa5bad01
+- Fix Forge 1.17.1+ compatibility issues 20f1ea6e9d864a68a88c903a14b73d29041a1c7b
+- Add support for forge 14.23.5.2851 to 14.23.5.2860 e3ce33832dd1f65018c6e9fc765e0dd9f6667bef
+-  Fix text selection bugs caused by preventDefault() ae1a434f96bb8ee2fdb1d5e288c82ca9f1488467
+- Prevent unwanted text selection in settings table 16d9f0a82a3afd4a95826aab8ab4ae8439aeb4ef
+- Fix SelectBox arrow-down losing focus on click 101b0e5219d3492607568955e6cd9676bcdbe906
+- Add :active button style to save and revert button 91e608613f20939c58fe90d936a358171ad85577
+
 # 0.13.0
 - Rework settings - add file dialog and select box b084ba23c23bd2fc255c6e3e28ad0fb4bcb7f81f
 - Change style of 'modpack-properties-table' keys acc4b25b0042f69be763196f3818c9e1064e1519 944da3bd2bbc02e8d39010b3d32a705123d10a1f
