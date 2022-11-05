@@ -578,6 +578,7 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 18px;
+    user-select: none;
 }
 .settings-table .category-row, .settings-table .button-row {
     background-color: rgb(50, 50, 50);
