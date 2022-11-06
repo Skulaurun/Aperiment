@@ -734,7 +734,10 @@ class MinecraftForge extends Minecraft {
 
     async _getForgeManifest() {
 
-        let forgeManifest = `${this.cache}/forge-${this.forgeVersion}.json`;
+        let forgeManifest = path.join(
+            this.cache,
+            `forge-${this.forgeVersion}.json`
+        );
 
         try {
 
@@ -805,7 +808,7 @@ class MinecraftForge extends Minecraft {
             files.unshift({
                 name: library.name,
                 size: library.size,
-                path: `${this.cache}/libraries/${library.path}`,
+                path: path.join(this.cache, "libraries", library.path),
                 url: library.url
             });
 
@@ -823,17 +826,17 @@ class MinecraftForge extends Minecraft {
         for (let i = 0; i < installLibraries.length; i++) {
 
             let library = installLibraries[i];
-            let { path, url, size } = library["downloads"]["artifact"];
+            let artifact = library["downloads"]["artifact"];
 
-            if (!url || url == "") {
+            if (!artifact.url || artifact.url == "") {
                 continue;
             }
 
             files.unshift({
                 name: library.name,
-                size: size,
-                path: `${this.cache}/libraries/${path}`,
-                url: url
+                size: artifact.size,
+                path: path.join(this.cache, "libraries", artifact.path),
+                url: artifact.url
             });
 
         }
@@ -858,9 +861,18 @@ class MinecraftForge extends Minecraft {
 
         // Edited to run Forge 1.13 and higher, this is a temporary solution!
         if (compareVersions(this.version, "1.13") !== -1 || compareVersions(this.forgeVersion, "1.12.2-14.23.5.2851") !== -1) {
-            args.unshift(`-Dforgewrapper.librariesDir=${this.cache}/libraries`);
-            args.unshift(`-Dforgewrapper.installer=${this.cache}/libraries/${this._forgeManifest["forgeInstaller"]}`);
-            args.unshift(`-Dforgewrapper.minecraft=${this._getJars()[0].path}`);
+
+            let clientPath = this._getJars()[0]["path"];
+            let libraryPath = path.join(this.cache, "libraries");
+            let installerPath = path.join(
+                this.cache, "libraries",
+                this._forgeManifest["forgeInstaller"]
+            );
+
+            args.unshift(`-Dforgewrapper.librariesDir=${libraryPath}`);
+            args.unshift(`-Dforgewrapper.installer=${installerPath}`);
+            args.unshift(`-Dforgewrapper.minecraft=${clientPath}`);
+
         }
 
         args[args.indexOf(this._manifest["mainClass"])] = this._forgeManifest["mainClass"];
@@ -903,8 +915,8 @@ class MinecraftForge extends Minecraft {
 
             // Edited to run Forge 1.13 and higher, this is a temporary solution!
             if (compareVersions(this.version, "1.13") !== -1) {
-                this._forgeManifest["minecraftArguments"] = this._manifest["arguments"]["game"].filter(x => typeof x === "string").join(" ");
                 this._forgeManifest["mainClass"] = "io.github.zekerzhayard.forgewrapper.installer.Main";
+                this._forgeManifest["minecraftArguments"] = this._manifest["arguments"]["game"].filter(x => typeof x === "string").join(" ");
                 this._forgeManifest["minecraftArguments"] += " " + this._forgeManifest["arguments"]["game"].filter(x => typeof x === "string").join(" ");
             }
 
