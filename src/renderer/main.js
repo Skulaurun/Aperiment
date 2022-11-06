@@ -713,7 +713,7 @@ ipcRenderer.on("modpack-stdout", (event, id, data) => {
 
 });
 
-ipcRenderer.on("modpack-stderr", (event, data) => {
+ipcRenderer.on("modpack-stderr", (event, id, data) => {
     appendConsole(consoleOutput, new String(data));
 });
 
