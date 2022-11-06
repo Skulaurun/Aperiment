@@ -72,7 +72,7 @@ class Minecraft extends EventEmitter {
 
     }
 
-    _init(path, name, version, user, java) {
+    _init(directory, name, version, user, java) {
 
         if (compareVersions(version, "1.5.2") !== 1) {
             throw new Error("Unsupported version!");
@@ -81,12 +81,13 @@ class Minecraft extends EventEmitter {
         this.user = user;
         this.java = java;
         this.name = name;
-        this.alive = true;
-        this.running = false;
         this.version = version;
 
-        this.cache = `${path}/cache`;
-        this.path = `${path}/instances/${name}`;
+        this.alive = true;
+        this.running = false;
+
+        this.cache = path.join(directory, "cache");
+        this.path = path.join(directory, "instances", name);
 
         this._getVersionManifest().then(() => {
             this.emit("ready");
@@ -98,7 +99,11 @@ class Minecraft extends EventEmitter {
 
     async _getAssetIndex(versionManifest) {
 
-        let assetIndex = `${this.cache}/assets/indexes/${versionManifest["assetIndex"].id}.json`;
+        let assetIndex = path.join(
+            this.cache,
+            "assets/indexes",
+            versionManifest["assetIndex"]["id"] + ".json",
+        );
 
         try {
 
@@ -121,7 +126,10 @@ class Minecraft extends EventEmitter {
 
     async _getVersionManifest() {
 
-        let versionManifest = `${this.cache}/${this.version}.json`;
+        let versionManifest = path.join(
+            this.cache,
+            this.version + ".json"
+        );
 
         try {
 
@@ -223,7 +231,7 @@ class Minecraft extends EventEmitter {
                         files.push({
                             name: library.name,
                             size: classifier.size,
-                            path: `${this.cache}/libraries/${classifier.path}`,
+                            path: path.join(this.cache, "libraries", classifier.path),
                             url: classifier.url,
                             extract: true
                         });
@@ -238,7 +246,7 @@ class Minecraft extends EventEmitter {
                 files.push({
                     name: library.name,
                     size: artifact.size,
-                    path: `${this.cache}/libraries/${artifact.path}`,
+                    path: path.join(this.cache, "libraries", artifact.path),
                     url: artifact.url
                 });
                 
@@ -259,12 +267,13 @@ class Minecraft extends EventEmitter {
         for (let key in assets) {
 
             let asset = assets[key];
+            /* Don't put path.join() here, this is used in an URL. */
             let filename = `${asset.hash.substring(0, 2)}/${asset.hash}`;
 
             files.push({
                 name: path.basename(key),
                 size: asset.size,
-                path: `${this.cache}/assets/objects/${filename}`,
+                path: path.join(this.cache, "assets/objects", filename),
                 url: `${VANILLA_ASSETS_URL}/${filename}`
             });
 
@@ -283,7 +292,7 @@ class Minecraft extends EventEmitter {
         files.push({
             name: `${this._manifest["id"]}.jar`,
             size: client.size,
-            path: `${this.cache}/bin/${this._manifest["id"]}.jar`,
+            path: path.join(this.cache, "bin", `${this._manifest["id"]}.jar`),
             url: client.url
         });
 
@@ -383,7 +392,7 @@ class Minecraft extends EventEmitter {
                 for await (let entry of zip) {
 
                     if (!entry.path.startsWith("META-INF/")) {
-                        await writeStream(entry, `${directory}/${entry.path}`);
+                        await writeStream(entry, path.join(directory, entry.path));
                     } else {
                         entry.autodrain();
                     }
@@ -402,9 +411,17 @@ class Minecraft extends EventEmitter {
         await fs.promises.mkdir(directory, { recursive: true });
 
         for (const [ filepath, { hash } ] of Object.entries(this._manifest["assetIndex"]["objects"])) {
-            const destination = `${directory}/${filepath}`;
+
+            const destination = path.join(directory, filepath);
             await fs.promises.mkdir(path.dirname(destination), { recursive: true });
-            await fs.promises.copyFile(`${this.cache}/assets/objects/${hash.substr(0, 2)}/${hash}`, destination);
+
+            const assetPath = path.join(
+                this.cache,
+                "assets/objects",
+                hash.substr(0, 2), hash
+            );
+            await fs.promises.copyFile(assetPath, destination);
+
         }
 
     }
@@ -432,9 +449,9 @@ class Minecraft extends EventEmitter {
             "auth_uuid": this.user.id,
             "auth_player_name": this.user.nickname,
             "auth_access_token": this.user.accessToken,
-            "assets_root": `${this.cache}/assets`,
-            "game_assets": `${this.cache}/assets/virtual/legacy`,
-            "assets_index_name": this._manifest["assetIndex"].id,
+            "assets_root": path.join(this.cache, "assets"),
+            "game_assets": path.join(this.cache, "assets/virtual/legacy"),
+            "assets_index_name": this._manifest["assetIndex"]["id"],
             "version_name": this._manifest["id"],
             "version_type": this._manifest["type"],
             "game_directory": this.path,
@@ -445,16 +462,16 @@ class Minecraft extends EventEmitter {
 
     _getJavaArguments() {
         
-        let mainClass = this._manifest["mainClass"];
+        let client = this._getJars()[0]["path"];
         let libraries = this._buildLibraryString();
-        let minecraftJar = this._getJars()[0].path;
+        let natives = path.join(this.path, "natives");
 
         return [
             `-Dminecraft.applet.TargetDirectory=${this.path}`,
-            `-Djava.library.path=${this.path}/natives`,
-            `-Dminecraft.client.jar=${minecraftJar}`,
-            "-cp", `${libraries};${minecraftJar}`,
-            mainClass
+            `-Djava.library.path=${natives}`,
+            `-Dminecraft.client.jar=${client}`,
+            "-cp", `${libraries};${client}`,
+            this._manifest["mainClass"]
         ];
 
     }
@@ -491,10 +508,10 @@ class Minecraft extends EventEmitter {
     async _launch(launchArguments) {
 
         await fs.promises.mkdir(this.path, { recursive: true });
-        await this._grabNatives(`${this.path}/natives`);
+        await this._grabNatives(path.join(this.path, "natives"));
 
         if (compareVersions(this.version, "1.7.2") !== 1) {
-            await this._grabAssets(`${this.cache}/assets/virtual/legacy`);
+            await this._grabAssets(path.join(this.cache, "assets/virtual/legacy"));
         }
 
         if (!this.alive) {
@@ -509,7 +526,7 @@ class Minecraft extends EventEmitter {
 
         this.java.process.on("exit", (code) => {
 
-            rimraf(`${this.path}/natives`, (error) => {
+            rimraf(path.join(this.path, "natives"), (error) => {
                 if (error) {
                     this.emit("error", error);
                 }
