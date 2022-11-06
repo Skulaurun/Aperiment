@@ -934,11 +934,11 @@ class MinecraftForge extends Minecraft {
 
 class MinecraftModpack extends MinecraftForge {
 
-    constructor(path, name, url, user, java) {
+    constructor(directory, name, url, user, java) {
 
         super();
 
-        this._getModpackManifest(`${path}/instances/${name}`, url).then((manifest) => {
+        this._getModpackManifest(path.join(directory, "instances", name), url).then((manifest) => {
 
             this._modpackManifest = manifest;
             this.modpackVersion = manifest["currentVersion"] ? manifest["versions"].find(version => version.id === manifest["currentVersion"]) : manifest["versions"][0];
@@ -947,7 +947,7 @@ class MinecraftModpack extends MinecraftForge {
                 this._forceUpdate = true;
             }
 
-            this._init(path, name, this.modpackVersion["forge"], user, java);
+            this._init(directory, name, this.modpackVersion["forge"], user, java);
 
         }).catch((error) => {
             this.emit("error", error);
@@ -957,7 +957,7 @@ class MinecraftModpack extends MinecraftForge {
 
     async _getModpackManifest(directory, url) {
 
-        let manifest = `${directory}/meta.json`;
+        let manifest = path.join(directory, "meta.json");
 
         try {
 
@@ -1014,7 +1014,7 @@ class MinecraftModpack extends MinecraftForge {
             queue.push({
                 name: "modpack.zip",
                 size: this.modpackVersion.size,
-                path: `${this.path}/modpack.zip`,
+                path: path.join(this.path, "modpack.zip"),
                 url: this.modpackVersion.url,
                 extract: true
             });
@@ -1051,7 +1051,7 @@ class MinecraftModpack extends MinecraftForge {
 
     async _extractModpack() {
 
-        let file = `${this.path}/modpack.zip`;
+        let file = path.join(this.path, "modpack.zip");
         let reader = fs.createReadStream(file);
         let zip = reader.pipe(unzipper.Parse({forceStream: true}));
         let actions = await this._getActions(file);
@@ -1063,7 +1063,7 @@ class MinecraftModpack extends MinecraftForge {
                 continue;
             }
 
-            let location = `${this.path}/${entry.path}`;
+            let location = path.join(this.path, entry.path);
             await fs.promises.mkdir(path.dirname(location), { recursive: true });
 
             switch (item.action) {
@@ -1133,7 +1133,10 @@ class MinecraftModpack extends MinecraftForge {
             await this._extractModpack();
 
             this._modpackManifest["currentVersion"] = this.modpackVersion.id;
-            await fs.promises.writeFile(`${this.path}/meta.json`, JSON.stringify(this._modpackManifest, null, 4));
+            await fs.promises.writeFile(
+                path.join(this.path, "meta.json"),
+                JSON.stringify(this._modpackManifest, null, 4)
+            );
 
             this._forceUpdate = false;
 
