@@ -20,6 +20,7 @@
 
 const os = require("os");
 const fs = require("fs");
+const path = require("path");
 const http = require("http");
 const crypto = require("crypto");
 const { Readable } = require("stream");
@@ -36,7 +37,7 @@ const User = require("./user.js");
 const Java = require("./java.js");
 const { MinecraftModpack } = require("./minecraft.js");
 
-const USER_DATA = app.getPath("userData").replace(/\\/g, "/");
+const USER_DATA = app.getPath("userData");
 const DEVELOPER_MODE = process.argv.includes("--dev");
 
 require("../common/overrides.js");
@@ -160,18 +161,18 @@ app.once("ready", () => {
                     "allowPrerelease": true
                 },
                 "java": "java",
-                "minecraft": `${USER_DATA}/minecraft`
+                "minecraft": path.join(USER_DATA, "minecraft")
             },
-            path: `${USER_DATA}/config.json`
+            path: path.join(USER_DATA, "config.json")
         });
 
         modpacks = new Storage({
             data: [],
-            path: `${USER_DATA}/modpacks.json`
+            path: path.join(USER_DATA, "modpacks.json")
         });
 
         java = new Java(config.get("java"));
-        user = new User(`${USER_DATA}/user.json`);
+        user = new User(path.join(USER_DATA, "user.json"));
 
         java.getVersion().then((version) => {
             log.info(`Detected Java Runtime Environment v.${version}.`);
@@ -531,7 +532,7 @@ ipcMain.on("save-modpacks", (event, object) => {
 
 ipcMain.on("load-icons", async (event, modpacks) => {
 
-    const iconDirectory = `${config.get("minecraft")}/cache/icons`;
+    const iconDirectory = path.join(config.get("minecraft"), "cache/icons");
     const supportedMimeTypes = [
         "image/png",
         "image/jpeg",
@@ -546,9 +547,10 @@ ipcMain.on("load-icons", async (event, modpacks) => {
         let icons = {};
         for (const modpack of modpacks) {
             try {
-                const type = await fileType.fromFile(`${iconDirectory}/${modpack}`);
+                const iconPath = path.join(iconDirectory, modpack);
+                const type = await fileType.fromFile(iconPath);
                 if (supportedMimeTypes.includes(type.mime)) {
-                    icons[modpack] = `${iconDirectory}/${modpack}`;
+                    icons[modpack] = iconPath;
                 }
             } catch {}
         }
@@ -583,8 +585,8 @@ async function fetchIcon(url, modpack) {
     let remoteHash = null;
     let streamBuffer = null;
 
-    const iconDirectory = `${config.get("minecraft")}/cache/icons`;
-    const iconPath = `${iconDirectory}/${modpack}`;
+    const iconDirectory = path.join(config.get("minecraft"), "cache/icons");
+    const iconPath = path.join(iconDirectory, modpack);
 
     try {
         let { data: stream } = await axios({
