@@ -521,8 +521,6 @@ class Minecraft extends EventEmitter {
             return;
         }
 
-        console.log(launchArguments);
-
         this.running = true;
         this.java.exec(launchArguments, { cwd: this.path });
 
