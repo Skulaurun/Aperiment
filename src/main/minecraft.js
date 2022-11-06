@@ -426,10 +426,11 @@ class Minecraft extends EventEmitter {
 
     }
 
-    _buildLibraryString() {
+    _buildLibraryString(additionalLibraries = []) {
 
         let string = "";
         let libraries = this._getLibraries();
+        libraries = libraries.concat(additionalLibraries);
         libraries = libraries.filter(l => !l.hasOwnProperty("extract") && !l.extract);
 
         libraries.forEach((library, index) => {
@@ -463,14 +464,16 @@ class Minecraft extends EventEmitter {
     _getJavaArguments() {
         
         let client = this._getJars()[0]["path"];
-        let libraries = this._buildLibraryString();
+        let libraries = this._buildLibraryString([
+            { path: client }
+        ]);
         let natives = path.join(this.path, "natives");
 
         return [
             `-Dminecraft.applet.TargetDirectory=${this.path}`,
             `-Djava.library.path=${natives}`,
             `-Dminecraft.client.jar=${client}`,
-            "-cp", `${libraries};${client}`,
+            "-cp", `${libraries}`,
             this._manifest["mainClass"]
         ];
 
@@ -517,6 +520,8 @@ class Minecraft extends EventEmitter {
         if (!this.alive) {
             return;
         }
+
+        console.log(launchArguments);
 
         this.running = true;
         this.java.exec(launchArguments, { cwd: this.path });
