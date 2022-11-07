@@ -1,3 +1,11 @@
+# 0.14.1
+- Fix compatibility with Unix-like operating systems 85d54b96978de3859b2de41b2b3e17afff861906
+- Use path.join() when concatenating paths II. f4fef8fa317342de5c83eb361b74237e78638183 d84ba3fb94a902f78de88047b302e54fae4dfb28
+- Use path.join() when concatenating paths I. beb1a04d2bc004a7456160ba19fe6f128c5d5803 8818c35d671c6cd217fe053807753a10c26fac5e
+- Fix Java process modpack-stderr event in renderer 9b6a9f1ce8296ceacf9ecb1c520b0c426fcc8376
+- Improve logging of modpack errors d4cc1404ab02ae9dfd39ed78aea196a325610120
+- Fix Java path change needing launcher restart 5bb0c4f1b35edde786c3c38bb2c8888917b5c243
+
 # 0.14.0
 - Update electron and electron-builder 8175fda38af508b296b174923de984feaa5bad01
 - Fix Forge 1.17.1+ compatibility issues 20f1ea6e9d864a68a88c903a14b73d29041a1c7b
