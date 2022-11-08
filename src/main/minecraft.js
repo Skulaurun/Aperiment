@@ -528,18 +528,19 @@ class Minecraft extends EventEmitter {
         this.java.process.stderr.on("data", (data) => { this.emit("stderr-data", data); });
 
         this.java.process.on("exit", (code) => {
-
-            rimraf(path.join(this.path, "natives"), (error) => {
-                if (error) {
-                    this.emit("error", error);
-                }
-            });
-
-            this.running = false;
-            this.emit("exit", code);
-
+            if (code !== null) {
+                this._exit(code);
+            }
         });
 
+    }
+
+    _exit(message) {
+        rimraf(path.join(this.path, "natives"), (error) => {
+            if (error) this.emit("error", error);
+        });
+        this.running = false;
+        this.emit("exit", message);
     }
 
     async launch() {
@@ -561,20 +562,14 @@ class Minecraft extends EventEmitter {
     }
 
     terminate(signal) {
-
         try {
-
             if (this.running) {
-
                 this.java.process.kill(signal);
-                this.java.process.emit("exit", "forced-shutdown");
-                
+                this._exit("forced-shutdown");
             }
-
         } catch (error) {
             this.emit("error", error);
         }
-
     }
 
     kill() {
