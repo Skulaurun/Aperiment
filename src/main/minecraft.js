@@ -1361,6 +1361,10 @@ class MinecraftInstanceManager {
         do { instanceConfig['id'] = this._generateId(); }
         while (this.loadedConfigs[instanceConfig['id']]);
 
+        instanceConfig['manifestPath'] = path.join(
+            this.pathConfig['manifests'],
+            `${instanceConfig['id']}.json`
+        );
         this.loadedConfigs[instanceConfig['id']] = instanceConfig;
 
         return instanceConfig;

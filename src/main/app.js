@@ -388,16 +388,11 @@ ipcMain.on("user-logout", (event) => {
 
 });
 
-ipcMain.on("add-modpack", async (event, url) => { // TODO: Stricter rules for valid url.
+ipcMain.on("add-modpack", async (event, url) => {
 
     /*if (modpacks.get().some(m => m.url === url)) {
         mainWindow.send("modpack-add", null, `The modpack '${modpack.name}' already exists in the library!`);
         return;
-    }
-    
-    if (manifest.hasOwnProperty("icon") && validUrl.isUri(manifest["icon"])) {
-        let directory = modpack.name.trim().toLowerCase().replace(/ /g, "-");
-        fetchIcon(manifest["icon"], directory).catch(()=>{});
     }
 
     mainWindow.send("load-modpacks", modpacks.get());*/
@@ -407,6 +402,7 @@ ipcMain.on("add-modpack", async (event, url) => { // TODO: Stricter rules for va
         instanceManager.fetchIcon(instanceConfig['id']).catch((error) => {
             log.error(`Could not fetch icon for modpack '${instanceConfig['id']}'. ${error}`);
         });
+        instanceManager.saveConfig(instanceConfig['id']);
         mainWindow.send("modpack-add", instanceConfig['manifest']);
     } catch (error) {
         mainWindow.send("modpack-add", null, `${error}`);
