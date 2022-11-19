@@ -390,12 +390,12 @@ ipcMain.on("user-logout", (event) => {
 
 ipcMain.on("add-modpack", async (event, url) => {
 
-    /*if (modpacks.get().some(m => m.url === url)) {
-        mainWindow.send("modpack-add", null, `The modpack '${modpack.name}' already exists in the library!`);
+    if (instanceManager.findRemote(url)) {
+        mainWindow.send("modpack-add", null, `A modpack with the same remote URL already exists in the library!`);
         return;
     }
 
-    mainWindow.send("load-modpacks", modpacks.get());*/
+    //mainWindow.send("load-modpacks", modpacks.get());
 
     try {
         const instanceConfig = await instanceManager.addFromRemote(url);

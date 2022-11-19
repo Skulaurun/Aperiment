@@ -1298,6 +1298,12 @@ class MinecraftInstanceManager {
         return false;
     }
 
+    findRemote(remoteUrl) {
+        return Object.values(this.loadedConfigs)
+            .filter(o => o['config']['remote'])
+            .find(o => o['config']['remote'] === remoteUrl);
+    }
+
     async createDirectoryStructure() {
         for (const directory of Object.values(this.pathConfig)) {
             await fs.promises.mkdir(directory, { recursive: true });
