@@ -20,14 +20,24 @@
 
 const os = require("os");
 const fs = require("fs");
-const url = require("url");
 const path = require("path");
-const { EventEmitter } = require("events");
 const arch = require("arch");
-const axios = require("axios").default;
+const axios = require("axios");
 const rimraf = require("rimraf");
+const crypto = require("crypto");
 const unzipper = require("unzipper");
+const fileType = require("file-type");
+const { Readable } = require("stream");
+const { EventEmitter } = require("events");
+const { addAbortSignal } = require("stream");
+const { spawn } = require("child_process");
 const compareVersions = require("compare-versions");
+
+// STUPID SOLUTION!!
+let nanoid = {};
+(async () => {
+    nanoid = await import('nanoid');
+})();
 
 const VANILLA_ASSETS_URL = "https://resources.download.minecraft.net";
 const VANILLA_LIBRARIES_URL = "https://libraries.minecraft.net";
@@ -35,21 +45,20 @@ const FORGE_LIBRARIES_URL = "https://files.minecraftforge.net/maven";
 const VERSION_MANIFEST_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
 
 async function isPathAccessible(location) {
-
     try {
-
         await fs.promises.access(location);
         return true;
-        
     } catch (error) {
         return false;
     }
-
 }
 
-async function writeStream(stream, location) {
+async function writeStream(stream, location, options = {}) {
 
     let writer = fs.createWriteStream(location);
+    if (options['signal']) {
+        writer = addAbortSignal(options['signal'], writer);
+    }
 
     stream.pipe(writer);
 
@@ -60,44 +69,31 @@ async function writeStream(stream, location) {
 
 }
 
-class Minecraft extends EventEmitter {
+class Minecraft {
 
-    constructor(path, name, version, user, java) {
+    constructor(options) {
 
-        super();
+        this.user = options['userInfo'];
+        this.path = options['instancePath'];
+        this.version = options['vanillaVersion'];
+        this.runtime = options['minecraftRuntime'];
+        this.extension = options['extensionPackage'];
 
-        if (path && name && version && user && java) {
-            this._init(path, name, version, user, java);
-        }
+        this.pathConfig = options['pathConfig'];
 
-    }
+        /*
+            Note: This is a temporary solution,
+            code below should be refactored to use pathConfig[].
+        */
+        this.cache = this.pathConfig['cache'];
 
-    _init(directory, name, version, user, java) {
-
-        if (compareVersions(version, "1.5.2") !== 1) {
-            throw new Error("Unsupported version!");
-        }
-        
-        this.user = user;
-        this.java = java;
-        this.name = name;
-        this.version = version;
-
-        this.alive = true;
-        this.running = false;
-
-        this.cache = path.join(directory, "cache");
-        this.path = path.join(directory, "instances", name);
-
-        this._getVersionManifest().then(() => {
-            this.emit("ready");
-        }).catch((error) => {
-            this.emit("error", error);
-        });
+        this.process = null;
+        this.abortSignal = options['abortSignal'];
+        this.eventEmitter = options['eventEmitter'];
 
     }
 
-    async _getAssetIndex(versionManifest) {
+    async _fetchAssetIndex(versionManifest) {
 
         let assetIndex = path.join(
             this.cache,
@@ -106,17 +102,25 @@ class Minecraft extends EventEmitter {
         );
 
         try {
-
-            let content = await fs.promises.readFile(assetIndex);
-
+            let content = await fs.promises.readFile(assetIndex, {
+                signal: this.abortSignal
+            });
             return JSON.parse(content);
-            
         }
         catch (error) {
 
-            let content = (await axios.get(versionManifest["assetIndex"].url)).data;
+            this._rethrowAbort(error);
+
+            let { data: content } = await axios.get(
+                versionManifest["assetIndex"]["url"],
+                { signal: this.abortSignal }
+            );
             await fs.promises.mkdir(path.dirname(assetIndex), { recursive: true });
-            await fs.promises.writeFile(assetIndex, JSON.stringify(content, null, 4));
+            await fs.promises.writeFile(
+                assetIndex,
+                JSON.stringify(content, null, 4),
+                { signal: this.abortSignal }
+            );
             
             return content;
 
@@ -124,7 +128,7 @@ class Minecraft extends EventEmitter {
 
     }
 
-    async _getVersionManifest() {
+    async fetchManifest() {
 
         let versionManifest = path.join(
             this.cache,
@@ -133,14 +137,23 @@ class Minecraft extends EventEmitter {
 
         try {
 
-            let content = JSON.parse(await fs.promises.readFile(versionManifest));
-            content["assetIndex"]["objects"] = (await this._getAssetIndex(content))["objects"];
+            let content = JSON.parse(
+                await fs.promises.readFile(
+                    versionManifest,
+                    { signal: this.abortSignal }
+                )
+            );
 
+            content["assetIndex"]["objects"] = (await this._fetchAssetIndex(content))["objects"];
             this._manifest = content;
 
         } catch (error) {
 
-            let response = await axios.get(VERSION_MANIFEST_URL);
+            this._rethrowAbort(error);
+
+            let response = await axios.get(VERSION_MANIFEST_URL, {
+                signal: this.abortSignal
+            });
             let versions = response.data["versions"];
 
             for (let i = 0; i < versions.length; i++) {
@@ -149,11 +162,17 @@ class Minecraft extends EventEmitter {
 
                 if (version.id == this.version) {
 
-                    let content = (await axios.get(version.url)).data;
+                    let { data: content } = await axios.get(version["url"], {
+                        signal: this.abortSignal
+                    });
                     await fs.promises.mkdir(path.dirname(versionManifest), { recursive: true });
-                    await fs.promises.writeFile(versionManifest, JSON.stringify(content, null, 4));
-                    content["assetIndex"]["objects"] = (await this._getAssetIndex(content))["objects"];
+                    await fs.promises.writeFile(
+                        versionManifest,
+                        JSON.stringify(content, null, 4),
+                        { signal: this.abortSignal }
+                    );
 
+                    content["assetIndex"]["objects"] = (await this._fetchAssetIndex(content))["objects"];
                     this._manifest = content;
 
                     return;
@@ -325,55 +344,57 @@ class Minecraft extends EventEmitter {
 
     }
 
-    async download(progressCallback) {
+    async download() {
 
-        try {
+        let queue = await this._verifyFileIntegrity();
 
-            let queue = await this._verifyFileIntegrity();
+        /* Get Extension Package files if missing. */
+        queue = queue.concat(
+            await this.extension?.verifyPackageIntegrity() || []
+        );
 
-            let total = 0;
-            for (let i = 0; i < queue.length; i++) {
-                total += queue[i].size;
-            }
-    
-            let loaded = 0;
-            for (let i = 0; i < queue.length; i++) {
-    
-                let file = queue[i];
-    
-                await fs.promises.mkdir(path.dirname(file.path), { recursive: true });
+        let total = queue.reduce((accumulator, file) => {
+            return accumulator + file.size;
+        }, 0);
 
-                let response = await axios({
-                    url: file.url,
-                    method: "GET",
-                    responseType: "stream"
+        let loaded = 0;
+        for (let i = 0; i < queue.length; i++) {
+
+            let file = queue[i];
+
+            await fs.promises.mkdir(path.dirname(file.path), { recursive: true });
+
+            let response = await axios({
+                url: file.url,
+                method: "GET",
+                responseType: "stream",
+                signal: this.abortSignal
+            });
+
+            response.data.on('data', (data) => {
+
+                loaded += Buffer.byteLength(data);
+
+                this.eventEmitter.emit('download-progress', {
+                    file: file.name,
+                    loaded: {
+                        count: i + 1,
+                        size: loaded
+                    },
+                    total: {
+                        count: queue.length,
+                        size: total
+                    }
                 });
-                
-                response.data.on("data", (data) => {
 
-                    loaded += Buffer.byteLength(data);
+            });
+        
+            await writeStream(response.data, file.path, { signal: this.abortSignal });
 
-                    progressCallback({
-                        file: file.name,
-                        loaded: {
-                            count: i + 1,
-                            size: loaded
-                        },
-                        total: {
-                            count: queue.length,
-                            size: total
-                        }
-                    });
-
-                });
-            
-                await writeStream(response.data, file.path);
-    
-            }
-
-        } catch (error) {
-            this.emit("error", error);
         }
+
+        /* Prepare Extension Package for launch if any. */
+        await this.extension?.install();
 
     }
 
@@ -390,13 +411,11 @@ class Minecraft extends EventEmitter {
                 let zip = fs.createReadStream(library.path).pipe(unzipper.Parse({ forceStream: true }));
 
                 for await (let entry of zip) {
-
                     if (!entry.path.startsWith("META-INF/")) {
-                        await writeStream(entry, path.join(directory, entry.path));
+                        await writeStream(entry, path.join(directory, entry.path), { signal: this.abortSignal });
                     } else {
                         entry.autodrain();
                     }
-
                 }
 
             }
@@ -447,9 +466,9 @@ class Minecraft extends EventEmitter {
     _getMinecraftArguments() {
 
         return {
-            "auth_uuid": this.user.id,
-            "auth_player_name": this.user.nickname,
-            "auth_access_token": this.user.accessToken,
+            "auth_uuid": this.user['UUID'],
+            "auth_player_name": this.user['playerName'],
+            "auth_access_token": this.user['accessToken'],
             "assets_root": path.join(this.cache, "assets"),
             "game_assets": path.join(this.cache, "assets/virtual/legacy"),
             "assets_index_name": this._manifest["assetIndex"]["id"],
@@ -508,6 +527,20 @@ class Minecraft extends EventEmitter {
 
     }
 
+    _exit(message) {
+        rimraf(path.join(this.path, "natives"), (error) => {
+            if (error) this.eventEmitter.emit('internal-error', error);
+        });
+        this.process = null;
+        this.eventEmitter.emit('process-exit', message);
+    }
+
+    _rethrowAbort(error) {
+        if (error.name === "AbortError" || axios.isCancel(error)) {
+            throw error;
+        }
+    }
+
     async _launch(launchArguments) {
 
         await fs.promises.mkdir(this.path, { recursive: true });
@@ -517,17 +550,21 @@ class Minecraft extends EventEmitter {
             await this._grabAssets(path.join(this.cache, "assets/virtual/legacy"));
         }
 
-        if (!this.alive) {
-            return;
+        if (this.runtime['jvmArguments'] && this.runtime['jvmArguments'] != '' && /\s/.test(this.runtime['jvmArguments'])) {
+            launchArguments = this.runtime['jvmArguments'].split(' ').concat(launchArguments);
         }
 
-        this.running = true;
-        this.java.exec(launchArguments, { cwd: this.path });
-
-        this.java.process.stdout.on("data", (data) => { this.emit("stdout-data", data); });
-        this.java.process.stderr.on("data", (data) => { this.emit("stderr-data", data); });
-
-        this.java.process.on("exit", (code) => {
+        this.process = spawn(this.runtime['path'], launchArguments, { cwd: this.path, signal: this.abortSignal });
+        this.process.stdout.on("data", (data) => {
+            this.eventEmitter.emit('process-stdout', data); }
+        );
+        this.process.stderr.on("data", (data) => {
+            this.eventEmitter.emit('process-stderr', data);
+        });
+        this.process.on("error", (error) => {
+            this.eventEmitter.emit('internal-error', error);
+        });
+        this.process.on("exit", (code) => {
             if (code !== null) {
                 this._exit(code);
             }
@@ -535,69 +572,36 @@ class Minecraft extends EventEmitter {
 
     }
 
-    _exit(message) {
-        rimraf(path.join(this.path, "natives"), (error) => {
-            if (error) this.emit("error", error);
-        });
-        this.running = false;
-        this.emit("exit", message);
-    }
-
     async launch() {
 
-        try {
-
-            if (compareVersions(this.version, "1.13") !== -1) {
-                this._manifest["minecraftArguments"] = this._manifest["arguments"]["game"].filter(x => typeof x === "string").join(" ");
-            }
-
-            let launchArguments = this._buildLaunchArguments(this._manifest["minecraftArguments"]);
-
-            await this._launch(launchArguments);
-
-        } catch (error) {
-            this.emit("error", error);
+        if (compareVersions(this.version, "1.13") !== -1) {
+            this._manifest["minecraftArguments"] = this._manifest["arguments"]["game"].filter(x => typeof x === "string").join(" ");
         }
+
+        let launchArguments = this._buildLaunchArguments(this._manifest["minecraftArguments"]);
+        await this._launch(launchArguments);
         
     }
 
-    terminate(signal) {
-        try {
-            if (this.running) {
-                this.java.process.kill(signal);
-                this._exit("forced-shutdown");
-            }
-        } catch (error) {
-            this.emit("error", error);
-        }
+    isRunning() {
+        return this.process != null;
     }
 
-    kill() {
-        this.alive = false;
+    terminate(signal, reason) {
+        if (this.isRunning()) {
+            /* The status code of process.kill() is ignored. */
+            this.process.kill(signal);
+            this._exit(reason);
+        }
     }
 
 }
 
 class MinecraftForge extends Minecraft {
 
-    constructor(path, name, version, user, java) {
-
-        super();
-
-        if (path && name && version && user && java) {
-            this._init(path, name, version, user, java);
-        }
-
-    }
-
-    _init(path, name, version, user, java) {
-
-        let vanillaVersion = version.split("-")[0];
-
-        super._init(path, name, vanillaVersion, user, java);
-
-        this.forgeVersion = version;
-
+    constructor(options) {
+        super(options);
+        this.forgeVersion = options['forgeVersion'];
     }
 
     _splitDescriptor(descriptor) {
@@ -651,7 +655,8 @@ class MinecraftForge extends Minecraft {
                 }
                 let response = await axios.request({
                     url: library["url"],
-                    method: "HEAD"
+                    method: "HEAD",
+                    signal: this.abortSignal
                 });
                 library["size"] = parseInt(response.headers["content-length"]);
             }
@@ -716,7 +721,8 @@ class MinecraftForge extends Minecraft {
             if (url) {
                 let response = await axios.request({
                     url: url,
-                    method: "HEAD"
+                    method: "HEAD",
+                    signal: this.abortSignal
                 });
                 library["size"] = parseInt(response.headers["content-length"]);
                 library["path"] = path;
@@ -727,7 +733,7 @@ class MinecraftForge extends Minecraft {
 
     }
 
-    async _getForgeManifest() {
+    async _fetchForgeManifest() {
 
         let forgeManifest = path.join(
             this.cache,
@@ -736,18 +742,24 @@ class MinecraftForge extends Minecraft {
 
         try {
 
-            let content = await fs.promises.readFile(forgeManifest);
+            let content = await fs.promises.readFile(forgeManifest, {
+                signal: this.abortSignal
+            });
 
             this._forgeManifest = JSON.parse(content);
             
         }
         catch (error) {
 
+            this._rethrowAbort(error);
+
             // Edited to run Forge 1.13 and higher, this is a temporary solution!
             let response = compareVersions(this.version, "1.13") !== -1 || compareVersions(this.forgeVersion, "1.12.2-14.23.5.2851") !== -1 ? await axios.get(`${FORGE_LIBRARIES_URL}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`, {
-                responseType: "arraybuffer"
+                responseType: "arraybuffer",
+                signal: this.abortSignal
             }) : await axios.get(`${FORGE_LIBRARIES_URL}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-universal.jar`, {
-                responseType: "arraybuffer"
+                responseType: "arraybuffer",
+                signal: this.abortSignal
             });
 
             let buffer = Buffer.from(response.data, "binary");
@@ -775,12 +787,9 @@ class MinecraftForge extends Minecraft {
 
     }
 
-    async _getVersionManifest() {
-
-        await super._getVersionManifest();
-
-        await this._getForgeManifest();
-
+    async fetchManifest() {
+        await super.fetchManifest();
+        await this._fetchForgeManifest();
     }
 
     _getLibraries() {
@@ -841,13 +850,9 @@ class MinecraftForge extends Minecraft {
     }
 
     _getMinecraftArguments() {
-
         let args = super._getMinecraftArguments();
-
         args["version_name"] = this._forgeManifest["id"];
-
         return args;
-
     }
 
     _getJavaArguments() {
@@ -906,118 +911,29 @@ class MinecraftForge extends Minecraft {
 
     async launch() {
 
-        try {
-
-            // Edited to run Forge 1.13 and higher, this is a temporary solution!
-            if (compareVersions(this.version, "1.13") !== -1) {
-                this._forgeManifest["mainClass"] = "io.github.zekerzhayard.forgewrapper.installer.Main";
-                this._forgeManifest["minecraftArguments"] = this._manifest["arguments"]["game"].filter(x => typeof x === "string").join(" ");
-                this._forgeManifest["minecraftArguments"] += " " + this._forgeManifest["arguments"]["game"].filter(x => typeof x === "string").join(" ");
-            }
-
-            let launchArguments = this._buildLaunchArguments(this._forgeManifest["minecraftArguments"]);
-
-            await this._launch(launchArguments);
-
-        } catch (error) {
-            this.emit("error", error);
+        // Edited to run Forge 1.13 and higher, this is a temporary solution!
+        if (compareVersions(this.version, "1.13") !== -1) {
+            this._forgeManifest["mainClass"] = "io.github.zekerzhayard.forgewrapper.installer.Main";
+            this._forgeManifest["minecraftArguments"] = this._manifest["arguments"]["game"].filter(x => typeof x === "string").join(" ");
+            this._forgeManifest["minecraftArguments"] += " " + this._forgeManifest["arguments"]["game"].filter(x => typeof x === "string").join(" ");
         }
+
+        let launchArguments = this._buildLaunchArguments(this._forgeManifest["minecraftArguments"]);
+
+        await this._launch(launchArguments);
 
     }
 
 }
 
-class MinecraftModpack extends MinecraftForge {
+class MinecraftExtension {
 
-    constructor(directory, name, url, user, java) {
-
-        super();
-
-        this._getModpackManifest(path.join(directory, "instances", name), url).then((manifest) => {
-
-            this._modpackManifest = manifest;
-            this.modpackVersion = manifest["currentVersion"] ? manifest["versions"].find(version => version.id === manifest["currentVersion"]) : manifest["versions"][0];
-
-            if (!this._modpackManifest["currentVersion"]) {
-                this._forceUpdate = true;
-            }
-
-            this._init(directory, name, this.modpackVersion["forge"], user, java);
-
-        }).catch((error) => {
-            this.emit("error", error);
-        });
-
-    }
-
-    async _getModpackManifest(directory, url) {
-
-        let manifest = path.join(directory, "meta.json");
-
-        try {
-
-            var content = (await axios.get(url)).data;
-
-        } catch (error) {
-
-            let content = JSON.parse(await fs.promises.readFile(manifest));
-
-            return content;
-
-        }
-
-        try {
-
-            let meta = JSON.parse(await fs.promises.readFile(manifest));
-
-            if (meta.hasOwnProperty("currentVersion")) {
-                content["currentVersion"] = meta["currentVersion"];
-            }
-            
-        } catch (error) {
-            content["currentVersion"] = null;
-        }
-
-        await fs.promises.mkdir(path.dirname(manifest), { recursive: true });
-        await fs.promises.writeFile(manifest, JSON.stringify(content, null, 4));
-
-        return content;
-
-    }
-
-    isUpToDate() {
-
-        if (this._modpackManifest["currentVersion"]) {
-            
-            let latestVersion = this._modpackManifest["versions"][0].id;
-            let currentVersion = this.modpackVersion.id;
-    
-            return compareVersions(currentVersion, latestVersion) === 0;
-
-        }
-
-        return false;
-
-    }
-
-    async _verifyFileIntegrity() {
-
-        let queue = await super._verifyFileIntegrity();
-
-        if (this._forceUpdate) {
-
-            queue.push({
-                name: "modpack.zip",
-                size: this.modpackVersion.size,
-                path: path.join(this.path, "modpack.zip"),
-                url: this.modpackVersion.url,
-                extract: true
-            });
-
-        }
-
-        return queue;
-
+    constructor(activeOptions, instanceOptions) {
+        this.packageName = activeOptions['id'];
+        this.path = instanceOptions['instancePath'];
+        this.version = activeOptions['candidateVersion'];
+        this.abortSignal = activeOptions['abortSignal'];
+        this.enableUpdate = activeOptions['enableUpdate'];
     }
 
     async _getActions(location) {
@@ -1027,16 +943,12 @@ class MinecraftModpack extends MinecraftForge {
         let zip = reader.pipe(unzipper.Parse({forceStream: true}));
 
         for await (let entry of zip) {
-
             if (entry.path === "actions.json") {
-
                 actions = JSON.parse(await entry.buffer());
                 break;
-
             } else {
                 entry.autodrain();
             }
-
         }
 
         reader.close();
@@ -1046,7 +958,7 @@ class MinecraftModpack extends MinecraftForge {
 
     async _extractModpack() {
 
-        let file = path.join(this.path, "modpack.zip");
+        let file = path.join(this.path, this.packageName);
         let reader = fs.createReadStream(file);
         let zip = reader.pipe(unzipper.Parse({forceStream: true}));
         let actions = await this._getActions(file);
@@ -1065,33 +977,25 @@ class MinecraftModpack extends MinecraftForge {
 
                 case "ADD":
                     if (entry.type === "File") {
-
                         if (!await isPathAccessible(location)) {
-
-                            await writeStream(entry, location);
+                            await writeStream(entry, location, { signal: this.abortSignal });
                             continue;
-
                         }
-
                     }
                     break;
                 
                 case "REPLACE":
                     if (entry.type === "File") {
-
                         if (await isPathAccessible(location)) {
                             await fs.promises.unlink(location);
                         }
-
-                        await writeStream(entry, location);
+                        await writeStream(entry, location, { signal: this.abortSignal });
                         continue;
-
                     }
                     break;
 
                 case "DELETE":
                     if (entry.type === "Directory") {
-
                         if (await isPathAccessible(location)) {
                             await new Promise((resolve, reject) => {
                                 rimraf(location, (error) => {
@@ -1099,12 +1003,9 @@ class MinecraftModpack extends MinecraftForge {
                                 });
                             });
                         }
-
                     } else if (entry.type === "File") {
-
-                        await writeStream(entry, location);
+                        await writeStream(entry, location, { signal: this.abortSignal });
                         continue;
-
                     }
                     break;
 
@@ -1119,35 +1020,561 @@ class MinecraftModpack extends MinecraftForge {
 
     }
 
-    async download(progressCallback) {
-
-        await super.download(progressCallback);
-
-        if (this._forceUpdate) {
-
-            await this._extractModpack();
-
-            this._modpackManifest["currentVersion"] = this.modpackVersion.id;
-            await fs.promises.writeFile(
-                path.join(this.path, "meta.json"),
-                JSON.stringify(this._modpackManifest, null, 4)
-            );
-
-            this._forceUpdate = false;
-
+    async verifyPackageIntegrity() {
+        if (this.enableUpdate) {
+            return [{
+                name: this.packageName,
+                path: path.join(this.path, this.packageName),
+                url: this.version['extension']['url'],
+                size: this.version['extension']['size'],
+                extract: true
+            }];
         }
-
+        return [];
     }
 
-    update() {
-        this._forceUpdate = true;
-        this.modpackVersion = this._modpackManifest["versions"][0];
-    }
-
-    getIconUrl() {
-        return this._modpackManifest["icon"];
+    async install() {
+        if (this.enableUpdate) {
+            await this._extractModpack();
+        }
     }
 
 }
 
-module.exports = { Minecraft, MinecraftForge, MinecraftModpack };
+class MinecraftInstanceManager {
+
+    static MANIFEST_VERSION = '1.0';
+
+    constructor(rootPath) {
+
+        this.pathConfig = {
+            'base': path.normalize(rootPath),
+            'cache': path.join(rootPath, 'cache'),
+            'icons': path.join(rootPath, 'cache/icons'),
+            'assets': path.join(rootPath, 'cache/assets'),
+            'clients': path.join(rootPath, 'cache/clients'),
+            'libraries': path.join(rootPath, 'cache/libraries'),
+            'manifests': path.join(rootPath, 'cache/manifests'),
+            'instances': path.join(rootPath, 'instances')
+        };
+
+        this.userInfo = {
+            'UUID': '25966168-dc9c-360c-8f32-ed022bfa1070',
+            'playerName': 'Herobrine',
+            'accessToken': '{}'
+        };
+
+        this.defaultConfig = {
+            'runtime': {
+                'path': 'C:\\Program Files\\Java\\jre1.8.0_271\\bin\\java.exe',
+                'jvmArguments': ''
+            }
+        };
+
+        this.loadedIcons = {};
+        this.loadedConfigs = {};
+        this.activeInstances = {};
+
+    }
+
+    _generateId() {
+        return nanoid.customAlphabet(
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+            'abcdefghijklmnopqrstuvwxyz' +
+            '0123456789',
+            16
+        )();
+    }
+
+    _validateId(string) {
+        return typeof string === 'string'
+            && /^[a-zA-Z0-9]+$/.test(string)
+            && string.length === 16;
+    }
+
+    _hasTypedProperty = (object, properties) => {
+        properties.forEach(({ property, type }) => {
+            if (!object.hasOwnProperty(property)) {
+                throw new Error(`Parse: Object is missing property '${property}'.`);
+            } else if (typeof object[property] !== type) {
+                if (type === 'version') {
+                    if (compareVersions.validate(object[property])) return;
+                } else if (type === 'array') {
+                    if (Array.isArray(object[property])) return;
+                } else if (type === 'path') {
+                    if (path.isAbsolute(object[property])) return;
+                }
+                throw new Error(
+                    `Parse: Object has wrong data type on property '${property}', ` +
+                    `found: '${typeof object[property]}', should be: '${type}'.`
+                );
+            }
+        });
+    }
+
+    _parseConfig(object) {
+
+        if (!this._validateId(object['id'])) {
+            object['id'] = this._generateId();
+        }
+
+        this._hasTypedProperty(object, [
+            { property: 'manifest', type: 'object' }
+        ]);
+        this._parseManifest(object['manifest']);
+
+        // TODO: Put code below into its own function _configureManifest()
+        if (typeof object['config'] !== 'object') {
+            object['config'] = {};
+        }
+        if (typeof object['config']['runtime'] !== 'object') {
+            object['config']['runtime'] = {};
+        }
+
+        // Note: Property path cannot be empty.
+        if (!object['config']['runtime']['path']) {
+            object['config']['runtime']['path'] = this.defaultConfig['runtime']['path'];
+        }
+
+        // Note: Property jvmArguments can be empty.
+        if (typeof object['config']['runtime']['jvmArguments'] !== 'string') {
+            object['config']['runtime']['jvmArguments'] = object.manifest?.default?.jvmArguments
+                || this.defaultConfig['runtime']['jvmArguments'];
+        }
+
+        // Remove junk from jvmArguments, e.g. non arguments or whitespaces.
+        const jvmArguments = [...object['config']['runtime']['jvmArguments'].matchAll(/-[^\s]+/g)];
+        object['config']['runtime']['jvmArguments'] = jvmArguments.join(' ');
+
+        return object;
+    }
+
+    _parseManifest(manifest) {
+
+        if (typeof manifest !== 'object') {
+            throw new Error('The manifest is invalid.');
+        }
+
+        // TODO: truncate name length
+        // TODO: parse creators, description, ...
+
+        if (!manifest['_MANIFEST_VERSION_']) {
+            this._parseLegacyManifest(manifest);
+            this._migrateLegacyManifest(manifest);
+        }
+
+        this._hasTypedProperty(manifest, [
+            { property: '_MANIFEST_VERSION_', type: 'version' },
+            { property: 'versions', type: 'array' },
+            { property: 'name', type: 'string' }
+        ]);
+
+        if (Array.isArray(manifest['versions'])) {
+            if (manifest['versions'].length == 0 || manifest['versions'].some(v => typeof v !== 'object')) {
+                throw new Error('Parse: Manifest has no installable versions.');
+            }
+            manifest['versions'].forEach((version) => {
+                
+                this._hasTypedProperty(version, [
+                    { property: 'id', type: 'version' }
+                ]);
+
+                if (!version['vanilla']) {
+                    throw new Error('Missing vanilla game version.');
+                }
+                if (version['forge'] && version['fabric']) {
+                    throw new Error('Mod Loader conflict, both Forge and Fabric were specified.');
+                }
+                if (typeof version['extension'] === 'object') {
+                    this._hasTypedProperty(version['extension'], [
+                        { property: 'size', type: 'number' },
+                        { property: 'url', type: 'string' }
+                    ]);
+                }
+                
+            });
+        }
+
+        return manifest;
+    }
+
+    _getInstance(instanceId, options = { isActive: false }) {
+
+        const arrayOfInterest = options['isActive'] ?
+            this.activeInstances : this.loadedConfigs;
+
+        if (!arrayOfInterest[instanceId]) {
+            if (options['isActive']) {
+                throw new Error(`Instance with ID '${instanceId}' is not active.`);
+            } else {
+                throw new Error(`Instance with ID '${instanceId}' does not exist.`);
+            }
+        }
+
+        return arrayOfInterest[instanceId];
+
+    }
+
+    _findCurrentVersion(config) {
+        if (!config['config']['version']) return null;
+        return config['manifest']['versions'].find((version) => {
+            return version.id === config['config']['version'];
+        });
+    }
+
+    _findLatestVersion(versions) {
+        return this._sortVersions(versions)[0];
+    }
+
+    _sortVersions(array) {
+        return array.sort((a, b) => {
+            return compareVersions(b['id'], a['id']);
+        });
+    }
+
+    _parseLegacyManifest(manifest) {
+
+        if (typeof manifest !== 'object' || ['name', 'creators', 'description', 'versions', 'vma'].some(p => !manifest[p])
+            || !Array.isArray(manifest['versions']) || manifest['versions'].length == 0
+            || manifest['versions'].some(v => typeof v !== 'object')
+            || manifest['versions'].some(v => ['id', 'size', 'forge', 'url'].some(p => !v[p]))) {
+            throw new Error('Parse: Could not parse Legacy Manifest.');
+        }
+
+        return manifest;
+    }
+
+    _migrateLegacyManifest(manifest) {
+
+        manifest['_MANIFEST_VERSION_'] = MinecraftInstanceManager.MANIFEST_VERSION;
+        manifest['versions'] = manifest['versions'].map((version) => {
+
+            if (typeof version['forge'] === 'string' && version['forge'].indexOf('-') !== -1) {
+                version['vanilla'] = version['forge'].split('-')[0];
+            }
+            
+            version['extension'] = {
+                'size': version['size'],
+                'url': version['url']
+            };
+
+            delete version['url'];
+            delete version['size'];
+
+            return version;
+        });
+
+        if (typeof manifest['vma'] === 'string') {
+            manifest['default'] = {
+                'jvmArguments': manifest['vma']
+            };
+            delete manifest['vma'];
+        }
+
+        return manifest;
+    }
+
+    _stringifyConfig(config) {
+        return JSON.stringify(config, (property, value) => {
+            if (property === 'manifestPath') return undefined;
+            else return value;
+        }, 4);
+    }
+
+    isActive(activeId) {
+        return typeof this.activeInstances[activeId] !== 'undefined';
+    }
+
+    isUpToDate(loadedId) {
+        let instanceConfig = this._getInstance(loadedId, { isActive: false });
+        let currentVersion = this._findCurrentVersion(instanceConfig);
+        let latestVersion = this._findLatestVersion(instanceConfig['manifest']['versions']);
+        if (currentVersion && latestVersion) {
+            return compareVersions(
+                currentVersion['id'],
+                latestVersion['id']
+            ) === 0;
+        }
+        return false;
+    }
+
+    async createDirectoryStructure() {
+        for (const directory of Object.values(this.pathConfig)) {
+            await fs.promises.mkdir(directory, { recursive: true });
+        }
+    }
+
+    async loadConfigs() {
+
+        // Search for manifests in this.pathConfig['manifests']
+
+        for (const entry of await fs.promises.readdir(this.pathConfig['manifests'], { withFileTypes: true })) {
+            if (entry.isFile()) {
+                const manifestPath = path.join(this.pathConfig['manifests'], entry.name);
+                try {
+                    
+                    const instanceConfig = this._parseConfig(JSON.parse(
+                        await fs.promises.readFile(manifestPath)
+                    ));
+                    while (this.loadedConfigs[instanceConfig['id']]) {
+                        instanceConfig['id'] = this._generateId();
+                    }
+
+                    instanceConfig['manifestPath'] = manifestPath;
+                    this.loadedConfigs[instanceConfig['id']] = instanceConfig;
+                    this.saveConfig(instanceConfig['id']).catch((error) => {
+                        // log error
+                    });
+
+                } catch (error) {
+                    // Log error
+                }
+            }
+        }
+
+        return this.loadedConfigs;
+    }
+
+    async saveConfig(loadedId) {
+        let instanceConfig = this._getInstance(loadedId, { isActive: false });
+        await fs.promises.writeFile(
+            instanceConfig['manifestPath'],
+            this._stringifyConfig(instanceConfig)
+        );
+    }
+
+    async addFromRemote(remoteUrl) {
+        const { data: remoteManifest } = await axios.get(remoteUrl);
+        return this.addFromManifest(remoteManifest);
+    }
+
+    addFromManifest(manifest) {
+
+        let instanceConfig = {
+            'id': null,
+            'manifest': this._parseManifest(manifest),
+            'config': {
+                'runtime': this.defaultConfig['runtime']
+            }
+        };
+
+        do { instanceConfig['id'] = this._generateId(); }
+        while (this.loadedConfigs[instanceConfig['id']]);
+
+        this.loadedConfigs[instanceConfig['id']] = instanceConfig;
+
+        return instanceConfig;
+    }
+
+    /* Use this function only in try...catch {} block */
+    async loadIcons() {
+
+        const supportedMimeTypes = [
+            "image/png",
+            "image/jpeg",
+            "image/webp",
+            "image/gif"
+        ];
+
+        await fs.promises.access(this.pathConfig['icons']);
+        for (const instanceConfig of Object.values(this.loadedConfigs)) {
+            try {
+                const iconPath = path.join(
+                    this.pathConfig['icons'],
+                    instanceConfig['id']
+                );
+                const type = await fileType.fromFile(iconPath);
+                if (supportedMimeTypes.includes(type.mime)) {
+                    this.loadedIcons[instanceConfig['id']] = iconPath;
+                }
+            } catch {}
+        }
+
+        return this.loadedIcons;
+
+    }
+
+    /* Residue: mkdir, missing try...catch {} block */
+    async fetchIcon(loadedId) {
+
+        let instanceConfig = this._getInstance(loadedId, { isActive: false });
+        if (!instanceConfig['manifest']['icon']) {
+            return;
+        }
+
+        const computeHash = (hash, stream) => {
+            return new Promise((resolve, reject) => {
+                stream.pipe(crypto.createHash(hash).setEncoding("hex"))
+                    .on("finish", function() {
+                        resolve(this.read());
+                    }).on("error", reject);
+            });
+        };
+    
+        const streamToBuffer = (stream) => {
+            return new Promise((resolve, reject) => {
+                let buffer = [];
+                stream.on("data", (chunk) => { buffer.push(chunk); });
+                stream.on("end", () => resolve(Buffer.concat(buffer)));
+                stream.on("error", reject);
+            });
+        };
+    
+        let fileHash = null;
+        let remoteHash = null;
+        let streamBuffer = null;
+    
+        const iconPath = path.join(
+            this.pathConfig['icons'],
+            instanceConfig['id']
+        );
+    
+        try {
+            let { data: stream } = await axios({
+                method: "GET",
+                url: instanceConfig['manifest']['icon'],
+                responseType: "stream"
+            });
+            streamBuffer = await streamToBuffer(stream);
+            remoteHash = await computeHash("sha256", Readable.from(streamBuffer));
+        } catch { return; }
+
+        try {
+            await fs.promises.access(iconPath);
+            fileHash = await computeHash("sha256", fs.createReadStream(iconPath));
+        } catch {}
+    
+        if (remoteHash != null && fileHash != remoteHash) {
+            await fs.promises.mkdir(this.pathConfig['icons'], { recursive: true });
+            await writeStream(Readable.from(streamBuffer), iconPath);
+        }
+
+    }
+
+    async runInstance(activeId) {
+        let activeInstance = this._getInstance(activeId, { isActive: true });
+        try {
+            await activeInstance['instance'].fetchManifest();
+            await activeInstance['instance'].download();
+
+            this.loadedConfigs[activeId]['config']['version'] = activeInstance['candidateVersion']['id'];
+            await this.saveConfig(activeId);
+
+            await activeInstance['instance'].launch();
+            activeInstance['eventEmitter'].emit('process-start');
+        } catch (error) {
+            activeInstance['eventEmitter'].emit('internal-error', error);
+        }
+    }
+
+    async createInstance(loadedId, options = { enableUpdate: true }) {
+
+        let instanceConfig = this._getInstance(loadedId, { isActive: false });
+
+        const abortController = new AbortController();
+        const { signal: abortSignal } = abortController;
+
+        let activeWrapper = {
+            'id': loadedId,
+            'instance': null,
+            'hasRemote': false,
+            'enableUpdate': false,
+            'candidateVersion': null,
+            'abortSignal': abortSignal,
+            'abortController': abortController,
+            'eventEmitter': new EventEmitter()
+        };
+
+        if (instanceConfig['config']['remote']) {
+
+            const { data: remoteManifest } = await axios.get(instanceConfig['config']['remote'], {
+                signal: abortSignal
+            });
+    
+            try {
+                instanceConfig['manifest'] = this._parseManifest(remoteManifest);
+                activeWrapper['hasRemote'] = true;
+            } catch(error) {
+                // could not parse remote manifest, using local
+                // log error
+            }
+
+            if (activeWrapper['hasRemote']) {
+                await this.saveConfig(instanceConfig['id']);
+            }
+
+        }
+
+        activeWrapper['candidateVersion'] = this._findCurrentVersion(instanceConfig);
+        if (!activeWrapper['candidateVersion'] || (options['enableUpdate'] && !this.isUpToDate(instanceConfig['id']))) {
+            activeWrapper['candidateVersion'] = this._findLatestVersion(instanceConfig['manifest']['versions']);
+            activeWrapper['enableUpdate'] = true;
+        }
+
+        const instancePath = path.join(
+            this.pathConfig['instances'],
+            instanceConfig['id']
+        );
+
+        let instanceOptions = {
+            'pathConfig': this.pathConfig,
+            'userInfo': this.userInfo,
+            'instancePath': instancePath,
+            'minecraftRuntime': instanceConfig['config']['runtime'],
+            'vanillaVersion': activeWrapper['candidateVersion']['vanilla'],
+            'forgeVersion': activeWrapper['candidateVersion']['forge'],
+            'eventEmitter': activeWrapper['eventEmitter'],
+            'abortSignal': activeWrapper['abortSignal']
+        };
+
+        if (typeof activeWrapper['candidateVersion']['extension'] === 'object') {
+            instanceOptions['extensionPackage'] = new MinecraftExtension(
+                activeWrapper, instanceOptions
+            );
+        }
+
+        if (instanceOptions['forgeVersion']) {
+            activeWrapper['instance'] = new MinecraftForge(instanceOptions);
+        } else if (instanceOptions['fabricVersion']) {
+            // TODO: Implement Fabric Loader
+        } else if (instanceOptions['vanillaVersion']) {
+            activeWrapper['instance'] = new Minecraft(instanceOptions);
+        } else {
+            throw new Error('');
+        }
+
+        this.activeInstances[loadedId] = activeWrapper;
+        return activeWrapper['eventEmitter'];
+
+    }
+
+    destroyInstance(activeId, reason) {
+        
+        let activeInstance = this._getInstance(activeId, { isActive: true });
+        
+        if (activeInstance['instance'].isRunning()) {
+            activeInstance['instance'].terminate('SIGKILL', reason);
+        } else {
+            activeInstance['abortController']
+                .abort(reason);
+        }
+        
+        delete this.activeInstances[activeId];
+
+    }
+
+    setUserInfo(userInfo) {
+        this.userInfo = userInfo;
+    }
+
+    setDefaultConfig(defaultConfig) {
+        this.defaultConfig = defaultConfig;
+    }
+
+    setConfig(loadedId, config) {
+        this._getInstance(loadedId, { isActive: false })['config'] = config;
+    }
+
+}
+
+module.exports = { MinecraftInstanceManager };

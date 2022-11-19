@@ -394,7 +394,7 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
         let modpack = modpacks[i];
 
         let item = document.createElement("div");
-        item.setAttribute("id", uuid4().replace(/-/g, ""));
+        item.setAttribute("id", modpack.id);
         item.setAttribute("name", modpack.name);
         item.setAttribute("creators", modpack.creators.join(", "));
         item.setAttribute("description", modpack.description);

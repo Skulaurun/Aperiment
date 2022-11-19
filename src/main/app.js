@@ -23,10 +23,10 @@ const fs = require("fs");
 const path = require("path");
 const http = require("http");
 const crypto = require("crypto");
+const axios = require("axios");
 const { Readable } = require("stream");
 const fileType = require("file-type");
 const { parse: parseUrl } = require("url");
-const { default: axios } = require("axios");
 const validUrl = require("valid-url");
 const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
@@ -35,7 +35,7 @@ const { app, screen, ipcMain, shell, dialog, BrowserWindow } = require("electron
 const Storage = require("./storage.js");
 const User = require("./user.js");
 const Java = require("./java.js");
-const { MinecraftModpack } = require("./minecraft.js");
+const { MinecraftInstanceManager } = require("./minecraft.js");
 
 const USER_DATA = app.getPath("userData");
 const DEVELOPER_MODE = process.argv.includes("--dev");
@@ -86,6 +86,7 @@ process.on("unhandledRejection", crashHandler);
 
 let config, user, java, modpacks;
 let loadWindow, loginWindow, mainWindow;
+let instanceManager;
 
 function findWindow(id) {
     if (mainWindow.webContents.id === id) {
@@ -173,6 +174,8 @@ app.once("ready", () => {
 
         java = new Java(config.get("java"));
         user = new User(path.join(USER_DATA, "user.json"));
+
+        instanceManager = new MinecraftInstanceManager(config.get('minecraft'));
 
         java.getVersion().then((version) => {
             log.info(`Detected Java Runtime Environment v.${version}.`);
@@ -283,12 +286,25 @@ ipcMain.once("app-start", () => {
     
     loginWindow.once("ready-to-show", () => {
 
-        mainWindow.once("ready-to-show", () => {
+        mainWindow.once("ready-to-show", async () => {
 
+            let configList = await instanceManager.loadConfigs();
+            configList = Object.values(configList);
+            configList = configList.map((config) => {
+                return {
+                    id: config['id'],
+                    name: config['manifest']['name'] || 'debug only',
+                    creators: config['manifest']['creators'] || ['debug only'],
+                    description: config['manifest']['description'] || 'this is debug only',
+                    url: config['config']['remote'],
+                    vma: config['config']['runtime']['jvmArguments']
+                };
+            });
+
+            mainWindow.send("load-modpacks", configList);
             mainWindow.send("load-settings", config.get());
-            mainWindow.send("load-modpacks", modpacks.get());
 
-            if (modpacks.size() > 0) log.info(`Successfully loaded ${modpacks.size()} modpacks.`);
+            if (configList.length > 0) log.info(`Successfully loaded ${configList.length} modpacks.`);
             else log.info("No modpacks to load.");
 
             user.loginFromMemory().then(() => {
@@ -374,29 +390,7 @@ ipcMain.on("user-logout", (event) => {
 
 ipcMain.on("add-modpack", async (event, url) => { // TODO: Stricter rules for valid url.
 
-    if (!validUrl.isUri(url)) {
-        mainWindow.send("modpack-add", null, `Failed to add modpack, invalid manifest URL!`);
-        return;
-    }
-
-    let manifest = (await axios.get(url)).data;
-
-    if ((typeof manifest !== "object" || !manifest.hasOwnProperties("name", "creators", "description", "versions", "vma")) ||
-        (!Array.isArray(manifest.versions) || manifest.versions.length === 0 || typeof manifest.versions[0] !== "object") ||
-        (!manifest.versions[0].hasOwnProperties("id", "size", "forge", "url") || !validUrl.isUri(manifest.versions[0].url))) {
-            mainWindow.send("modpack-add", null, `Failed to add modpack, invalid manifest JSON!`);
-            return;
-    }
-
-    let modpack = {
-        name: manifest.name,
-        creators: manifest.creators,
-        description: manifest.description,
-        url: url,
-        vma: manifest.vma
-    }
-
-    if (modpacks.get().some(m => m.url === url)) {
+    /*if (modpacks.get().some(m => m.url === url)) {
         mainWindow.send("modpack-add", null, `The modpack '${modpack.name}' already exists in the library!`);
         return;
     }
@@ -406,109 +400,85 @@ ipcMain.on("add-modpack", async (event, url) => { // TODO: Stricter rules for va
         fetchIcon(manifest["icon"], directory).catch(()=>{});
     }
 
-    modpacks.set(modpacks.size(), modpack);
-    modpacks.save();
+    mainWindow.send("load-modpacks", modpacks.get());*/
 
-    mainWindow.send("modpack-add", modpack);
-    mainWindow.send("load-modpacks", modpacks.get());
+    try {
+        const instanceConfig = await instanceManager.addFromRemote(url);
+        instanceManager.fetchIcon(instanceConfig['id']).catch((error) => {
+            log.error(`Could not fetch icon for modpack '${instanceConfig['id']}'. ${error}`);
+        });
+        mainWindow.send("modpack-add", instanceConfig['manifest']);
+    } catch (error) {
+        mainWindow.send("modpack-add", null, `${error}`);
+    }
 
 });
 
-let activeModpacks = {};
+ipcMain.on("launch-modpack", async (event, options) => {
 
-ipcMain.on("launch-modpack", (event, options) => {
+    if (!instanceManager.isActive(options.id)) {
 
-    if (activeModpacks[options.id]) {
-        return;
-    }
-    
-    let localJava = new Java(config.get("java"), options.vma);
-    let modpack = new MinecraftModpack(config.get("minecraft"), options.directory, options.url, user, localJava);
+        const eventEmitter = await instanceManager.createInstance(options.id);
+        instanceManager.fetchIcon(options.id).catch((error) => {
+            log.error(`Could not fetch icon for modpack '${options.id}'. ${error}`);
+        });
 
-    modpack.on("ready", () => {
-
-        /*
-            Modpack update should be optional,
-            and also logged for debugging purposes.
-        */
-        if (!modpack.isUpToDate()) {
-            modpack.update();
-        }
-
-        let iconUrl = modpack.getIconUrl();
-        if (iconUrl) { fetchIcon(iconUrl, modpack.name).catch(()=>{}); }
-    
         /*
             Modpack download progress is currently displayed in the form of a green progress bar,
             which is insufficient for debugging purposes.
             The names of the files currently being downloaded should be logged into a special debug window.
         */
-        modpack.download((progress) => {
-            event.sender.send("modpack-download-progress", options.id, progress);
-        }).then(() => {
-            modpack.launch().then(() => {
-                event.sender.send("modpack-start", options.id);
-            });
+        eventEmitter.on('download-progress', (progress) => {
+            mainWindow?.send("modpack-download-progress", options.id, progress);
         });
-    
-    });
+        eventEmitter.on('process-start', () => {
+            mainWindow?.send("modpack-start", options.id);
+        });
+        /*
+            Errors generated by Java process and sent to stdout/stderr,
+            should be displayed/logged into a special debug window.
+        */
+        eventEmitter.on('process-stdout', (data) => {
+            mainWindow?.send("modpack-stdout", options.id, data.toString());
+        });
+        eventEmitter.on('process-stderr', (data) => {
+            mainWindow?.send("modpack-stderr", options.id, data.toString());
+        });
+        eventEmitter.on('process-exit', (code) => {
+            if (instanceManager.isActive()) {
+                instanceManager.destroyInstance(options.id);
+            }
+            mainWindow?.send("modpack-exit", options.id, code);
+        });
+        eventEmitter.on('internal-error', (error) => {
+            if (error.name !== "AbortError" && !axios.isCancel(error)) {
+                error = `Error: ${error.loggify()}`;
+                log.error(`Modpack '${options.directory}' has encountered an unexpected error. ${error}`);
+                mainWindow?.send("modpack-error", options.id, error);
+            } else {
+                /* TODO: Get abort reason from abortSignal. */
+                mainWindow?.send("modpack-error", options.id, "Error: The operation was aborted (user-request)");
+            }
+            eventEmitter.emit('process-exit', 'user-request');
+        });
 
-    modpack.on("error", (error) => {
-        if (error instanceof Error) {
-            error = `Error: ${error.loggify()}`;
-        }
-        event.sender.send("modpack-error", options.id, error);
-        log.error(`Modpack '${options.directory}' has encountered an unexpected error. ${error}`);
-    });
-    
-    /*
-        Errors generated by Java process and sent to stdout/stderr,
-        should be displayed/logged into a special debug window.
-    */
-    modpack.on("stdout-data", (data) => {
-        event.sender.send("modpack-stdout", options.id, data.toString());
-    });
-    modpack.on("stderr-data", (data) => {
-        event.sender.send("modpack-stderr", options.id, data.toString());
-    });
-    
-    modpack.on("exit", (code) => {
-        if (activeModpacks[options.id]) {
-            delete activeModpacks[options.id];
-        }
-        event.sender.send("modpack-exit", options.id, code);
-    });
+        instanceManager.runInstance(options.id);
 
-    activeModpacks[options.id] = modpack;
+    }
 
 });
 
 ipcMain.on("terminate-modpack", (event, id) => {
-
-    let modpack = activeModpacks[id];
-    if (!modpack) return;
-
-    if (!modpack.running) {
-        modpack.kill();
-        modpack.removeAllListeners();
-        event.sender.send("modpack-exit", id, "job-cancelled");
-    } else {
-        modpack.terminate("SIGKILL");
+    if (instanceManager.isActive(id)) {
+        instanceManager.destroyInstance(id, 'user-request');
     }
-
-    delete activeModpacks[id];
-    
 });
 
 ipcMain.on("save-settings", (event, settings) => {
-
     for (let key in settings) {
         config.set(key, settings[key]);
     }
-
     config.save();
-    //event.sender.send("load-settings", config.get());
-
 });
 
 ipcMain.on("save-modpacks", (event, object) => {
