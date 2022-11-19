@@ -441,7 +441,7 @@ ipcMain.on("launch-modpack", async (event, options) => {
             mainWindow?.send("modpack-stderr", options.id, data.toString());
         });
         eventEmitter.on('process-exit', (code) => {
-            if (instanceManager.isActive()) {
+            if (instanceManager.isActive(options.id)) {
                 instanceManager.destroyInstance(options.id);
             }
             mainWindow?.send("modpack-exit", options.id, code);
