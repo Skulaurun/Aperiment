@@ -1123,29 +1123,8 @@ class MinecraftInstanceManager {
         ]);
         this._parseManifest(object['manifest']);
 
-        // TODO: Put code below into its own function _configureManifest()
-        if (typeof object['config'] !== 'object') {
-            object['config'] = {};
-        }
-        if (typeof object['config']['runtime'] !== 'object') {
-            object['config']['runtime'] = {};
-        }
-
-        // Note: Property path cannot be empty.
-        if (!object['config']['runtime']['path']) {
-            object['config']['runtime']['path'] = this.defaultConfig['runtime']['path'];
-        }
-
-        // Note: Property jvmArguments can be empty.
-        if (typeof object['config']['runtime']['jvmArguments'] !== 'string') {
-            object['config']['runtime']['jvmArguments'] = object.manifest?.default?.jvmArguments
-                || this.defaultConfig['runtime']['jvmArguments'];
-        }
-
-        // Remove junk from jvmArguments, e.g. non arguments or whitespaces.
-        const jvmArguments = [...object['config']['runtime']['jvmArguments'].matchAll(/-[^\s]+/g)];
-        object['config']['runtime']['jvmArguments'] = jvmArguments.join(' ');
-
+        this._configureManifest(object);
+        
         return object;
     }
 
@@ -1196,6 +1175,33 @@ class MinecraftInstanceManager {
         }
 
         return manifest;
+    }
+
+    _configureManifest(object) {
+
+        if (typeof object['config'] !== 'object') {
+            object['config'] = {};
+        }
+        if (typeof object['config']['runtime'] !== 'object') {
+            object['config']['runtime'] = {};
+        }
+
+        // Note: Property path cannot be empty.
+        if (!object['config']['runtime']['path']) {
+            object['config']['runtime']['path'] = this.defaultConfig['runtime']['path'];
+        }
+
+        // Note: Property jvmArguments can be empty.
+        if (typeof object['config']['runtime']['jvmArguments'] !== 'string') {
+            object['config']['runtime']['jvmArguments'] = object.manifest?.default?.jvmArguments
+                || this.defaultConfig['runtime']['jvmArguments'];
+        }
+
+        // Note: Remove junk from jvmArguments, e.g. non arguments or whitespaces.
+        const jvmArguments = [...object['config']['runtime']['jvmArguments'].matchAll(/-[^\s]+/g)];
+        object['config']['runtime']['jvmArguments'] = jvmArguments.join(' ');
+
+        return object;
     }
 
     _getInstance(instanceId, options = { isActive: false }) {
@@ -1357,12 +1363,10 @@ class MinecraftInstanceManager {
     addFromManifest(manifest) {
 
         let instanceConfig = {
-            'id': null,
-            'manifest': this._parseManifest(manifest),
-            'config': {
-                'runtime': this.defaultConfig['runtime']
-            }
+            'id': null, /* Keep ID at the top */
+            'manifest': this._parseManifest(manifest)
         };
+        this._configureManifest(instanceConfig);
 
         do { instanceConfig['id'] = this._generateId(); }
         while (this.loadedConfigs[instanceConfig['id']]);
