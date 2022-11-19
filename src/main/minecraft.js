@@ -44,6 +44,9 @@ const VANILLA_LIBRARIES_URL = "https://libraries.minecraft.net";
 const FORGE_LIBRARIES_URL = "https://files.minecraftforge.net/maven";
 const VERSION_MANIFEST_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
 
+const FABRIC_META_URL = "https://meta.fabricmc.net/v2";
+const FABRIC_LIBRARIES_URL = "https://maven.fabricmc.net";
+
 async function isPathAccessible(location) {
     try {
         await fs.promises.access(location);
@@ -926,6 +929,116 @@ class MinecraftForge extends Minecraft {
 
 }
 
+class MinecraftFabric extends Minecraft {
+
+    constructor(options) {
+        super(options);
+        this.fabricVersion = options['fabricVersion'];
+    }
+
+    _splitDescriptor(descriptor) {
+        let parts = descriptor.split(':');
+        parts[0] = parts[0].replace(/\./g, '/');
+        return [...parts, `${parts[1]}-${parts[2]}.jar`];
+    }
+
+    _toMavenUrl(descriptor) {
+        return [
+            FABRIC_LIBRARIES_URL,
+            ...this._splitDescriptor(descriptor)
+        ].join('/');
+    }
+
+    _toLibraryPath(descriptor) {
+        return path.join(
+            `${this.cache}/libraries`,
+            ...this._splitDescriptor(descriptor)
+        );
+    }
+
+    _toLibraryFile(descriptor) {
+        return {
+            name: descriptor,
+            path: this._toLibraryPath(descriptor),
+            url: this._toMavenUrl(descriptor)
+        };
+    }
+
+    _getLibraries() {
+        let files = super._getLibraries();
+        for (const library of this._fabricManifest['launcherMeta']['libraries']) {
+            let libraryFile = this._toLibraryFile(library['name']);
+            libraryFile['size'] = library['size'];
+            files.unshift(libraryFile);
+        }
+        return files;
+    }
+
+    async _refactorFabricManifest(manifest) {
+
+        let libraries = [
+            ...manifest['launcherMeta']['libraries']['common'],
+            ...manifest['launcherMeta']['libraries']['client'],
+            { name: manifest['loader']['maven'], url: `${FABRIC_LIBRARIES_URL}/` },
+            { name: manifest['intermediary']['maven'], url: `${FABRIC_LIBRARIES_URL}/` }
+        ];
+
+        for (const library of libraries) {
+            let { headers } = await axios.request({
+                method: 'HEAD',
+                url: this._toMavenUrl(library['name']),
+                signal: this.abortSignal
+            });
+            library['size'] = parseInt(headers['content-length']);
+        }
+
+        manifest['launcherMeta']['libraries'] = libraries;
+        manifest['mainClass'] = manifest['launcherMeta']['mainClass']['client'];
+
+    }
+
+    async _fetchFabricManifest() {
+
+        let fabricManifest = path.join(
+            this.cache,
+            `fabric-${this.fabricVersion}.json`
+        );
+
+        try {
+            this._fabricManifest = JSON.parse(
+                await fs.promises.readFile(fabricManifest, { signal: this.abortSignal })
+            );
+        } catch (error) {
+            this._rethrowAbort(error);
+
+            let { data: manifest } = await axios.get(`${FABRIC_META_URL}/versions/loader/${this.version}/${this.fabricVersion}`, {
+                signal: this.abortSignal
+            });
+            
+            await this._refactorFabricManifest(manifest);
+
+            await fs.promises.mkdir(path.dirname(fabricManifest), { recursive: true });
+            await fs.promises.writeFile(fabricManifest, JSON.stringify(manifest, null, 4));
+
+            this._fabricManifest = manifest;
+
+        }
+
+    }
+
+    async fetchManifest() {
+        await super.fetchManifest();
+        await this._fetchFabricManifest();
+    }
+
+    _getJavaArguments() {
+        let args = super._getJavaArguments();
+        args[args.indexOf(this._manifest["mainClass"])] = this._fabricManifest["mainClass"];
+        return args;
+    }
+
+}
+
 class MinecraftExtension {
 
     constructor(activeOptions, instanceOptions) {
@@ -1536,6 +1649,7 @@ class MinecraftInstanceManager {
             'instancePath': instancePath,
             'minecraftRuntime': instanceConfig['config']['runtime'],
             'vanillaVersion': activeWrapper['candidateVersion']['vanilla'],
+            'fabricVersion': activeWrapper['candidateVersion']['fabric'],
             'forgeVersion': activeWrapper['candidateVersion']['forge'],
             'eventEmitter': activeWrapper['eventEmitter'],
             'abortSignal': activeWrapper['abortSignal']
@@ -1550,7 +1664,7 @@ class MinecraftInstanceManager {
         if (instanceOptions['forgeVersion']) {
             activeWrapper['instance'] = new MinecraftForge(instanceOptions);
         } else if (instanceOptions['fabricVersion']) {
-            // TODO: Implement Fabric Loader
+            activeWrapper['instance'] = new MinecraftFabric(instanceOptions);
         } else if (instanceOptions['vanillaVersion']) {
             activeWrapper['instance'] = new Minecraft(instanceOptions);
         } else {
