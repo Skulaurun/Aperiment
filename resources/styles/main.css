@@ -499,8 +499,8 @@
     background: none;
     font-size: 16px;
 }
-.modpack-properties-table td input:not([readonly]) {
-    border: 1px solid white;
+.modpack-properties-table .writable-input .input-parent-element {
+    border-bottom: 1px solid white;
 }
 
 .page-footer {
