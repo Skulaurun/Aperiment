@@ -1470,14 +1470,17 @@ class MinecraftInstanceManager {
 
     async addFromRemote(remoteUrl) {
         const { data: remoteManifest } = await axios.get(remoteUrl);
-        return this.addFromManifest(remoteManifest);
+        return this.addFromManifest(remoteManifest, {
+            'remote': remoteUrl
+        });
     }
 
-    addFromManifest(manifest) {
+    addFromManifest(manifest, config = {}) {
 
         let instanceConfig = {
             'id': null, /* Keep ID at the top */
-            'manifest': this._parseManifest(manifest)
+            'manifest': this._parseManifest(manifest),
+            'config': config
         };
         this._configureManifest(instanceConfig);
 
