@@ -148,7 +148,7 @@ class Storage {
                     target[key] && source[key]
                     && typeof target[key] === "object"
                     && typeof source[key] === "object"
-                    ) ? this.mergeObjects(target[key], source[key]) : source[key];
+                    ) ? this._mergeObjects(target[key], source[key]) : source[key];
             });
         });
         return target;
