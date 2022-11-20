@@ -1404,6 +1404,10 @@ class MinecraftInstanceManager {
         return typeof this.activeInstances[activeId] !== 'undefined';
     }
 
+    isLoaded(loadedId) {
+        return typeof this.loadedConfigs[loadedId] !== 'undefined';
+    }
+
     isUpToDate(loadedId) {
         let instanceConfig = this._getInstance(loadedId, { isActive: false });
         let currentVersion = this._findCurrentVersion(instanceConfig);
