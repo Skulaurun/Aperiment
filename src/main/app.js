@@ -290,16 +290,6 @@ ipcMain.once("app-start", () => {
 
             let configList = await instanceManager.loadConfigs();
             configList = Object.values(configList);
-            configList = configList.map((config) => {
-                return {
-                    id: config['id'],
-                    name: config['manifest']['name'] || 'debug only',
-                    creators: config['manifest']['creators'] || ['debug only'],
-                    description: config['manifest']['description'] || 'this is debug only',
-                    url: config['config']['remote'],
-                    vma: config['config']['runtime']['jvmArguments']
-                };
-            });
 
             mainWindow.send("load-modpacks", configList);
             mainWindow.send("load-settings", config.get());
@@ -477,23 +467,14 @@ ipcMain.on("save-settings", (event, settings) => {
     config.save();
 });
 
-ipcMain.on("save-modpacks", (event, object) => {
-
-    for (let i = 0; i < modpacks.size(); i++) {
-
-        let item = modpacks.get(i);
-        if (item.url === object.url) {
-
-            item[object.key] = object.value;
-
-            modpacks.set(i, item);
-
-        }
-
+ipcMain.on("save-instance-config", (event, instanceConfig) => {
+    if (instanceManager.isLoaded(instanceConfig['id'])) {
+        instanceManager.setConfig(
+            instanceConfig['id'],
+            instanceConfig['config']
+        );
+        instanceManager.saveConfig(instanceConfig['id']);
     }
-
-    modpacks.save();
-
 });
 
 ipcMain.on("load-icons", async (event, modpacks) => {

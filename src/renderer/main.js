@@ -49,6 +49,8 @@ const InputType = {
 
 };
 
+let loadedConfigs = {};
+
 let consoleOutput = null;
 let isConsoleVisible = true;
 
@@ -94,6 +96,21 @@ function appendConsole(handle, content) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    Array.from(document.querySelectorAll("tr td.writable-input")).forEach((element) => {
+        const inputType = InputType[element.getAttribute("input-type")];
+        if (inputType["value"] === InputValue.FILE || inputType["value"] === InputValue.DIRECTORY) {
+            new PathBox({
+                default: "",
+                isDirectory: inputType["value"] === InputValue.DIRECTORY,
+                fileTypes: inputType["fileTypes"]
+            }).put(element);
+        } else if (inputType["value"] === InputValue.TEXT) {
+            new InputElement("text", {
+                default: ""
+            }).put(element);
+        }
+    });
 
     Array.from(document.querySelectorAll(".footer-button.href")).forEach((button) => {
         button.addEventListener("click", (event) => {
@@ -160,6 +177,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let modpackProperties = document.getElementById("modpack-properties");
     let modpackPropertiesTable = document.getElementById("modpack-properties-table");
+    modpackProperties.save = function() {
+
+        let didChange = false;
+        let instanceConfig = null;
+
+        Array.from(modpackPropertiesTable.querySelectorAll("tr:has(input:not([readonly]))"))
+            .filter(e => e.hasAttribute("path") && e.hasAttribute("config-id"))
+            .forEach((element) => {
+
+                instanceConfig = loadedConfigs[element.getAttribute("config-id")];
+
+                let input = element.querySelector("input");
+                let inputId = input.getAttribute("input-id");
+                let inputElement = InputElement.registry.find(x => inputId && x.id == inputId);
+
+                let currentObject = instanceConfig;
+                let path = element.getAttribute("path").split(".");
+                for (let i = 0; i < path.length - 1; i++) {
+                    if (!currentObject.hasOwnProperty(path[i])) {
+                        currentObject[path[i]] = {};
+                    }
+                    currentObject = currentObject[path[i]];
+                }
+
+                if (inputElement.previousValue != inputElement.value()) {
+                    currentObject[path[path.length - 1]] = inputElement.value();
+                    inputElement.save();
+                    didChange = true;
+                }
+
+            });
+
+        if (instanceConfig && didChange) {
+            ipcRenderer.send("save-instance-config", instanceConfig);
+        }
+
+    }
     modpackProperties.show = function() {
         this.style.visibility = "visible";
     }
@@ -167,6 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
         this.style.visibility = "hidden";
     }
     modpackProperties.querySelector("svg").addEventListener("click", () => {
+        modpackProperties.save();
         modpackProperties.hide();
     });
     modpackProperties.querySelector(".modpack-properties-header").addEventListener("mousedown", (event) => {
@@ -261,28 +316,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
-    Array.from(modpackPropertiesTable.querySelectorAll("input:not([readonly])")).forEach((element) => {
-
-        let tr = (element.parentElement).parentElement;
-
-        element.addEventListener("focusout", () => {
-
-            let modpack = document.getElementById(tr.parentElement.getAttribute("modpack"));
-
-            if (modpack.getAttribute("vma") != element.value) {
-
-                ipcRenderer.send("save-modpacks", {
-                    url: modpack.getAttribute("url"),
-                    key: tr.getAttribute("key"),
-                    value: element.value
-                });
-
-                modpack.setAttribute("vma", element.value);
-
-            }
-
-        });
-
+    modpackPropertiesTable.addEventListener("focusout", () => {
+        modpackProperties.save();
     });
 
     document.getElementById("logout-button").addEventListener("click", () => {
@@ -392,15 +427,11 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
     for (let i = 0; i < modpacks.length; i++) {
 
         let modpack = modpacks[i];
+        loadedConfigs[modpack["id"]] = modpacks[i];
 
         let item = document.createElement("div");
-        item.setAttribute("id", modpack.id);
-        item.setAttribute("name", modpack.name);
-        item.setAttribute("creators", modpack.creators.join(", "));
-        item.setAttribute("description", modpack.description);
-        item.setAttribute("directory", modpack.name.trim().toLowerCase().replace(/ /g, "-"));
-        item.setAttribute("url", modpack.url);
-        item.setAttribute("vma", modpack.vma);
+        item.setAttribute("id", modpack["id"]);
+        item.setAttribute("name", modpack["manifest"]["name"]);
         item.setAttribute("hover", false);
         item.setAttribute("running", false);
         item.setAttribute("contextmenu", false);
@@ -480,19 +511,11 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
 
         });
 
-        item.addEventListener("mouseenter", () => {
-
-            item.setAttribute("hover", true);
-
-        });
+        item.addEventListener("mouseenter", () => { item.setAttribute("hover", true); });
         item.addEventListener("mouseleave", () => {
-
             if (item.getAttribute("contextmenu") === "false") {
-
                 item.setAttribute("hover", false);
-
             }
-
         });
 
         item.addEventListener("contextmenu", (event) => {
@@ -520,11 +543,46 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
                 {
                     "name": "Properties",
                     "action": function(modpack) {
-                        Array.from(modpackPropertiesTable.children[0].children).forEach((element) => {
-                            modpackPropertiesTable.children[0].setAttribute("modpack", modpack.getAttribute("id"));
-                            element.children[1].children[0].value = modpack.getAttribute(element.getAttribute("key"));
+
+                        const windowTitle = modpackProperties.querySelector(".modpack-window-title");
+                        let modpackName = modpack.getAttribute("name");
+                        if (modpackName) {
+                            windowTitle.textContent = modpackName.substring(0, 40);
+                            if (modpackName.length > 40) {
+                                windowTitle.textContent += "...";
+                            }
+                        }
+
+                        Array.from(modpackPropertiesTable.querySelectorAll("tr:has(input)"))
+                            .filter(e => e.hasAttribute("path"))
+                            .forEach((element) => {
+                                element.setAttribute("config-id", modpack.getAttribute("id"));
+                                let path = element.getAttribute("path").split(".");
+                                let input = element.querySelector("input");
+                                let currentObject = loadedConfigs[element.getAttribute("config-id")];
+                                for (const key of path) {
+                                    if (typeof currentObject !== "object" || !currentObject.hasOwnProperty(key)) {
+                                        currentObject = undefined;
+                                        break;
+                                    }
+                                    currentObject = currentObject[key];
+                                }
+                                if (Array.isArray(currentObject)) {
+                                    currentObject = currentObject.join(", ");
+                                }
+                                if (typeof currentObject !== "undefined") {
+                                    input.value = currentObject;
+                                } else {
+                                    input.value = "None";
+                                }
+                                if (input.hasAttribute("input-id")) {
+                                    let inputId = input.getAttribute("input-id");
+                                    InputElement.registry.find(x => inputId && x.id == inputId)
+                                        ?.save();
+                                }
                         });
                         modpackProperties.show();
+
                     }
                 }
             ].forEach((object) => {

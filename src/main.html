@@ -147,7 +147,7 @@
                         <div id="modpack-properties" class="modpack-properties">
                             
                             <div class="modpack-properties-header">
-                                <p>Properties</p>
+                                <p class="modpack-window-title"></p>
                                 <svg width="18" height="18">
                                     <line x1="30%" y1="30%" x2="70%" y2="70%"/>
                                     <line x1="70%" y1="30%" x2="30%" y2="70%"/>
@@ -156,29 +156,22 @@
 
                             <table id="modpack-properties-table" class="modpack-properties-table">
                                 <tbody>
-                                    <tr key="name">
-                                        <td>Name</td>
-                                        <td><input type="text" readonly></td>
-                                    </tr>
-                                    <tr key="creators">
+                                    <tr path="manifest.creators">
                                         <td>Creators</td>
                                         <td><input type="text" readonly></td>
                                     </tr>
-                                    <tr key="description">
+                                    <tr path="manifest.description">
                                         <td>Description</td>
                                         <td><input type="text" readonly></td>
                                     </tr>
-                                    <tr key="vma">
+                                    <tr path="config.runtime.jvmArguments">
                                         <td>JVM Arguments</td>
-                                        <td><input type="text"></td>
+                                        <td class="writable-input" input-type="jvmArguments"></td>
                                     </tr>
-                                    <!--<tr>
+                                    <tr path="config.runtime.path">
                                         <td>Java Executable</td>
-                                        <td class="input-open-dialog" dialog-type="java">
-                                            <input type="text">
-                                            <span class="open-dialog-button">...</span>
-                                        </td>
-                                    </tr>-->
+                                        <td class="writable-input" input-type="java"></td>
+                                    </tr>
                                 </tbody>
                             </table>
 
