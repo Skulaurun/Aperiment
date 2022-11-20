@@ -20,7 +20,6 @@
 
 const fs = require("fs");
 const path = require("path");
-const helper = require("../common/helper.js");
 
 class Storage {
 
@@ -53,11 +52,11 @@ class Storage {
             
             var content = fs.readFileSync(this.path, { encoding: "utf-8" });
 
-            if (helper.isJson(content)) {
+            if (this._isJson(content)) {
 
                 content = JSON.parse(content);
 
-                this.data = this.mergeData ? helper.mergeObjects(this.data, content) : content;
+                this.data = this.mergeData ? this._mergeObjects(this.data, content) : content;
 
                 // TODO: return if this.data equals content
                 
@@ -129,6 +128,30 @@ class Storage {
 
     isEmpty() {
         return (Object.entries(this.data).length === 0 && this.data.constructor === Object)
+    }
+
+    _isJson(data) {
+        if (typeof data !== "string") { return false; }
+        try {
+            var json = JSON.parse(data);
+            var type = Object.prototype.toString.call(json);
+            return type === "[object Object]" || type === "[object Array]";
+        } catch (err) {
+            return false;
+        }
+    }
+
+    _mergeObjects(target, ...sources) {
+        sources.forEach((source) => {
+            Object.keys(source).forEach((key) => {
+                target[key] = (
+                    target[key] && source[key]
+                    && typeof target[key] === "object"
+                    && typeof source[key] === "object"
+                    ) ? this.mergeObjects(target[key], source[key]) : source[key];
+            });
+        });
+        return target;
     }
 
 }

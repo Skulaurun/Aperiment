@@ -634,8 +634,7 @@ ipcRenderer.on("load-settings", (event, settings) => {
         "aper": "Launcher"
     };
     let inputList = [];
-
-    settings = helper.flattenObject(settings);
+    settings = flattenObject(settings);
 
     let settingsTable = document.getElementById("settings-table").querySelector("tbody");
     settingsTable.innerHTML = "";
@@ -850,4 +849,17 @@ function onRevertSettings(inputList) {
     for (const input of inputList) {
         input.revert();
     }
+}
+
+function flattenObject(target, parent, separator = ".") {
+    let object = {};
+    for (const [key, value] of Object.entries(target)) {
+        let path = parent ? (parent + separator + key) : key;
+        if (Object.prototype.toString.call(value) === "[object Object]") {
+            Object.assign(object, this.flattenObject(value, path));
+        } else {
+            object[path] = value;
+        }
+    }
+    return object;
 }

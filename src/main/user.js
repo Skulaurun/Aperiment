@@ -18,7 +18,8 @@
  *
  */
 
-const helper = require("../common/helper.js");
+const crypto = require("crypto");
+
 const Storage = require("./storage.js");
 const Auth = require("./auth.js");
 
@@ -107,7 +108,16 @@ class User {
     }
 
     offlineUUID(username) {
-        return helper.uuid3(`OfflinePlayer:${username}`);
+        return this._uuid3(`OfflinePlayer:${username}`);
+    }
+
+    _uuid3(data) {
+        let bytes = crypto.createHash("md5").update(data).digest();
+        bytes[6] &= 0x0f;
+        bytes[6] |= 0x30;
+        bytes[8] &= 0x3f;
+        bytes[8] |= 0x80;
+        return bytes.toString("hex");
     }
 
 }
