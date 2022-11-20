@@ -40,8 +40,6 @@ const { MinecraftInstanceManager } = require("./minecraft.js");
 const USER_DATA = app.getPath("userData");
 const DEVELOPER_MODE = process.argv.includes("--dev");
 
-require("../common/overrides.js");
-
 log.transports.console.format = "[{h}:{i}:{s}.{ms}] [{level}]: {text}";
 log.transports.file.format = "[{d}-{m}-{y} {h}:{i}:{s}.{ms}] [{level}]: {text}";
 log.hooks.push((message) => { message.level = message.level.toUpperCase(); return message; });
@@ -207,7 +205,7 @@ app.once("ready", () => {
         if (!DEVELOPER_MODE && config.get("aper.autoUpdate", true)) {
             autoUpdater.allowPrerelease = config.get("aper.allowPrerelease", true);
             autoUpdater.checkForUpdates().catch((error) => {
-                log.error(`Could not check for updates.\n ${error.loggify()}`);
+                log.error(`Could not check for updates.\n ${error.stack}`);
                 ipcMain.emit("app-start");
             });
         } else {
@@ -445,7 +443,7 @@ ipcMain.on("launch-modpack", async (event, options) => {
         });
         eventEmitter.on('internal-error', (error) => {
             if (error.name !== "AbortError" && !axios.isCancel(error)) {
-                error = `Error: ${error.loggify()}`;
+                error = `${error.stack}`;
                 log.error(`Modpack '${options.directory}' has encountered an unexpected error. ${error}`);
                 mainWindow?.send("modpack-error", options.id, error);
             } else {
