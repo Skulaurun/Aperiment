@@ -385,15 +385,22 @@ ipcMain.on("add-modpack", async (event, url) => {
         return;
     }
 
-    //mainWindow.send("load-modpacks", modpacks.get());
-
     try {
         const instanceConfig = await instanceManager.addFromRemote(url);
-        instanceManager.fetchIcon(instanceConfig['id']).catch((error) => {
-            log.error(`Could not fetch icon for modpack '${instanceConfig['id']}'. ${error}`);
-        });
+        instanceManager.fetchIcon(instanceConfig['id'])
+            .then((iconPath) => {
+                if (iconPath) {
+                    mainWindow?.send("load-icons", {
+                        [instanceConfig['id']]: iconPath
+                    });
+                }
+            })
+            .catch((error) => {
+                log.error(`Could not fetch icon for modpack '${instanceConfig['id']}'. ${error}`);
+            });
         instanceManager.saveConfig(instanceConfig['id']);
         mainWindow.send("modpack-add", instanceConfig['manifest']);
+        mainWindow.send("load-modpacks", Object.values(instanceManager.loadedConfigs));
     } catch (error) {
         mainWindow.send("modpack-add", null, `${error}`);
     }
@@ -477,98 +484,10 @@ ipcMain.on("save-instance-config", (event, instanceConfig) => {
     }
 });
 
-ipcMain.on("load-icons", async (event, modpacks) => {
-
-    const iconDirectory = path.join(config.get("minecraft"), "cache/icons");
-    const supportedMimeTypes = [
-        "image/png",
-        "image/jpeg",
-        "image/webp",
-        "image/gif"
-    ];
-
-    try {
-
-        await fs.promises.access(iconDirectory);
-
-        let icons = {};
-        for (const modpack of modpacks) {
-            try {
-                const iconPath = path.join(iconDirectory, modpack);
-                const type = await fileType.fromFile(iconPath);
-                if (supportedMimeTypes.includes(type.mime)) {
-                    icons[modpack] = iconPath;
-                }
-            } catch {}
-        }
-
-        event.sender.send("load-icons", icons);
-
-    } catch {}
-
+ipcMain.on("load-icons", async () => {
+    const loadedIcons = await instanceManager.loadIcons();
+    mainWindow?.send("load-icons", loadedIcons);
 });
-
-async function fetchIcon(url, modpack) {
-
-    const computeHash = (hash, stream) => {
-        return new Promise((resolve, reject) => {
-            stream.pipe(crypto.createHash(hash).setEncoding("hex"))
-                .on("finish", function() {
-                    resolve(this.read());
-                }).on("error", reject);
-        });
-    };
-
-    const streamToBuffer = (stream) => {
-        return new Promise((resolve, reject) => {
-            let buffer = [];
-            stream.on("data", (chunk) => { buffer.push(chunk); });
-            stream.on("end", () => resolve(Buffer.concat(buffer)));
-            stream.on("error", reject);
-        });
-    };
-
-    let fileHash = null;
-    let remoteHash = null;
-    let streamBuffer = null;
-
-    const iconDirectory = path.join(config.get("minecraft"), "cache/icons");
-    const iconPath = path.join(iconDirectory, modpack);
-
-    try {
-        let { data: stream } = await axios({
-            url: url,
-            method: "GET",
-            responseType: "stream"
-        });
-        streamBuffer = await streamToBuffer(stream);
-        remoteHash = await computeHash("sha256", Readable.from(streamBuffer));
-    } catch { return; }
-
-    try {
-        await fs.promises.access(iconPath);
-        fileHash = await computeHash("sha256", fs.createReadStream(iconPath));
-    } catch {}
-
-    if (remoteHash != null && fileHash != remoteHash) {
-
-        await fs.promises.mkdir(iconDirectory, { recursive: true });
-
-        try {
-
-            const writeStream = Readable.from(streamBuffer);
-            const writer = fs.createWriteStream(iconPath);
-            writeStream.pipe(writer);
-
-            writer.on("finish", () => {
-                ipcMain.emit("load-icons", { sender: mainWindow }, [modpack]);
-            });
-
-        } catch {}
-
-    }
-
-}
 
 ipcMain.on("open-link", (event, link) => {
     shell.openExternal(link);

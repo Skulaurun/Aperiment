@@ -422,8 +422,6 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
     let modpackPropertiesTable = document.getElementById("modpack-properties-table");
     
     modpackContainer.innerHTML = "";
-
-    let modpackIDs = [];
     for (let i = 0; i < modpacks.length; i++) {
 
         let modpack = modpacks[i];
@@ -611,25 +609,22 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
         });
 
         modpackContainer.appendChild(item);
-        modpackIDs.push(item.getAttribute("directory"));
 
     }
 
     let modpackCount = document.getElementById("modpack-count");
     modpackCount.textContent = modpacks.length + (modpacks.length === 1 ? " modpack" : " modpacks");
 
-    ipcRenderer.send("load-icons", modpackIDs);
+    ipcRenderer.send("load-icons");
 
 });
 
-ipcRenderer.on("load-icons", (event, icons) => {
-
+ipcRenderer.on("load-icons", (_, icons) => {
     let modpackContainer = document.getElementById("modpack-container");
     for (const [id, icon] of Object.entries(icons)) {
-        const modpackIcon = modpackContainer.querySelector(`.modpack-item[directory="${id}"] img`);
+        const modpackIcon = modpackContainer.querySelector(`.modpack-item[id="${id}"] img`);
         modpackIcon.src = `${icon}?${new Date().getTime()}`;
     }
-
 });
 
 ipcRenderer.on("load-settings", (event, settings) => {

@@ -1500,7 +1500,6 @@ class MinecraftInstanceManager {
         return instanceConfig;
     }
 
-    /* Use this function only in try...catch {} block */
     async loadIcons() {
 
         const supportedMimeTypes = [
@@ -1510,7 +1509,6 @@ class MinecraftInstanceManager {
             "image/gif"
         ];
 
-        await fs.promises.access(this.pathConfig['icons']);
         for (const instanceConfig of Object.values(this.loadedConfigs)) {
             try {
                 const iconPath = path.join(
@@ -1528,7 +1526,6 @@ class MinecraftInstanceManager {
 
     }
 
-    /* Residue: mkdir, missing try...catch {} block */
     async fetchIcon(loadedId) {
 
         let instanceConfig = this._getInstance(loadedId, { isActive: false });
@@ -1582,6 +1579,8 @@ class MinecraftInstanceManager {
             await fs.promises.mkdir(this.pathConfig['icons'], { recursive: true });
             await writeStream(Readable.from(streamBuffer), iconPath);
         }
+
+        return iconPath;
 
     }
 
