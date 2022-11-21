@@ -508,7 +508,7 @@ async function loadChangelog() {
                     let commits = line.match(/\b([a-f0-9]{40})\b/g);
                     for (const commit of commits) {
                         line = line.replace(commit, "");
-                        commitHTMLBuffer += `<a href='https://github.com/Skulaurun/a-periment/commit/${commit}'>${commit.substring(0, 7)}</a>`;
+                        commitHTMLBuffer += `<a href='https://github.com/Skulaurun/Aperiment/commit/${commit}'>${commit.substring(0, 7)}</a>`;
                     }
                     line = line.trim();
                     outputHTMLBuffer += `<div class='changelog-line'>${line}${commitHTMLBuffer}</div>`;
