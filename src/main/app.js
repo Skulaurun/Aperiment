@@ -30,7 +30,6 @@ const { app, screen, ipcMain, shell, dialog, BrowserWindow } = require("electron
 
 const Storage = require("./Storage.js");
 const User = require("./auth/User.js");
-const Java = require("./java.js");
 const InstanceManager = require("./minecraft/InstanceManager.js");
 
 const USER_DATA = app.getPath("userData");
@@ -78,9 +77,8 @@ process.getCPUUsage();
 process.on("uncaughtException", crashHandler);
 process.on("unhandledRejection", crashHandler);
 
-let config, user, java, modpacks;
+let instanceManager, config, user;
 let loadWindow, loginWindow, mainWindow;
-let instanceManager;
 
 function findWindow(id) {
     if (mainWindow.webContents.id === id) {
@@ -161,25 +159,8 @@ app.once("ready", () => {
             path: path.join(USER_DATA, "config.json")
         });
 
-        modpacks = new Storage({
-            data: [],
-            path: path.join(USER_DATA, "modpacks.json")
-        });
-
-        java = new Java(config.get("java"));
         user = new User(path.join(USER_DATA, "user.json"));
-
         instanceManager = new InstanceManager(config.get('minecraft'));
-
-        java.getVersion().then((version) => {
-            log.info(`Detected Java Runtime Environment v.${version}.`);
-        }).catch(() => {
-            if (java.path === "java") {
-                log.warn("Could not detect any installed java version.");
-            } else {
-                log.warn("The java path specified in the config file is not a valid java executable.");
-            }
-        });
         
         autoUpdater.once("update-downloaded", () => {
             loadWindow.send("update-downloaded");
