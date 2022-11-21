@@ -28,7 +28,7 @@ const unzipper = require("unzipper");
 const { spawn } = require("child_process");
 const compareVersions = require("compare-versions");
 
-const FsUtil = require("../FsUtil.js");
+const FsUtil = require("../utils/FsUtil.js");
 const CommonRoute = require('./CommonRoute.js');
 
 module.exports = class Minecraft {

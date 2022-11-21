@@ -23,7 +23,7 @@ const path = require("path");
 const rimraf = require("rimraf");
 const unzipper = require("unzipper");
 
-const FsUtil = require("../FsUtil.js");
+const FsUtil = require("../utils/FsUtil.js");
 
 module.exports = class MinecraftExtension {
 
