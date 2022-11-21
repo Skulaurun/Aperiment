@@ -434,7 +434,7 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
         item.classList.add("modpack-item");
     
         let icon = document.createElement("img");
-        icon.src = "../../resources/images/modpack.png";
+        icon.src = "../../assets/images/modpack.png";
         item.appendChild(icon);
 
         let statusBar = document.createElement("div");

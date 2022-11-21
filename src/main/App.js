@@ -141,7 +141,9 @@ app.once("ready", () => {
         loadWindow = null;
     });
 
-    loadWindow.loadFile("src/renderer/load-window/LoadWindow.html");
+    loadWindow.loadFile(
+        "src/renderer/components/load-window/LoadWindow.html"
+    );
 
     loadWindow.once("ready-to-show", () => {
 
@@ -284,7 +286,9 @@ ipcMain.once("app-start", () => {
 
         });
 
-        mainWindow.loadFile("src/renderer/main-window/MainWindow.html");
+        mainWindow.loadFile(
+            "src/renderer/components/main-window/MainWindow.html"
+        );
 
     });
 
@@ -299,7 +303,9 @@ ipcMain.once("app-start", () => {
         app.quit();
     });
 
-    loginWindow.loadFile("src/renderer/login-window/LoginWindow.html");
+    loginWindow.loadFile(
+        "src/renderer/components/login-window/LoginWindow.html"
+    );
 
 });
 
