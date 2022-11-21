@@ -1,7 +1,7 @@
-# A-Periment (Aper)
+# Aperiment (Aper)
 *Custom Minecraft Launcher*
 
-A-Periment's main purpose is to provide an easy way of manipulating SkulTech-X-Periment modpacks and all other modpacks, which use the A-Periment Manifest Format. This is the launcher's 7th generation. First version was released on 18 July 2018.
+Aperiment's main purpose is to provide an easy way of manipulating SkulTech-X-Periment modpacks and all other modpacks, which use the Aperiment Manifest Format. This is the launcher's 7th generation. First version was released on 18 July 2018.
 
 > *Motto: Make modpacks playable with a few clicks.*
 

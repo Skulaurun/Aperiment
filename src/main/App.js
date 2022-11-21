@@ -1,20 +1,20 @@
 /*
  *
- *   A-Periment - Custom minecraft launcher
+ *   Aperiment - Custom Minecraft Launcher
  *   Copyright (C) 2020 - 2022 Adam Charvát
  *
- *   A-Periment is free software: you can redistribute it and/or modify
+ *   Aperiment is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
  *
- *   A-Periment is distributed in the hope that it will be useful,
+ *   Aperiment is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with A-Periment. If not, see <https://www.gnu.org/licenses/>.
+ *   along with Aperiment. If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
@@ -118,10 +118,10 @@ app.on("second-instance", () => {
 
 app.once("ready", () => {
 
-    log.info(`A-Periment v.${app.getVersion()} started.`);
+    log.info(`Aperiment v.${app.getVersion()} started.`);
     
     loadWindow = new BrowserWindow({
-        title: "A-Periment",
+        title: "Aperiment",
         width: 256,
         height: 276,
         frame: false,
@@ -200,7 +200,7 @@ ipcMain.once("app-start", () => {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
     loginWindow = new BrowserWindow({
-        title: "A-Periment",
+        title: "Aperiment",
         width: Math.round(width / 4),
         height: Math.round(height / 2),
         show: false,
@@ -245,7 +245,7 @@ ipcMain.once("app-start", () => {
     server.listen(46969);
 
     mainWindow = new BrowserWindow({
-        title: "A-Periment",
+        title: "Aperiment",
         width: Math.round(width / 1.5),
         height: Math.round(height / 1.5),
         minWidth: 800,
@@ -476,7 +476,7 @@ ipcMain.on("open-link", (event, link) => {
 
 ipcMain.on("open-file", async (event, inputId, dialogType, fileTypes) => {
     const result = await dialog.showOpenDialog(findWindow(event.sender.id), {
-        title: `A-Periment Select ${dialogType ? "Folder" : "File"}`,
+        title: `Aperiment Select ${dialogType ? "Folder" : "File"}`,
         properties: [dialogType ? "openDirectory" : "openFile"],
         buttonLabel: "Select",
         filters: !dialogType ? fileTypes : []

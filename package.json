@@ -1,7 +1,7 @@
 {
-  "name": "a-periment",
+  "name": "aperiment",
   "version": "0.14.1",
-  "description": "Custom minecraft launcher",
+  "description": "Custom Minecraft Launcher",
   "main": "src/main/App.js",
   "scripts": {
     "start": "electron . --dev",
@@ -10,8 +10,8 @@
     "deploy": "electron-builder --win --ia32 --publish always"
   },
   "build": {
-    "appId": "com.skulaurun.aper",
-    "productName": "A-Periment",
+    "appId": "eu.skulaurun.aperiment",
+    "productName": "Aperiment",
     "publish": {
       "provider": "github"
     },
