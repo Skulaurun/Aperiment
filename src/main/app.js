@@ -28,7 +28,7 @@ const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
 const { app, screen, ipcMain, shell, dialog, BrowserWindow } = require("electron");
 
-const Storage = require("./Storage.js");
+const Config = require("./Config.js");
 const User = require("./auth/User.js");
 const InstanceManager = require("./minecraft/InstanceManager.js");
 
@@ -147,7 +147,7 @@ app.once("ready", () => {
 
         loadWindow.show();
 
-        config = new Storage({
+        config = new Config({
             data: {
                 "aper": {
                     "autoUpdate": true,

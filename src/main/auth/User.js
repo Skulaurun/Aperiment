@@ -20,14 +20,14 @@
 
 const crypto = require("crypto");
 
-const Storage = require("../Storage.js");
+const Config = require("../Config.js");
 const Auth = require("./Auth.js");
 
 module.exports = class User {
 
     constructor(path) {
 
-        this.storage = new Storage({
+        this.storage = new Config({
             data: {
                 id: null,
                 nickname: null,

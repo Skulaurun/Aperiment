@@ -27,7 +27,7 @@ const { Readable } = require("stream");
 const { EventEmitter } = require("events");
 const compareVersions = require("compare-versions");
 
-const FsUtil = require("./FsUtil.js");
+const FsUtil = require("../FsUtil.js");
 const Minecraft = require("./Minecraft.js");
 const MinecraftForge = require("./MinecraftForge.js");
 const MinecraftFabric = require("./MinecraftFabric.js");

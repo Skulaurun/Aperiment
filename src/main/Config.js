@@ -21,7 +21,7 @@
 const fs = require("fs");
 const path = require("path");
 
-module.exports = class Storage {
+module.exports = class Config {
 
     constructor({ path, data = {}, autoLoad = true, autoSave = false, mergeData = true }) {
 
