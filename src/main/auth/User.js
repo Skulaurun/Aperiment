@@ -20,10 +20,10 @@
 
 const crypto = require("crypto");
 
-const Storage = require("./storage.js");
-const Auth = require("./auth.js");
+const Storage = require("../Storage.js");
+const Auth = require("./Auth.js");
 
-class User {
+module.exports = class User {
 
     constructor(path) {
 
@@ -120,6 +120,4 @@ class User {
         return bytes.toString("hex");
     }
 
-}
-
-module.exports = User;
+};

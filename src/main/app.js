@@ -22,20 +22,16 @@ const os = require("os");
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
-const crypto = require("crypto");
 const axios = require("axios");
-const { Readable } = require("stream");
-const fileType = require("file-type");
 const { parse: parseUrl } = require("url");
-const validUrl = require("valid-url");
 const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
 const { app, screen, ipcMain, shell, dialog, BrowserWindow } = require("electron");
 
-const Storage = require("./storage.js");
-const User = require("./user.js");
+const Storage = require("./Storage.js");
+const User = require("./auth/User.js");
 const Java = require("./java.js");
-const { MinecraftInstanceManager } = require("./minecraft.js");
+const InstanceManager = require("./minecraft/InstanceManager.js");
 
 const USER_DATA = app.getPath("userData");
 const DEVELOPER_MODE = process.argv.includes("--dev");
@@ -147,7 +143,7 @@ app.once("ready", () => {
         loadWindow = null;
     });
 
-    loadWindow.loadFile("src/load.html");
+    loadWindow.loadFile("src/renderer/load-window/LoadWindow.html");
 
     loadWindow.once("ready-to-show", () => {
 
@@ -173,7 +169,7 @@ app.once("ready", () => {
         java = new Java(config.get("java"));
         user = new User(path.join(USER_DATA, "user.json"));
 
-        instanceManager = new MinecraftInstanceManager(config.get('minecraft'));
+        instanceManager = new InstanceManager(config.get('minecraft'));
 
         java.getVersion().then((version) => {
             log.info(`Detected Java Runtime Environment v.${version}.`);
@@ -307,7 +303,7 @@ ipcMain.once("app-start", () => {
 
         });
 
-        mainWindow.loadFile("src/main.html");
+        mainWindow.loadFile("src/renderer/main-window/MainWindow.html");
 
     });
 
@@ -322,7 +318,7 @@ ipcMain.once("app-start", () => {
         app.quit();
     });
 
-    loginWindow.loadFile("src/login.html");
+    loginWindow.loadFile("src/renderer/login-window/LoginWindow.html");
 
 });
 

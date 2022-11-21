@@ -20,7 +20,7 @@
 
 const axios = require("axios");
 
-class Auth {
+module.exports = class Auth {
 
     static CLIENT_ID = "c1348caf-f18f-49d9-b63a-8e5cb0f7dd3b";
 
@@ -207,5 +207,3 @@ class Auth {
     }
 
 };
-
-module.exports = Auth;

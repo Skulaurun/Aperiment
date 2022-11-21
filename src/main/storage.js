@@ -21,7 +21,7 @@
 const fs = require("fs");
 const path = require("path");
 
-class Storage {
+module.exports = class Storage {
 
     constructor({ path, data = {}, autoLoad = true, autoSave = false, mergeData = true }) {
 
@@ -38,34 +38,21 @@ class Storage {
     }
 
     save() {
-
         var content = JSON.stringify(this.data, null, 4) + "\n";
-
         fs.mkdirSync(path.dirname(this.path), { recursive: true });
         fs.writeFileSync(this.path, content, { encoding: "utf-8" });
-
     }
 
     load() {
-
         if (fs.existsSync(this.path)) {
-            
             var content = fs.readFileSync(this.path, { encoding: "utf-8" });
-
             if (this._isJson(content)) {
-
                 content = JSON.parse(content);
-
                 this.data = this.mergeData ? this._mergeObjects(this.data, content) : content;
-
                 // TODO: return if this.data equals content
-                
             }
-    
         }
-
         this.save();
-
     }
 
     set(path, value) {
@@ -77,17 +64,12 @@ class Storage {
         }
 
         var currentObject = this.data;
-
         for (var i = 0; i < path.length - 1; i++) {
-
             if (!currentObject.hasOwnProperty(path[i])) {
                 currentObject[path[i]] = {};
             }
-
             currentObject = currentObject[path[i]];
-
         }
-
         currentObject[path[path.length - 1]] = value;
 
         if (this.autoSave) {
@@ -107,15 +89,11 @@ class Storage {
         }
 
         var currentObject = this.data;
-
         for (var i = 0; i < path.length; i++) {
-
             if (typeof currentObject !== "object" || !currentObject.hasOwnProperty(path[i])) {
                 return value || null;
             }
-
             currentObject = currentObject[path[i]];
-
         }
 
         return currentObject;
@@ -154,6 +132,4 @@ class Storage {
         return target;
     }
 
-}
-
-module.exports = Storage;
+};

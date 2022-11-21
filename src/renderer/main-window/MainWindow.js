@@ -18,8 +18,6 @@
  *
  */
 
-const uuid4 = require("uuid").v4;
-
 const InputValue = Object.freeze({"FILE": 0, "DIRECTORY": 1, "BOOLEAN": 2, "TEXT": 3});
 const InputType = {
 
@@ -436,7 +434,7 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
         item.classList.add("modpack-item");
     
         let icon = document.createElement("img");
-        icon.src = "../resources/images/modpack.png";
+        icon.src = "../../../resources/images/modpack.png";
         item.appendChild(icon);
 
         let statusBar = document.createElement("div");

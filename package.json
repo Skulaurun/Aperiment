@@ -2,7 +2,7 @@
   "name": "a-periment",
   "version": "0.14.1",
   "description": "Custom minecraft launcher",
-  "main": "src/main/app.js",
+  "main": "src/main/App.js",
   "scripts": {
     "start": "electron . --dev",
     "build": "electron-builder --win --ia32 --publish never",
