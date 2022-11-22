@@ -32,7 +32,7 @@ const Config = require("./Config.js");
 const User = require("./auth/User.js");
 const InstanceManager = require("./minecraft/InstanceManager.js");
 
-const USER_DATA = app.getPath("userData");
+const LEGACY_USER_DATA = app.getPath("userData");
 const DEVELOPER_MODE = process.argv.includes("--dev");
 
 log.transports.console.format = "[{h}:{i}:{s}.{ms}] [{level}]: {text}";
@@ -118,6 +118,31 @@ app.on("second-instance", () => {
 
 app.once("ready", () => {
 
+    const productName = 'Aperiment';
+    const companyName = 'Skulaurun';
+
+    let USER_DATA = process.env.APER_DATA_HOME || LEGACY_USER_DATA;
+    if (!process.env.APER_DATA_HOME) {
+        if (os.type() === "Windows_NT") {
+            USER_DATA = path.join(
+                os.homedir(),
+                `AppData/LocalLow/${companyName}/${productName}`
+            );
+        } else if (os.type() === "Linux") {
+            USER_DATA = path.join(
+                os.homedir(),
+                `.${productName.toLowerCase()}`
+            );
+        } else if (os.type() === "Darwin") {
+            USER_DATA = path.join(
+                app.getPath('appData'),
+                productName
+            )
+        }
+    }
+
+    fs.promises.mkdir(USER_DATA, { recursive: true });
+
     log.info(`Aperiment v.${app.getVersion()} started.`);
     
     loadWindow = new BrowserWindow({
@@ -156,7 +181,7 @@ app.once("ready", () => {
                     "allowPrerelease": true
                 },
                 "java": "java",
-                "minecraft": path.join(USER_DATA, "minecraft")
+                "minecraft": path.normalize(USER_DATA)
             },
             path: path.join(USER_DATA, "config.json")
         });
