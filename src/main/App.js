@@ -267,6 +267,13 @@ ipcMain.once("app-start", () => {
 
             let configList = await instanceManager.loadConfigs();
             configList = Object.values(configList);
+            configList = configList.map((config) => {
+                config["instancePath"] = path.join(
+                    instanceManager.pathConfig['instances'],
+                    config['id']
+                );
+                return config;
+            });
 
             mainWindow.send("load-modpacks", configList);
             mainWindow.send("load-settings", config.get());
@@ -449,13 +456,6 @@ ipcMain.on("terminate-modpack", (event, id) => {
     }
 });
 
-ipcMain.on("save-settings", (event, settings) => {
-    for (let key in settings) {
-        config.set(key, settings[key]);
-    }
-    config.save();
-});
-
 ipcMain.on("save-instance-config", (event, instanceConfig) => {
     if (instanceManager.isLoaded(instanceConfig['id'])) {
         instanceManager.setConfig(
@@ -485,6 +485,20 @@ ipcMain.on("open-file", async (event, inputId, dialogType, fileTypes) => {
     if (!result.canceled) {
         event.sender.send("open-file", inputId, result.filePaths[0]);
     }
+});
+
+ipcMain.on("open-in-explorer", async (event, path) => {
+    const error = await shell.openPath(path);
+    if (error) {
+        log.error(`Failed to open path '${path}'.`);
+    }
+});
+
+ipcMain.on("save-settings", (event, settings) => {
+    for (let key in settings) {
+        config.set(key, settings[key]);
+    }
+    config.save();
 });
 
 async function loadChangelog() {

@@ -537,6 +537,13 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
                     }
                 },
                 {
+                    "name": "Open Folder",
+                    "action": function(modpack) {
+                        let instanceConfig = loadedConfigs[modpack.getAttribute("id")];
+                        ipcRenderer.send("open-in-explorer", instanceConfig["instancePath"]);
+                    }
+                },
+                {
                     "name": "Properties",
                     "action": function(modpack) {
 
