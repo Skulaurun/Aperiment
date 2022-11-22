@@ -427,7 +427,8 @@ ipcMain.on("launch-modpack", async (event, options) => {
         eventEmitter.on('internal-error', (error) => {
             if (error.name !== "AbortError" && !axios.isCancel(error)) {
                 error = `${error.stack}`;
-                log.error(`Modpack '${options.directory}' has encountered an unexpected error. ${error}`);
+                let modpackName = instanceManager.loadedConfigs[options.id]?.manifest?.name;
+                log.error(`Modpack '${modpackName || options.id}' has encountered an unexpected error. ${error}`);
                 mainWindow?.send("modpack-error", options.id, error);
             } else {
                 /* TODO: Get abort reason from abortSignal. */
