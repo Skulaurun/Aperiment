@@ -50,7 +50,7 @@ module.exports = class InstanceManager {
             'assets': path.join(rootPath, 'cache/assets'),
             'clients': path.join(rootPath, 'cache/clients'),
             'libraries': path.join(rootPath, 'cache/libraries'),
-            'manifests': path.join(rootPath, 'cache/manifests'),
+            'manifests': path.join(rootPath, 'manifests'),
             'instances': path.join(rootPath, 'instances')
         };
 
