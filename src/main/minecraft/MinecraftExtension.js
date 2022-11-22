@@ -76,7 +76,7 @@ module.exports = class MinecraftExtension {
 
                 case "ADD":
                     if (entry.type === "File") {
-                        if (!await isPathAccessible(location)) {
+                        if (!await FsUtil.isPathAccessible(location)) {
                             await FsUtil.writeStream(entry, location, { signal: this.abortSignal });
                             continue;
                         }
@@ -85,7 +85,7 @@ module.exports = class MinecraftExtension {
                 
                 case "REPLACE":
                     if (entry.type === "File") {
-                        if (await isPathAccessible(location)) {
+                        if (await FsUtil.isPathAccessible(location)) {
                             await fs.promises.unlink(location);
                         }
                         await FsUtil.writeStream(entry, location, { signal: this.abortSignal });
@@ -95,7 +95,7 @@ module.exports = class MinecraftExtension {
 
                 case "DELETE":
                     if (entry.type === "Directory") {
-                        if (await isPathAccessible(location)) {
+                        if (await FsUtil.isPathAccessible(location)) {
                             await new Promise((resolve, reject) => {
                                 rimraf(location, (error) => {
                                     if (!error) { resolve(); } else { reject(); }
