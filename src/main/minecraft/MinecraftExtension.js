@@ -55,7 +55,7 @@ module.exports = class MinecraftExtension {
 
     }
 
-    async _extractModpack() {
+    async _extractExtension() {
 
         let file = path.join(this.path, this.packageName);
         let reader = fs.createReadStream(file);
@@ -134,7 +134,7 @@ module.exports = class MinecraftExtension {
 
     async install() {
         if (this.enableUpdate) {
-            await this._extractModpack();
+            await this._extractExtension();
         }
     }
 
