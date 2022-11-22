@@ -273,7 +273,10 @@ module.exports = class Minecraft {
         files.push({
             name: `${this._manifest["id"]}.jar`,
             size: client.size,
-            path: path.join(this.cache, "bin", `${this._manifest["id"]}.jar`),
+            path: path.join(
+                this.cache,
+                `clients/${this._manifest["id"]}.jar`
+            ),
             url: client.url
         });
 
