@@ -312,7 +312,7 @@ module.exports = class InstanceManager {
 
     async loadConfigs() {
 
-        // Search for manifests in this.pathConfig['manifests']
+        await fs.promises.mkdir(this.pathConfig['manifests'], { recursive: true });
 
         for (const entry of await fs.promises.readdir(this.pathConfig['manifests'], { withFileTypes: true })) {
             if (entry.isFile()) {
