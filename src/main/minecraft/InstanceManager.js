@@ -310,12 +310,6 @@ module.exports = class InstanceManager {
             .find(o => o['config']['remote'] === remoteUrl);
     }
 
-    async createDirectoryStructure() {
-        for (const directory of Object.values(this.pathConfig)) {
-            await fs.promises.mkdir(directory, { recursive: true });
-        }
-    }
-
     async loadConfigs() {
 
         // Search for manifests in this.pathConfig['manifests']
