@@ -586,4 +586,12 @@ module.exports = class InstanceManager {
         this._getInstance(loadedId, { isActive: false })['config'] = config;
     }
 
+    getInstancePath(loadedId) {
+        let instanceConfig = this._getInstance(loadedId, { isActive: false });
+        return path.join(
+            this.pathConfig['instances'],
+            instanceConfig['id']
+        );
+    }
+
 };

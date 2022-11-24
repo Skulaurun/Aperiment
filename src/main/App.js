@@ -292,13 +292,6 @@ ipcMain.once("app-start", () => {
 
             let configList = await instanceManager.loadConfigs();
             configList = Object.values(configList);
-            configList = configList.map((config) => {
-                config["instancePath"] = path.join(
-                    instanceManager.pathConfig['instances'],
-                    config['id']
-                );
-                return config;
-            });
 
             mainWindow.send("load-modpacks", configList);
             mainWindow.send("load-settings", config.get());
@@ -496,7 +489,26 @@ ipcMain.on("load-icons", async () => {
     mainWindow?.send("load-icons", loadedIcons);
 });
 
-ipcMain.on("open-link", (event, link) => {
+ipcMain.on("open-instance-folder", (_, loadedId) => {
+    try {
+        let instancePath = instanceManager.getInstancePath(loadedId);
+        ipcMain.emit("open-in-explorer", {}, instancePath, true);
+    } catch (error) {
+        log.error(`Failed to open instance folder for ID '${loadedId}'. ${error}`);
+    }
+});
+
+ipcMain.on("open-in-explorer", async (_, location, ensureExists) => {
+    if (ensureExists) {
+        await fs.promises.mkdir(location, { recursive: true });
+    }
+    const error = await shell.openPath(location);
+    if (error) {
+        log.error(`Failed to open path '${location}'.`);
+    }
+});
+
+ipcMain.on("open-link", (_, link) => {
     shell.openExternal(link);
 });
 
@@ -509,13 +521,6 @@ ipcMain.on("open-file", async (event, inputId, dialogType, fileTypes) => {
     });
     if (!result.canceled) {
         event.sender.send("open-file", inputId, result.filePaths[0]);
-    }
-});
-
-ipcMain.on("open-in-explorer", async (event, path) => {
-    const error = await shell.openPath(path);
-    if (error) {
-        log.error(`Failed to open path '${path}'.`);
     }
 });
 
