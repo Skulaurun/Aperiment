@@ -423,6 +423,7 @@
 .context-menu {
     z-index: 1000;
     position: absolute;
+    width: 200px;
     transform: scale(0);
     transform-origin: top left;
     background-color: rgb(30, 30, 30);
