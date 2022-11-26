@@ -35,10 +35,6 @@ const MinecraftExtension = require("./MinecraftExtension.js");
 
 module.exports = class InstanceManager {
 
-    static _nanoid = {};
-    static _nanoidWrapper = import('nanoid')
-        .then((object) => InstanceManager._nanoid = object);
-
     static MANIFEST_VERSION = '1.0';
 
     constructor(rootPath) {
@@ -74,18 +70,14 @@ module.exports = class InstanceManager {
     }
 
     _generateId() {
-        return InstanceManager._nanoid.customAlphabet(
-            'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
-            'abcdefghijklmnopqrstuvwxyz' +
-            '0123456789',
-            16
-        )();
+        return crypto.randomBytes(4)
+            .toString("hex");
     }
 
     _validateId(string) {
         return typeof string === 'string'
-            && /^[a-zA-Z0-9]+$/.test(string)
-            && string.length === 16;
+            && /^[a-z0-9]+$/.test(string)
+            && string.length === 8;
     }
 
     _hasTypedProperty = (object, properties) => {
