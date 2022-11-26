@@ -31,6 +31,7 @@
     },
     "nsis": {
       "artifactName": "${productName}-Setup-${version}.${ext}",
+      "guid": "a018b08f-3e21-54eb-aabc-cdc1b7dafcf6",
       "oneClick": false,
       "perMachine": true,
       "allowToChangeInstallationDirectory": true,
