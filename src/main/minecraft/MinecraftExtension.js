@@ -20,7 +20,6 @@
 
 const fs = require("fs");
 const path = require("path");
-const rimraf = require("rimraf");
 const unzipper = require("unzipper");
 
 const FsUtil = require("../utils/FsUtil.js");
@@ -96,11 +95,7 @@ module.exports = class MinecraftExtension {
                 case "DELETE":
                     if (entry.type === "Directory") {
                         if (await FsUtil.isPathAccessible(location)) {
-                            await new Promise((resolve, reject) => {
-                                rimraf(location, (error) => {
-                                    if (!error) { resolve(); } else { reject(); }
-                                });
-                            });
+                            await fs.promises.rm(location, { recursive: true, force: true });
                         }
                     } else if (entry.type === "File") {
                         await FsUtil.writeStream(entry, location, { signal: this.abortSignal });

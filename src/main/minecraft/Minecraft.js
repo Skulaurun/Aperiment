@@ -23,7 +23,6 @@ const fs = require("fs");
 const path = require("path");
 const arch = require("arch");
 const axios = require("axios");
-const rimraf = require("rimraf");
 const unzipper = require("unzipper");
 const { spawn } = require("child_process");
 const compareVersions = require("compare-versions");
@@ -493,11 +492,10 @@ module.exports = class Minecraft {
     }
 
     _exit(message) {
-        rimraf(path.join(this.path, "natives"), (error) => {
-            if (error) this.eventEmitter.emit('internal-error', error);
-        });
         this.process = null;
         this.eventEmitter.emit('process-exit', message);
+        fs.promises.rm(path.join(this.path, "natives"), { recursive: true, force: true })
+            .catch(()=>{}); // TODO: Log error
     }
 
     _rethrowAbort(error) {
