@@ -50,7 +50,6 @@
     "electron-updater": "^4.3.5",
     "file-type": "^16.5.4",
     "unzipper": "^0.10.11",
-    "uuid": "^8.3.0",
     "valid-url": "^1.0.9"
   },
   "repository": {
