@@ -4,10 +4,11 @@
   "description": "Custom Minecraft Launcher",
   "main": "src/main/App.js",
   "scripts": {
-    "start": "electron . --dev",
-    "build": "electron-builder --win --ia32 --publish never",
-    "build-linux": "electron-builder --linux --publish never",
-    "deploy": "electron-builder --win --ia32 --publish always"
+    "start:dev": "electron . --dev",
+    "build:windows": "electron-builder --windows --publish never",
+    "build:linux": "electron-builder --linux --publish never",
+    "deploy:windows": "electron-builder --windows --publish always",
+    "deploy:linux": "electron-builder --linux --publish always"
   },
   "devDependencies": {
     "electron": "^21.2.2",
