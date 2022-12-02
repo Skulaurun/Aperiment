@@ -9,35 +9,6 @@
     "build-linux": "electron-builder --linux --publish never",
     "deploy": "electron-builder --win --ia32 --publish always"
   },
-  "build": {
-    "appId": "eu.skulaurun.aperiment",
-    "productName": "Aperiment",
-    "publish": {
-      "provider": "github"
-    },
-    "directories": {
-      "output": "build",
-      "buildResources": "."
-    },
-    "extraFiles": [
-      "README.md",
-      "COPYRIGHT.txt",
-      "CHANGELOG.txt",
-      "LICENSE"
-    ],
-    "win": {
-      "target": "nsis",
-      "icon": "icon.ico"
-    },
-    "nsis": {
-      "artifactName": "${productName}-Setup-${version}.${ext}",
-      "guid": "a018b08f-3e21-54eb-aabc-cdc1b7dafcf6",
-      "oneClick": false,
-      "perMachine": true,
-      "allowToChangeInstallationDirectory": true,
-      "license": "LICENSE"
-    }
-  },
   "devDependencies": {
     "electron": "^21.2.2",
     "electron-builder": "^23.6.0"
