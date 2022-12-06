@@ -211,8 +211,8 @@ app.once("ready", () => {
             loadWindow.send("update-download-progress", progress);
         });
 
-        if (!DEVELOPER_MODE && config.get("aper.autoUpdate", true)) {
-            autoUpdater.allowPrerelease = config.get("aper.allowPrerelease", true);
+        if (!DEVELOPER_MODE && config.get("launcher.autoUpdate", true)) {
+            autoUpdater.allowPrerelease = config.get("launcher.allowPrerelease", true);
             autoUpdater.checkForUpdates().catch((error) => {
                 log.error(`Could not check for updates.\n ${error.stack}`);
                 ipcMain.emit("app-start");
