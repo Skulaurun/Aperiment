@@ -22,11 +22,11 @@ const InputValue = Object.freeze({"FILE": 0, "DIRECTORY": 1, "BOOLEAN": 2, "TEXT
 const InputType = {
 
     /* Aperiment Settings */
-    "aper.autoUpdate": {
+    "launcher.autoUpdate": {
         name: "Auto Update",
         value: InputValue.BOOLEAN
     },
-    "aper.allowPrerelease": {
+    "launcher.allowPrerelease": {
         name: "Beta Versions",
         value: InputValue.BOOLEAN
     },
@@ -37,7 +37,7 @@ const InputType = {
             { name: "Java Executable", extensions: ["exe"] }
         ]
     },
-    "minecraft": {
+    "minecraftDirectory": {
         name: "Minecraft Directory",
         value: InputValue.DIRECTORY
     },
@@ -636,7 +636,7 @@ ipcRenderer.on("load-settings", (event, settings) => {
     
     let settingCategory = {
         "general": "General",
-        "aper": "Launcher"
+        "launcher": "Launcher"
     };
     let inputList = [];
     settings = flattenObject(settings);
