@@ -32,7 +32,7 @@ const Config = require("./Config.js");
 const User = require("./auth/User.js");
 const InstanceManager = require("./minecraft/InstanceManager.js");
 
-const LEGACY_USER_DATA = app.getPath("userData");
+const LEGACY_USER_DATA = path.join(app.getPath("appData"), "a-periment");
 const DEVELOPER_MODE = process.argv.includes("--dev");
 
 log.transports.console.format = "[{h}:{i}:{s}.{ms}] [{level}]: {text}";
@@ -121,7 +121,7 @@ app.once("ready", () => {
     const productName = 'Aperiment';
     const companyName = 'Skulaurun';
 
-    let USER_DATA = process.env.APER_DATA_HOME || LEGACY_USER_DATA;
+    let USER_DATA = process.env.APER_DATA_HOME || app.getPath("userData");
     if (!process.env.APER_DATA_HOME) {
         if (os.type() === "Windows_NT") {
             USER_DATA = path.join(
@@ -170,21 +170,26 @@ app.once("ready", () => {
         "src/renderer/components/load-window/LoadWindow.html"
     );
 
-    loadWindow.once("ready-to-show", () => {
+    loadWindow.once("ready-to-show", async () => {
 
         loadWindow.show();
 
+        const isLegacy = await migrateLegacyConfig(
+            path.join(USER_DATA, "config.json"),
+            path.join(LEGACY_USER_DATA, "config.json")
+        );
+
         config = new Config({
             data: {
-                "aper": {
+                "launcher": {
                     "autoUpdate": true,
                     "allowPrerelease": true
                 },
-                "java": "java",
-                "minecraft": path.normalize(USER_DATA)
+                "minecraftDirectory": path.normalize(USER_DATA)
             },
             path: path.join(USER_DATA, "config.json")
         });
+        config.isLegacy = () => { return isLegacy; };
 
         user = new User(path.join(USER_DATA, "user.json"));
         instanceManager = new InstanceManager(config.get('minecraft'));
@@ -298,6 +303,15 @@ ipcMain.once("app-start", () => {
 
             if (configList.length > 0) log.info(`Successfully loaded ${configList.length} modpacks.`);
             else log.info("No modpacks to load.");
+
+            if (config.isLegacy()) {
+                const minecraftPath = config.get('minecraftDirectory');
+                try {
+                    await migrateLegacyFiles(minecraftPath);
+                } catch (error) {
+                    log.error(`Failed to migrate instances at '${minecraftPath}'. ${error}`);
+                }
+            }
 
             user.loginFromMemory().then(() => {
                 mainWindow.show();
@@ -569,4 +583,105 @@ async function loadChangelog() {
     } catch (error) {
         log.error(`Failed to load a changelog. ${error}`);
     }
+}
+
+async function migrateLegacyConfig(configPath, legacyConfigPath) {
+
+    try {
+        await fs.promises.access(configPath);
+        return false;
+    } catch {}
+
+    try {
+        
+        const legacyConfig = JSON.parse(
+            await fs.promises.readFile(legacyConfigPath)
+        );
+
+        const newConfig = {
+            "launcher": {
+                "autoUpdate": legacyConfig["aper"]["autoUpdate"],
+                "allowPrerelease": legacyConfig["aper"]["allowPrerelease"]
+            },
+            "minecraftDirectory": legacyConfig["minecraft"]
+        };
+
+        await fs.promises.writeFile(configPath, JSON.stringify(newConfig, null, 4));
+        await fs.promises.unlink(legacyConfigPath);
+        return true;
+
+    } catch { return false; }
+
+}
+
+async function migrateLegacyFiles(minecraftPath) {
+
+    const instancePath = path.join(minecraftPath, 'instances');
+    const entryList = (await fs.promises.readdir(instancePath, { withFileTypes: true }))
+        .filter(e => e.isDirectory());
+
+    let modpackList = [];
+    try {
+        const loadedModpackList = JSON.parse(
+            await fs.promises.readFile(
+                path.join(LEGACY_USER_DATA, 'modpacks.json')
+            )
+        );
+        if (Array.isArray(modpackList) && modpackList.every(x => typeof x === 'object')) {
+            modpackList = loadedModpackList;
+        }
+    } catch {}
+
+    for (const entry of entryList) {
+        try {
+            const metaPath = path.join(
+                instancePath,
+                `${entry.name}/meta.json`
+            );
+            let metaManifest = JSON.parse(
+                await fs.promises.readFile(metaPath)
+            );
+            const instanceConfig = instanceManager.addFromManifest(metaManifest);
+            if (typeof instanceConfig['manifest']['currentVersion'] === 'string') {
+                instanceConfig['config']['version'] = instanceConfig['manifest']['currentVersion'];
+            }
+            if (typeof instanceConfig['manifest']['currentVersion'] !== 'undefined') {
+                delete instanceConfig['manifest']['currentVersion'];
+            }
+            instanceManager.fetchIcon(instanceConfig['id'])
+                .then((iconPath) => {
+                    if (iconPath) {
+                        mainWindow?.send("load-icons", {
+                            [instanceConfig['id']]: iconPath
+                        });
+                    }
+                })
+                .catch(()=>{});
+            const candidateModpack = modpackList.find((modpack) => {
+                let normalizedName = (modpack['name'] || '')
+                    .trim()
+                    .toLowerCase()
+                    .replace(/ /g, '-');
+                return normalizedName === entry.name;
+            });
+            if (candidateModpack && candidateModpack['url']) {
+                instanceConfig['config']['remote'] = candidateModpack['url'];
+            }
+            await fs.promises.rename(
+                path.join(instancePath, entry.name),
+                path.join(instancePath, instanceConfig['id'])
+            );
+            await fs.promises.mkdir(instanceManager.pathConfig['manifests'], { recursive: true });
+            await instanceManager.saveConfig(instanceConfig['id']);
+            await fs.promises.unlink(path.join(
+                instancePath,
+                `${instanceConfig['id']}/meta.json`
+            ));
+        } catch (error) {
+            log.error(`There was an error during migration of '${entry.name}'. ${error}`);
+        }
+    }
+
+    mainWindow?.send('load-modpacks', Object.values(instanceManager.loadedConfigs));
+
 }
