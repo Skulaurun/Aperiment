@@ -192,7 +192,13 @@ app.once("ready", () => {
         config.isLegacy = () => { return isLegacy; };
 
         user = new User(path.join(USER_DATA, "user.json"));
-        instanceManager = new InstanceManager(config.get('minecraft'));
+        instanceManager = new InstanceManager(config.get('minecraftDirectory'));
+        instanceManager.setDefaultConfig({
+            "runtime": {
+                "path": "java",
+                "jvmArguments": ""
+            }
+        });
         
         autoUpdater.once("update-downloaded", () => {
             loadWindow.send("update-downloaded");
