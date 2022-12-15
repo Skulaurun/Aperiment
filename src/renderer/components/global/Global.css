@@ -49,14 +49,15 @@ img {
 .window-about p {
     display: inline-block;
     vertical-align: top;
-    line-height: 24px;
-    font-size: 14px;
+    line-height: 26px;
+    font-size: 12px;
+    letter-spacing: 2px;
 }
 .window-about img {
     display: inline-block;
-    margin: 3px 0 0 3px;
-    width: 18px;
-    height: 18px;
+    margin: 4px 1px 0 4px;
+    width: 16px;
+    height: 16px;
 }
 .window-controls {
     float: right;

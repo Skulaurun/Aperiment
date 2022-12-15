@@ -4,7 +4,7 @@ publish:
   provider: github
 directories:
   output: build
-  buildResources: "."
+  buildResources: resources
 extraFiles:
   - README.md
   - COPYRIGHT.txt
@@ -14,7 +14,7 @@ win:
   target:
     target: nsis
     arch: ia32
-  icon: icon.ico
+  icon: resources/icons/icon.ico
 nsis:
   artifactName: ${productName}-windows-${version}-${arch}.${ext}
   guid: a018b08f-3e21-54eb-aabc-cdc1b7dafcf6
