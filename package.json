@@ -4,7 +4,7 @@
   "description": "Custom Minecraft Launcher",
   "main": "src/main/App.js",
   "scripts": {
-    "start:dev": "electron . --dev",
+    "start": "electron . --dev",
     "build:windows": "electron-builder --windows --publish never",
     "build:linux": "electron-builder --linux --publish never",
     "deploy:windows": "electron-builder --windows --publish always",
