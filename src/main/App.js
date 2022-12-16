@@ -18,7 +18,6 @@
  *
  */
 
-const os = require("os");
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
@@ -28,6 +27,7 @@ const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
 const { app, screen, ipcMain, shell, dialog, BrowserWindow } = require("electron");
 
+const Global = require("./Global.js");
 const Config = require("./Config.js");
 const User = require("./auth/User.js");
 const InstanceManager = require("./minecraft/InstanceManager.js");
@@ -114,30 +114,7 @@ app.on("second-instance", () => {
 
 app.once("ready", () => {
 
-    const productName = 'Aperiment';
-    const companyName = 'Skulaurun';
-
-    let USER_DATA = process.env.APER_DATA_HOME || app.getPath("userData");
-    if (!process.env.APER_DATA_HOME) {
-        if (os.type() === "Windows_NT") {
-            USER_DATA = path.join(
-                os.homedir(),
-                `AppData/LocalLow/${companyName}/${productName}`
-            );
-        } else if (os.type() === "Linux") {
-            USER_DATA = path.join(
-                os.homedir(),
-                `.${productName.toLowerCase()}`
-            );
-        } else if (os.type() === "Darwin") {
-            USER_DATA = path.join(
-                app.getPath('appData'),
-                productName
-            )
-        }
-    }
-
-    fs.promises.mkdir(USER_DATA, { recursive: true });
+    fs.promises.mkdir(Global["USER_DATA"], { recursive: true });
 
     log.info(`Aperiment v.${app.getVersion()} started.`);
     
@@ -171,8 +148,8 @@ app.once("ready", () => {
         loadWindow.show();
 
         const isLegacy = await migrateLegacyConfig(
-            path.join(USER_DATA, "config.json"),
-            path.join(LEGACY_USER_DATA, "config.json")
+            path.join(Global["USER_DATA"], "config.json"),
+            path.join(Global["LEGACY_USER_DATA"], "config.json")
         );
 
         config = new Config({
@@ -181,13 +158,13 @@ app.once("ready", () => {
                     "autoUpdate": true,
                     "allowPrerelease": true
                 },
-                "minecraftDirectory": path.normalize(USER_DATA)
+                "minecraftDirectory": path.normalize(Global["USER_DATA"])
             },
-            path: path.join(USER_DATA, "config.json")
+            path: path.join(Global["USER_DATA"], "config.json")
         });
         config.isLegacy = () => { return isLegacy; };
 
-        user = new User(path.join(USER_DATA, "user.json"));
+        user = new User(path.join(Global["USER_DATA"], "user.json"));
         instanceManager = new InstanceManager(config.get('minecraftDirectory'));
         instanceManager.setDefaultConfig({
             "runtime": {
@@ -626,7 +603,7 @@ async function migrateLegacyFiles(minecraftPath) {
     try {
         const loadedModpackList = JSON.parse(
             await fs.promises.readFile(
-                path.join(LEGACY_USER_DATA, 'modpacks.json')
+                path.join(Global["LEGACY_USER_DATA"], 'modpacks.json')
             )
         );
         if (Array.isArray(modpackList) && modpackList.every(x => typeof x === 'object')) {
