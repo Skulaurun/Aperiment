@@ -50,23 +50,19 @@ process.once("SIGUSR2", exitHandler);
 
 function crashHandler(error) {
 
-    let errorInfo = error.stack.toString();
-    let cpuUsage = Math.round(process.getCPUUsage().percentCPUUsage);
-    let totalMemory = Math.round(os.totalmem() / 1048576);
-    let loadedMemory = totalMemory - Math.round(os.freemem() / 1048576);
-    let message = [
-        `Fatal error has been encountered and the application cannot continue.`,
-        ` ---===[ System Info ]===---`,
-        `  * OS: ${os.type()} ${os.arch()}`,
-        `  * CPU: ${cpuUsage}%`,
-        `  * Memory: ${loadedMemory} MB / ${totalMemory} MB`,
-        ` ---===[ Error Info ]===---`,
-        `  ${errorInfo}`
-    ];
-
+    error = `${error.stack}`;
     log.variables.level = "CRASH";
-    log.error(message.join("\n"));
+    log.error(error);
     log.variables.level = "{level}";
+
+    try {
+        dialog.showMessageBoxSync(null, {
+            type: "error",
+            title: "Aperiment",
+            message: "Fatal error has been encountered and the application cannot continue!",
+            detail: error
+        });
+    } catch {}
 
     process.emit("exit", 1);
     process.exit(1);
