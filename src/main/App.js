@@ -23,21 +23,17 @@ const path = require("path");
 const http = require("http");
 const axios = require("axios");
 const { parse: parseUrl } = require("url");
-const log = require("electron-log");
 const { autoUpdater } = require("electron-updater");
 const { app, screen, ipcMain, shell, dialog, BrowserWindow } = require("electron");
 
 const Global = require("./Global.js");
+const Log = require("./Log.js");
 const Config = require("./Config.js");
 const User = require("./auth/User.js");
 const InstanceManager = require("./minecraft/InstanceManager.js");
 
-const LEGACY_USER_DATA = path.join(app.getPath("appData"), "a-periment");
 const DEVELOPER_MODE = process.argv.includes("--dev");
-
-log.transports.console.format = "[{h}:{i}:{s}.{ms}] [{level}]: {text}";
-log.transports.file.format = "[{d}-{m}-{y} {h}:{i}:{s}.{ms}] [{level}]: {text}";
-log.hooks.push((message) => { message.level = message.level.toUpperCase(); return message; });
+const log = Log.getLogger("main");
 
 function exitHandler(code) {
     log.info(`Exited with code ${code}.\n`);
@@ -50,26 +46,25 @@ process.once("SIGUSR2", exitHandler);
 
 function crashHandler(error) {
 
-    error = `${error.stack}`;
-    log.variables.level = "CRASH";
-    log.error(error);
-    log.variables.level = "{level}";
-
     try {
         dialog.showMessageBoxSync(null, {
             type: "error",
             title: "Aperiment",
             message: "Fatal error has been encountered and the application cannot continue!",
-            detail: error
+            detail: `${error.stack}`
         });
     } catch {}
 
-    process.emit("exit", 1);
-    process.exit(1);
+    log.fatal(error);
+    process.exitCode = 1;
+
+    Log.onShutdown(() => {
+        process.emit("exit", process.exitCode);
+        app.exit(process.exitCode);
+    });
 
 }
 
-process.getCPUUsage();
 process.on("uncaughtException", crashHandler);
 process.on("unhandledRejection", crashHandler);
 
