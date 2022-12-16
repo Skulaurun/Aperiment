@@ -19,11 +19,11 @@ linux:
   target: appImage
   icon: resources/icons/png
 nsis:
-  artifactName: ${productName}-windows-${version}-${arch}.${ext}
+  artifactName: ${productName}-${version}-windows-${arch}.${ext}
   guid: a018b08f-3e21-54eb-aabc-cdc1b7dafcf6
   oneClick: false
   perMachine: true
   allowToChangeInstallationDirectory: true
   license: LICENSE
 appImage:
-  artifactName: ${productName}-linux-${version}-${arch}.${ext}
+  artifactName: ${productName}-${version}-linux-${arch}.${ext}
