@@ -4,7 +4,7 @@ publish:
   provider: github
 directories:
   output: build
-  buildResources: resources
+  buildResources: resources/scripts
 extraFiles:
   - README.md
   - COPYRIGHT.txt
