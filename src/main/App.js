@@ -433,6 +433,7 @@ ipcMain.on("launch-modpack", async (event, options) => {
         });
         eventEmitter.on('process-exit', (code) => {
             if (instanceManager.isActive(options.id)) {
+                /* destroyInstance triggers another process-exit event */
                 instanceManager.destroyInstance(options.id);
             }
             mainWindow?.send("modpack-exit", options.id, code);
@@ -446,8 +447,9 @@ ipcMain.on("launch-modpack", async (event, options) => {
             } else {
                 /* TODO: Get abort reason from abortSignal. */
                 mainWindow?.send("modpack-error", options.id, "Error: The operation was aborted (user-request)");
+                eventEmitter.emit('process-exit', 'user-request');
             }
-            eventEmitter.emit('process-exit', 'user-request');
+            eventEmitter.emit('process-exit', 'internal-error');
         });
 
         instanceManager.runInstance(options.id);
