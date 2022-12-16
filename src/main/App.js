@@ -522,10 +522,13 @@ ipcMain.on("save-settings", (event, settings) => {
 async function loadChangelog() {
     try {
 
+        const changelogPath = Global["IS_PACKAGED"]
+            ? path.join(path.dirname(process.resourcesPath), "CHANGELOG.txt")
+            : path.join(__dirname, "../../CHANGELOG.txt");
+        const changelog = (await fs.promises.readFile(changelogPath)).toString();
+
         let listOpen = false;
         let outputHTMLBuffer = "";
-        const changelog = (await fs.promises.readFile("./CHANGELOG.txt")).toString();
-
         for (let line of changelog.split("\n")) {
             line = line.trim();
             if (line) {
