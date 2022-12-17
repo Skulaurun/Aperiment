@@ -11,8 +11,8 @@
     "deploy:linux": "electron-builder --linux --publish always"
   },
   "devDependencies": {
-    "electron": "^21.2.2",
-    "electron-builder": "^23.6.0"
+    "electron": "^22.0.0",
+    "electron-builder": "^24.0.0-alpha.7"
   },
   "dependencies": {
     "arch": "^2.1.2",
