@@ -405,6 +405,12 @@ ipcMain.on("launch-modpack", async (event, options) => {
 
     if (!instanceManager.isActive(options.id)) {
 
+        instanceManager.setUserInfo({
+            "UUID": user.id,
+            "playerName": user.nickname,
+            "accessToken": user.accessToken || "{}"
+        });
+
         const eventEmitter = await instanceManager.createInstance(options.id);
         instanceManager.fetchIcon(options.id).catch((error) => {
             log.error(`Could not fetch icon for modpack '${options.id}'. ${error}`);
