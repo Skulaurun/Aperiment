@@ -25,5 +25,6 @@ nsis:
   perMachine: true
   allowToChangeInstallationDirectory: true
   license: LICENSE
+  include: nsis/installer.nsh
 appImage:
   artifactName: ${productName}-${version}-linux-${arch}.${ext}

@@ -68,6 +68,8 @@ function crashHandler(error) {
 process.on("uncaughtException", crashHandler);
 process.on("unhandledRejection", crashHandler);
 
+let isLoaded = false;
+let commandQueue = [];
 let instanceManager, config, user;
 let loadWindow, loginWindow, mainWindow;
 
@@ -87,23 +89,46 @@ if (!app.requestSingleInstanceLock()) {
     app.quit();
 }
 
-app.on("second-instance", () => {
+function processArguments(arguments) {
 
-    let windows = [loadWindow, loginWindow, mainWindow];
-    for (let i = 0; i < windows.length; i++) {
+    const url = arguments.find((argument) => {
+        return argument.toLowerCase().startsWith("aperiment:")
+    });
 
-        let window = windows[i];
+    if (url) {
+        const command = () => {
+            try {
+                const { host, query } = parseUrl(url, true);
+                switch(host) {
+                    case 'launch':
+                        const instanceConfig = instanceManager.findRemote(query["remote"]);
+                        if (instanceConfig) {
+                            mainWindow.send("force-launch", instanceConfig["id"]);
+                        }
+                        break;
+                }
+            } catch (error) {
+                log.error(`Failed to execute command '${url}' with error. ${error}`);
+            }
+        };
+        if (isLoaded) { command(); }
+        else { commandQueue.push(command); }
+    }
+
+}
+
+app.on("second-instance", (_, argv) => {
+
+    processArguments(argv);
+
+    [loadWindow, loginWindow, mainWindow].forEach((window) => {
         if (window && window.isVisible()) {
-            
             if (window.isMinimized()) {
                 window.restore();
             }
-
             window.focus();
-
         }
-
-    }
+    });
 
 });
 
@@ -201,8 +226,9 @@ app.once("ready", () => {
 
 ipcMain.once("app-start", () => {
 
-    const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+    processArguments(process.argv);
 
+    const { width, height } = screen.getPrimaryDisplay().workAreaSize;
     loginWindow = new BrowserWindow({
         title: "Aperiment",
         width: Math.round(width / 4),
@@ -329,6 +355,13 @@ ipcMain.on("app-version", (event) => {
 
     sender.send("app-version", app.getVersion());
 
+});
+
+ipcMain.on("app-load-finish", () => {
+    isLoaded = true;
+    commandQueue.forEach((command) => {
+        command();
+    });
 });
 
 ipcMain.on("window-close", (event) => {

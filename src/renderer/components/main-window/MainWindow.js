@@ -625,11 +625,15 @@ ipcRenderer.on("load-modpacks", (event, modpacks) => {
 });
 
 ipcRenderer.on("load-icons", (_, icons) => {
+
     let modpackContainer = document.getElementById("modpack-container");
     for (const [id, icon] of Object.entries(icons)) {
         const modpackIcon = modpackContainer.querySelector(`.modpack-item[id="${id}"] img`);
         modpackIcon.src = `${icon}?${new Date().getTime()}`;
     }
+
+    ipcRenderer.send("app-load-finish");
+
 });
 
 ipcRenderer.on("load-settings", (event, settings) => {
@@ -817,6 +821,10 @@ ipcRenderer.on("load-changelog", (event, html) => {
         });
     });
 
+});
+
+ipcRenderer.on("force-launch", (_, id) => {
+    document.getElementById(id)?.click();
 });
 
 function onSaveSettings() {
