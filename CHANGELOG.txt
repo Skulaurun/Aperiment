@@ -1,3 +1,6 @@
+# 1.0.1
+- Fix userInfo hardcoded to 'Herobrine' 2ff62d7a28ddfe3f12a356b95de79896b5b858b1
+
 # 1.0.0
 - Fix changelog parse function - allow empty commits cb93fce2c5d10028d741bc121126ff8b69152440
 - Fix changelog style bugs (line-height, margin) 36ca5ea7dec7ca905379535898753da5c27ae6f7
