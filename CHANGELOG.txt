@@ -1,3 +1,53 @@
+# 1.0.0
+- Fix changelog parse function - allow empty commits cb93fce2c5d10028d741bc121126ff8b69152440
+- Fix changelog style bugs (line-height, margin) 36ca5ea7dec7ca905379535898753da5c27ae6f7
+- Fix 'process-exit' event sent twice 48a40c796b9104823ab0d93cb8f7601bdfc31975
+- Improve CHANGELOG.txt path resolution 833303c06dbdbc44747713b17a8a5b81a43328c4
+- Use log4js for better logging (breaking-change) 090f03f0b0723cb7f82161f7b51b91990ea10c1b
+- Move global variables from App.js into Global.js 00690d7000583d29cb096df21efdd178b7ad4ef9
+- Rework crash handler (showMessageBoxSync) b51301c13d518cec7dc07f13126598f55237e887
+- Add linux target to electron-builder.yml 0e5660a7b9841881387d3ed8225a3c57324bae50
+- Update Aperiment logo and window title 934530165e1ce4d4cad41336f09dd131afd17a1f fe2bd698093a40842fed59086508ce73c68e3011
+- Set InstanceManager default config in App.js 4f2b84020624d918fd7e2e549fbfb61cd058ede0
+- Add functionality to migrate legacy files cd7809d1c6537250576cd293572f6e911e8c822f f5765597d6a4180fcdc21efd9986164d7b8bb15d b8d0c851c182b047a7b7b574abc1d2eaf80ffcd7
+- Improve npm scripts and build configuration aa59b5d237325999d5082dcd0378903d38f888ef e1dceb58d7438d1281dc47090ef50c76be79e6da
+- Use electron-builder.yml for build configuration 887068e064e31492b5aa87ff428cee39562b03da 449a9d929d28e89c365b2871e86d4d2495342928 1ac437793875f73b8037d1ff461a5345f95a7d11
+- Remove redundant package 'uuid' from package.json 9c871111692ca1c3871e8c8e6bfdf1053502c69c
+- Remove redundant dependency on 'rimraf' 0299ff63c321b87f09d10a7a9a24b8fc8e8a0587
+- Remove package dependency Nano ID 1355edb02695c59297848202539d5364271e343e
+- Preserve legacy appId 'com.skulaurun.aper' GUID 037e2a5f28148164ac55c071cb0f85b61ba425c2
+- Use crypto.randomBytes(...) for ID generation 94a0cac258008525b5323d1cfc38afe45301852a
+- Improve instance path resolution b068c986c256d9047d3de3343c8084a9c1c18cdd b9180521d44b88ec79268eb09ac57dada13d2dd7
+- Make modpack context menu fixed width of 200px 18daf650564e0b37452f48d3a9b8e093aa549e16
+- Instance configs shouldn't be stored inside cache ef79a3e1d4cf58f56cd658667ac3d28a64706022
+- Change default data directory (breaking-change) d126aaf11943fe2f310cb5b2f8fe41de9f4e2e20
+- Implement modpack context menu - 'Open Folder' 5b19327a1beda02b8883b434ed43e09945089800
+- Rename cache 'bin' directory to 'clients' 51340f2e4aea190df5fbe353698bc17c056da901
+- Update project name A-Periment to Aperiment 9a4dbee5c34f1700aa2b0ce2fb8c21b56de60476 26964e8165261bcb2a5654700e91c46444ffd919
+- Fix bugs caused by Minecraft API rewrite 5b6bb5dd9900ca8b7e8827fa21da80a29e241066 b9f8e90e124f14139df0b76449c92a78d7bd756b
+- Refactoring: Change renderer folder structure 167a8f6cd0aa53455c8abbfe97f15bab30b5f258 ed5cec50c199cf9558bbaf1fd1755193fb87b254
+- Refactoring: Rename 'app.js' to 'App.js' 8b663007d58ed34e4f64e68c41047cc7958b07a9
+- Refactoring: Improve directory structure 14abec88a6ec3dd9649414b0261c142ccaf266e0 cb87d089518fa3150f017494345fa845c2fa1007
+- Refactoring: Remove unused variables and classes 0021c26cc5014295f9cc29b3cdb69961fd4a4b34
+- Refactoring: Redesign project structure and code 6eb735c2961f549d68afda9663ce698f586fcfd3 83ed1779ad0feb1bb724d4a9f49ed8e5f369eca3 fdadbf3c16f8e9633674778de1854b7e932e1538 eb9972ae772a7339b6e9afbb8bf91b041eb4f92f
+- Refactoring: Get rid of 'overrides.js' script 3ebbd72c85fa001021e344b61738535e0d238450
+- Refactoring: Remove HTML helper script include 61f4f546ca0aaa9f87d085b1b3540660b6fc91a0
+- Fix 'storage.js' wrongly named function 4fd49fe795e0114ad2bb6334c283c7bd706d942b
+- Refactoring: Get rid of 'helper.js' script 57acbd80bcde00c8495e30ceba5fa52dfe00a4ff
+- Adjust modpack icon loading to new Minecraft API 4494cfd76ff3b4dcedba906f1c9206c56d88edbc
+- Update default modpack icon 9a196051d444b6169ac80fcfa45dbca01f917191
+- Adjust 'modpack properties' to new Minecraft API 9196bb67e27700fef2b8d3bf4ded985b40f21081
+- Change style of non-readonly modpack properties 7777a4a74c4597c4a31daa17644a9b77f47396de
+- Add QoL method isLoaded(...) to Instance Manager 48d72ee25813635452f2a91b819b7d349a805cd1 32652c236b42ba18f07c54ec0f1f3b39d431be0d
+- Preserve remote when using addFromRemote(...) b973b247cc43b71d1a162a330f6b091e3f91546e
+- Implement Fabric Loader support b67184c7c8b2304d7da87d20ec16da25eba0ea13
+- Configure instance config in addFromManifest() b0a98291e69cb1cefbe65a66c6eb7e07a58ca73f
+- Reimplement check for duplicate modpacks via URL 3d89f185b0cf3e43f10b887951497378b59d899d
+- Rewrite launcher Minecraft API (breaking-change) 35344a8392bfe1b3797ec95493b8458c36a88967 bfedf97eca487a94e78f7168b80cdb800d04ecb5 cc481f079913d8040a37d695bcc106097f645593 ef79a3e1d4cf58f56cd658667ac3d28a64706022
+- Update axios to version 1.1.3 (breaking-change) 20488e7accd7ac6890348f89fffefd3c6c5f163e ea7178836ccdfacc105eb424ff10e0e6456059d8
+- Fix modpack 'status-bar' background style 98122313eb54355f68560326a8c2325f2b1baac6
+- Fix modpack exit code on forced-shutdown a87634e19460b63021732482126ee9760593199f
+
 # 0.14.1
 - Fix compatibility with Unix-like operating systems 85d54b96978de3859b2de41b2b3e17afff861906
 - Use path.join() when concatenating paths II. f4fef8fa317342de5c83eb361b74237e78638183 d84ba3fb94a902f78de88047b302e54fae4dfb28
