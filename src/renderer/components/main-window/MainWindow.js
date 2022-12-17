@@ -823,8 +823,8 @@ ipcRenderer.on("load-changelog", (event, html) => {
 
 });
 
-ipcRenderer.on("force-launch", (_, id) => {
-    document.getElementById(id)?.click();
+ipcRenderer.on("force-click", (_, selector) => {
+    document.querySelector(selector)?.click();
 });
 
 function onSaveSettings() {

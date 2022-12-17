@@ -103,7 +103,8 @@ function processArguments(arguments) {
                     case 'launch':
                         const instanceConfig = instanceManager.findRemote(query["remote"]);
                         if (instanceConfig) {
-                            mainWindow.send("force-launch", instanceConfig["id"]);
+                            mainWindow.send("force-click", `.menu-item[name=library]`);
+                            mainWindow.send("force-click", `[id='${instanceConfig["id"]}']`);
                         }
                         break;
                 }
