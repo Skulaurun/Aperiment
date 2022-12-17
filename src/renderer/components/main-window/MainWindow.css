@@ -201,18 +201,24 @@
     font-weight: bold;
 }
 .changelog-content .version-title {
-    margin-bottom: 10px;
+    margin-bottom: 4px;
 }
 .changelog-content .changelog-line {
-    margin-bottom: 10px;
+    display: flex;
+    margin-bottom: 4px;
+    line-height: 22px;
 }
 .changelog-content .changelog-line::before {
     content: "-";
     margin-right: 16px;
 }
+.changelog-content .changelog-line span {
+    margin-right: 4px;
+}
 .changelog-content .changelog-line a {
+    display: inline-block;
     color: rgb(60, 207, 92);
-    margin-left: 4px;
+    margin-right: 4px;
     text-decoration: none;
     padding: 4px;
     border-radius: 8px;

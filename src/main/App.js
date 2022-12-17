@@ -549,7 +549,9 @@ async function loadChangelog() {
                         commitHTMLBuffer += `<a href='https://github.com/Skulaurun/Aperiment/commit/${commit}'>${commit.substring(0, 7)}</a>`;
                     }
                     line = line.trim();
-                    outputHTMLBuffer += `<div class='changelog-line'>${line}${commitHTMLBuffer}</div>`;
+                    outputHTMLBuffer += `<div class='changelog-line'>`;
+                    outputHTMLBuffer += `<div class='flex-wrapper'><span>${line}</span>${commitHTMLBuffer}</div>`;
+                    outputHTMLBuffer += `</div>`;
                 }
             }
         }
