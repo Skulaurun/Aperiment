@@ -359,10 +359,19 @@ ipcMain.on("app-version", (event) => {
 });
 
 ipcMain.on("app-load-finish", () => {
-    isLoaded = true;
-    commandQueue.forEach((command) => {
-        command();
-    });
+    const loadFinish = () => {
+        isLoaded = true;
+        commandQueue.forEach((command) => {
+            command();
+        });
+    };
+    if (mainWindow.isVisible()) {
+        loadFinish();
+    } else {
+        mainWindow.on("show", () => {
+            loadFinish();
+        });
+    }
 });
 
 ipcMain.on("window-close", (event) => {
