@@ -102,9 +102,19 @@ function processArguments(arguments) {
                 switch(host) {
                     case 'launch':
                         const instanceConfig = instanceManager.findRemote(query["remote"]);
-                        if (instanceConfig) {
+                        const launch = (loadedId) => {
                             mainWindow.send("force-click", `.menu-item[name=library]`);
-                            mainWindow.send("force-click", `[id='${instanceConfig["id"]}']`);
+                            mainWindow.send("force-click", `[id='${loadedId}']`);
+                        };
+                        if (instanceConfig) {
+                            launch(instanceConfig["id"]);
+                        } else {
+                            ipcMain.emit("add-modpack", {}, query["remote"]);
+                            ipcMain.once("new-instance-config", (_, instanceConfig) => {
+                                if (instanceConfig && instanceConfig["config"]["remote"] === query["remote"]) {
+                                    launch(instanceConfig["id"]);
+                                }
+                            });
                         }
                         break;
                 }
@@ -359,18 +369,21 @@ ipcMain.on("app-version", (event) => {
 });
 
 ipcMain.on("app-load-finish", () => {
-    const loadFinish = () => {
-        isLoaded = true;
-        commandQueue.forEach((command) => {
-            command();
-        });
-    };
-    if (mainWindow.isVisible()) {
-        loadFinish();
-    } else {
-        mainWindow.on("show", () => {
+    if (!isLoaded) {
+        const loadFinish = () => {
+            commandQueue.forEach((command) => {
+                command();
+            });
+            isLoaded = true;
+            commandQueue = [];
+        };
+        if (mainWindow.isVisible()) {
             loadFinish();
-        });
+        } else {
+            mainWindow.once("show", () => {
+                loadFinish();
+            });
+        }
     }
 });
 
@@ -438,6 +451,9 @@ ipcMain.on("add-modpack", async (event, url) => {
         instanceManager.saveConfig(instanceConfig['id']);
         mainWindow.send("modpack-add", instanceConfig['manifest']);
         mainWindow.send("load-modpacks", Object.values(instanceManager.loadedConfigs));
+        ipcMain.once("app-load-finish", () => {
+            ipcMain.emit("new-instance-config", {}, instanceConfig);
+        });
     } catch (error) {
         mainWindow.send("modpack-add", null, `${error}`);
     }
