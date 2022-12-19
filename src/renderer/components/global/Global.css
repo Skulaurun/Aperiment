@@ -31,8 +31,8 @@ html, body {
 }
 
 img {
+    user-select: none;
     -webkit-user-drag: none;
-    -webkit-user-select: none;
 }
 
 .title-bar {
@@ -40,8 +40,8 @@ img {
     width: 100%;
     height: 24px;
     background-color: rgb(35, 35, 35);
+    user-select: none;
     -webkit-app-region: drag;
-    -webkit-user-select: none;
 }
 .window-about {
     float: left;
@@ -63,6 +63,10 @@ img {
     float: right;
     height: 100%;
     -webkit-app-region: no-drag;
+}
+.window-controls svg {
+    width: 24px;
+    height: 24px;
 }
 .window-controls svg > * {
     shape-rendering: crispEdges;

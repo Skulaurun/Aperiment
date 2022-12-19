@@ -95,6 +95,12 @@ function appendConsole(handle, content) {
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    Global.addWindowControls([
+        Global.SvgType.MinimizeButton,
+        Global.SvgType.MaximizeButton,
+        Global.SvgType.CloseButton
+    ]);
+
     Array.from(document.querySelectorAll("tr td.writable-input")).forEach((element) => {
         const inputType = InputType[element.getAttribute("input-type")];
         if (inputType["value"] === InputValue.FILE || inputType["value"] === InputValue.DIRECTORY) {

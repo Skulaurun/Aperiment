@@ -18,50 +18,70 @@
  *
  */
 
-const electron = require("electron");
-const { ipcRenderer } = electron;
+const { ipcRenderer } = require("electron");
 
-function removeEmptyNodes(node) {
+class Global {
 
-    for(let i = 0; i < node.childNodes.length; i++) {
+    static SvgNS = "http://www.w3.org/2000/svg";
+    static SvgType = Object.freeze({ "CloseButton": 0, "MaximizeButton": 1, "MinimizeButton": 2 });
 
-        let child = node.childNodes[i];
-
-        if (child.nodeType === 8 || (child.nodeType === 3 && !/\S/.test(child.nodeValue))) {
-            node.removeChild(child);
-            i--;
+    static createSvg(type) {
+        const svg = document.createElementNS(Global.SvgNS, "svg");
+        switch (type) {
+            case Global.SvgType.CloseButton:
+                const line1 = document.createElementNS(Global.SvgNS, "line");
+                const line2 = document.createElementNS(Global.SvgNS, "line");
+                Object.entries({"x1": "30%", "y1": "30%", "x2": "70%", "y2": "70%"})
+                    .forEach(([key, value]) => { line1.setAttribute(key, value); });
+                Object.entries({"x1": "70%", "y1": "30%", "x2": "30%", "y2": "70%"})
+                    .forEach(([key, value]) => { line2.setAttribute(key, value); });
+                svg.classList.add("close-button");
+                svg.appendChild(line1);
+                svg.appendChild(line2);
+                return svg;
+            case Global.SvgType.MaximizeButton:
+                const rect = document.createElementNS(Global.SvgNS, "rect");
+                Object.entries({"x": "30%", "y": "30%", "width": "40%", "height": "40%", "fill": "none"})
+                    .forEach(([key, value]) => { rect.setAttribute(key, value); });
+                svg.classList.add("maximize-button");
+                svg.appendChild(rect);
+                return svg;
+            case Global.SvgType.MinimizeButton:
+                const line = document.createElementNS(Global.SvgNS, "line");
+                Object.entries({"x1": "30%", "y1": "50%", "x2": "70%", "y2": "50%"})
+                    .forEach(([key, value]) => { line.setAttribute(key, value); });
+                svg.classList.add("minimize-button");
+                svg.appendChild(line);
+                return svg;
         }
-        else if (child.nodeType === 1) {
-            removeEmptyNodes(child);
-        }
-        
+        return null;
+    }
+
+    static addWindowControls(controls) {
+
+        const controlObject = {};
+        controls.forEach((control) => {
+            switch (control) {
+                case Global.SvgType.MinimizeButton:
+                    controlObject["window-minimize"] = Global.createSvg(control);
+                    break;
+                case Global.SvgType.MaximizeButton:
+                    controlObject["window-maximize"] = Global.createSvg(control);
+                    break;
+                case Global.SvgType.CloseButton:
+                    controlObject["window-close"] = Global.createSvg(control);
+                    break;
+            }
+        });
+
+        Object.entries(controlObject).forEach(([event, element]) => {
+            element.addEventListener("click", () => {
+                ipcRenderer.send(event);
+            });
+            document.getElementById("window-controls")
+                ?.appendChild(element);
+        });
+
     }
 
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    removeEmptyNodes(document);
-
-    let minimizeButton = document.querySelector(".window-controls > svg[name=minimize]");
-    if (minimizeButton) {
-        minimizeButton.addEventListener("click", () => {
-            ipcRenderer.send("window-minimize");
-        });
-    }
-
-    let maximizeButton = document.querySelector(".window-controls > svg[name=maximize]");
-    if (maximizeButton) {
-        maximizeButton.addEventListener("click", () => {
-            ipcRenderer.send("window-maximize");
-        });
-    }
-
-    let closeButton = document.querySelector(".window-controls > svg[name=close]");
-    if (closeButton) {
-        closeButton.addEventListener("click", () => {
-            ipcRenderer.send("window-close");
-        });
-    }
-
-});

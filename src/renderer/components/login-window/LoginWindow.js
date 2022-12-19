@@ -20,6 +20,11 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    Global.addWindowControls([
+        Global.SvgType.MinimizeButton,
+        Global.SvgType.CloseButton
+    ]);
+
     let username = document.getElementById("name-field");
     let submit = document.getElementById("submit-button");
 
