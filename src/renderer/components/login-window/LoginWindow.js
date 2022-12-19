@@ -18,6 +18,8 @@
  *
  */
 
+import Global from "../global/Global.js";
+
 document.addEventListener("DOMContentLoaded", () => {
 
     Global.addWindowControls([

@@ -18,6 +18,16 @@
  *
  */
 
+/*
+    Electron does not support ES6 modules,
+    so we need to use CommonJS require() here.
+*/
+const { ipcRenderer } = require("electron");
+
+import Popup from "../popup/Popup.js";
+import Global from "../global/Global.js";
+import { InputElement, SelectBox, PathBox } from "../input/Input.js";
+
 const InputValue = Object.freeze({"FILE": 0, "DIRECTORY": 1, "BOOLEAN": 2, "TEXT": 3});
 const InputType = {
 
@@ -875,7 +885,7 @@ function flattenObject(target, parent, separator = ".") {
     for (const [key, value] of Object.entries(target)) {
         let path = parent ? (parent + separator + key) : key;
         if (Object.prototype.toString.call(value) === "[object Object]") {
-            Object.assign(object, this.flattenObject(value, path));
+            Object.assign(object, flattenObject(value, path));
         } else {
             object[path] = value;
         }

@@ -24,7 +24,7 @@
  *  - https://www.skulaurun.eu/gamebook2
  */
 
-const Popup = {
+export default {
     
     maxQueueLength: 5,
     alertDuration: 6,

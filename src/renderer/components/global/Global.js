@@ -20,7 +20,7 @@
 
 const { ipcRenderer } = require("electron");
 
-class Global {
+export default class Global {
 
     static SvgNS = "http://www.w3.org/2000/svg";
     static SvgType = Object.freeze({ "CloseButton": 0, "MaximizeButton": 1, "MinimizeButton": 2 });

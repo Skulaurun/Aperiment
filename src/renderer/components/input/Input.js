@@ -18,7 +18,9 @@
  *
  */
 
-class InputElement {
+const { ipcRenderer } = require("electron");
+
+export class InputElement {
 
     static lastId = 0;
     static registry = [];
@@ -80,7 +82,7 @@ class InputElement {
 
 }
 
-class SelectBox extends InputElement {
+export class SelectBox extends InputElement {
 
     static visibleMenu = null;
 
@@ -190,7 +192,7 @@ document.addEventListener("click", () => {
     });
 });
 
-class PathBox extends InputElement {
+export class PathBox extends InputElement {
 
     /*
         Options Example
