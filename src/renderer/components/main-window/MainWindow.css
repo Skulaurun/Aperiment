@@ -88,7 +88,7 @@
     background-color: rgb(45, 45, 45);
 }
 .page-item {
-    display: none;
+    visibility: hidden;
     position: absolute;
     top: 0;
     left: 0;
@@ -99,7 +99,7 @@
 }
 .page-item.visible {
     opacity: 1;
-    display: block;
+    visibility: visible;
 }
 .page-title {
     overflow: hidden;
