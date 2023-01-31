@@ -463,7 +463,7 @@ module.exports = class InstanceManager {
             await this.saveConfig(activeId);
 
             await activeInstance['instance'].launch();
-            activeInstance['eventEmitter'].emit('process-start');
+            activeInstance['eventEmitter'].emit('process-start', activeInstance['instance'].process.pid);
         } catch (error) {
             activeInstance['eventEmitter'].emit('internal-error', error);
         }
