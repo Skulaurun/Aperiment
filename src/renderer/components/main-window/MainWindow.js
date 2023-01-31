@@ -26,82 +26,12 @@ const { ipcRenderer } = require("electron");
 
 import Popup from "../popup/Popup.js";
 import Global from "../global/Global.js";
-import { InputElement, SelectBox, PathBox } from "../input/Input.js";
+import { Instance } from "../../Instance.js";
+import { CustomElement } from "../../ElementBuilder.js";
+import { InputType, InputValue, InstanceState } from "../../Enum.js";
+import { InputBox, SelectBox, PathBox } from "../input/Input.js";
 
-const InputValue = Object.freeze({"FILE": 0, "DIRECTORY": 1, "BOOLEAN": 2, "TEXT": 3});
-const InputType = {
-
-    /* Aperiment Settings */
-    "launcher.autoUpdate": {
-        name: "Auto Update",
-        value: InputValue.BOOLEAN
-    },
-    "launcher.allowPrerelease": {
-        name: "Beta Versions",
-        value: InputValue.BOOLEAN
-    },
-    "java": {
-        name: "Java Executable",
-        value: InputValue.FILE,
-        fileTypes: [
-            { name: "Java Executable", extensions: ["exe"] }
-        ]
-    },
-    "minecraftDirectory": {
-        name: "Minecraft Directory",
-        value: InputValue.DIRECTORY
-    },
-
-    /* Modpack Properties */
-    "jvmArguments": { value: InputValue.TEXT }
-
-};
-
-let loadedConfigs = {};
-
-let consoleOutput = null;
-let isConsoleVisible = true;
-
-function encodeWhiteSpaces(string) {
-
-    return string.split("").map(function(c) {
-
-        if (c === " ") return "\u00A0"
-        else return c;
-
-    }).join('');
-
-}
-
-function appendConsole(handle, content) {
-
-    if (!isConsoleVisible) {
-        return;
-    }
-
-    const message = document.createElement("div");
-
-    content.split("\n").forEach((text) => {
-
-        let line = null;
-
-        if (text != "") {
-
-            line = document.createElement("p");
-            line.textContent = encodeWhiteSpaces(text);
-
-        } else {
-            line = document.createElement("br");
-        }
-
-        message.appendChild(line);
-
-    });
-
-    handle.appendChild(message);
-    handle.scrollTo(0, handle.scrollHeight);
-
-}
+let instances = [];
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -111,18 +41,25 @@ document.addEventListener("DOMContentLoaded", () => {
         Global.SvgType.CloseButton
     ]);
 
+    document.querySelector(".page-item[name=library]")
+        ?.appendChild(Instance.launchOverlay.get());
+
     Array.from(document.querySelectorAll("tr td.writable-input")).forEach((element) => {
         const inputType = InputType[element.getAttribute("input-type")];
-        if (inputType["value"] === InputValue.FILE || inputType["value"] === InputValue.DIRECTORY) {
-            new PathBox({
-                default: "",
-                isDirectory: inputType["value"] === InputValue.DIRECTORY,
-                fileTypes: inputType["fileTypes"]
-            }).put(element);
-        } else if (inputType["value"] === InputValue.TEXT) {
-            new InputElement("text", {
-                default: ""
-            }).put(element);
+        if (inputType["value"] === InputValue.File || inputType["value"] === InputValue.Directory) {
+            element.appendChild(
+                new PathBox({
+                    default: "",
+                    isDirectory: inputType["value"] === InputValue.Directory,
+                    fileTypes: inputType["fileTypes"]
+                }).get()
+            );
+        } else if (inputType["value"] === InputValue.Text) {
+            element.appendChild(
+                new InputBox({
+                    default: ""
+                }).get()
+            );
         }
     });
 
@@ -159,179 +96,14 @@ document.addEventListener("DOMContentLoaded", () => {
         entry.appendChild(button);
         modpackStoreList.appendChild(entry);
     }
-    
-    consoleOutput = document.getElementById("console-output");
-    appendConsole(consoleOutput, ">>> Console output window, the JVM logs messages here.\n");
-    isConsoleVisible = false;
 
     ipcRenderer.send("app-version");
 
     let modpackSearchBar = document.getElementById("modpack-search-bar");
     document.getElementById("add-modpack-button").addEventListener("click", () => {
-
         if (modpackSearchBar.value != "") {
             ipcRenderer.send("add-modpack", modpackSearchBar.value);
         }
-
-    });
-
-    let modpackContainer = document.getElementById("modpack-container");
-    let modpackContextMenu = document.getElementById("modpack-context-menu");
-    document.addEventListener("click", () => {
-
-        let item = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
-        if (item) {
-            item.setAttribute("hover", false);
-            item.setAttribute("contextmenu", false);
-        }
-
-        modpackContextMenu.classList.remove("active");
-
-    });
-
-    let modpackProperties = document.getElementById("modpack-properties");
-    let modpackPropertiesTable = document.getElementById("modpack-properties-table");
-    modpackProperties.save = function() {
-
-        let didChange = false;
-        let instanceConfig = null;
-
-        Array.from(modpackPropertiesTable.querySelectorAll("tr:has(input:not([readonly]))"))
-            .filter(e => e.hasAttribute("path") && e.hasAttribute("config-id"))
-            .forEach((element) => {
-
-                instanceConfig = loadedConfigs[element.getAttribute("config-id")];
-
-                let input = element.querySelector("input");
-                let inputId = input.getAttribute("input-id");
-                let inputElement = InputElement.registry.find(x => inputId && x.id == inputId);
-
-                let currentObject = instanceConfig;
-                let path = element.getAttribute("path").split(".");
-                for (let i = 0; i < path.length - 1; i++) {
-                    if (!currentObject.hasOwnProperty(path[i])) {
-                        currentObject[path[i]] = {};
-                    }
-                    currentObject = currentObject[path[i]];
-                }
-
-                if (inputElement.previousValue != inputElement.value()) {
-                    currentObject[path[path.length - 1]] = inputElement.value();
-                    inputElement.save();
-                    didChange = true;
-                }
-
-            });
-
-        if (instanceConfig && didChange) {
-            ipcRenderer.send("save-instance-config", instanceConfig);
-        }
-
-    }
-    modpackProperties.show = function() {
-        this.style.visibility = "visible";
-    }
-    modpackProperties.hide = function() {
-        this.style.visibility = "hidden";
-    }
-    modpackProperties.querySelector("svg").addEventListener("click", () => {
-        modpackProperties.save();
-        modpackProperties.hide();
-    });
-    modpackProperties.querySelector(".modpack-properties-header").addEventListener("mousedown", (event) => {
-
-        event.preventDefault();
-        let element = event.currentTarget.parentElement;
-
-        var internalWindowDrag = function(event) {
-
-            event.preventDefault();
-
-            let posY = element.offsetTop + event.movementY;
-            let posX = element.offsetLeft + event.movementX;
-
-            let rect1 = element.getBoundingClientRect();
-            let rect2 = element.parentElement.getBoundingClientRect();
-
-            if (posY >= 0) {
-
-                let maxHeight = rect2.height - rect1.height;
-
-                if (posY <= maxHeight) {
-                    element.style.top = `${posY}px`;
-                } else {
-                    element.style.top = `${maxHeight}px`;
-                }
-
-            } else {
-                element.style.top = 0;
-            }
-
-            if (posX >= 0) {
-
-                let maxWidth = rect2.width - rect1.width;
-
-                if (posX <= maxWidth) {
-                    element.style.left = `${posX}px`;
-                } else {
-                    element.style.left = `${maxWidth}px`;
-                }
-
-            } else {
-                element.style.left = 0;
-            }
-
-        };
-
-        var stopInternalWindowDrag = function(event) {
-
-            document.removeEventListener("mouseup", stopInternalWindowDrag);
-            document.removeEventListener("mousemove", internalWindowDrag);
-
-        };
-
-        document.addEventListener("mouseup", stopInternalWindowDrag);
-        document.addEventListener("mousemove", internalWindowDrag);
-
-    });
-
-    let lastWidth = window.innerWidth, lastHeight = window.innerHeight;
-    window.addEventListener("resize", (event) => {
-
-        let x = lastWidth - event.target.innerWidth;
-        let y = lastHeight - event.target.innerHeight;
-        let top = parseInt(modpackProperties.style.top);
-        let left = parseInt(modpackProperties.style.left);
-
-        lastWidth = event.target.innerWidth;
-        lastHeight = event.target.innerHeight;
-
-        let rect1 = modpackProperties.getBoundingClientRect();
-        let rect2 = modpackProperties.parentElement.getBoundingClientRect();
-
-        let maxWidth = rect2.width - rect1.width;
-        let maxHeight = rect2.height - rect1.height;
-
-        if (top >= maxHeight) {
-            if ((top - y) < 0) {
-                modpackProperties.style.top = 0;
-            } else {
-                modpackProperties.style.top = `${top - y}px`;
-            }
-        }
-
-        if (left >= maxWidth) {
-            if ((left - x) < 0) {
-                modpackProperties.style.left = 0;
-            } else {
-                modpackProperties.style.left = `${left - x}px`;
-            }
-        }
-
-    });
-
-    modpackPropertiesTable.addEventListener("focusout", () => {
-        modpackProperties.save();
     });
 
     document.getElementById("logout-button").addEventListener("click", () => {
@@ -339,302 +111,47 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("menu-container").querySelectorAll(".menu-item").forEach((node) => {
-
         node.addEventListener("click", () => {
-
             if (!node.classList.contains("selected")) {
-
                 let name = node.getAttribute("name");
-
                 document.querySelector(".menu-item.selected").classList.remove("selected");
                 document.querySelector(".menu-item[name=" + name + "]").classList.add("selected");
-
                 document.querySelector(".page-item.visible").classList.remove("visible");
                 document.querySelector(".page-item[name=" + name + "]").classList.add("visible");
-
             }
-
         });
-
-    });
-    
-    const resizeHandle = document.getElementById("console-resize-handle");
-    const toggleConsole = document.getElementById("toggle-console");
-
-    let clearConsole = (isClosed) => {
-        if (isClosed) {
-            let clonedNode = consoleOutput.children[0].cloneNode(true);
-            consoleOutput.innerHTML = "";
-            consoleOutput.appendChild(clonedNode);
-        }
-        isConsoleVisible = !isClosed;
-    };
-
-    let consoleVisible = false;
-    toggleConsole.addEventListener("click", () => {
-        if (!consoleVisible) {
-            consoleOutput.parentElement.style.height = `${window.innerHeight / 3}px`;
-        } else {
-            consoleOutput.parentElement.style.height = "0px";
-        }
-        consoleVisible = !consoleVisible;
-        clearConsole(!consoleVisible);
-    });
-
-    let onConsoleResize = (e) => {
-        let newHeight = consoleOutput.parentElement.offsetHeight - e.movementY;
-        if (modpackContainer.offsetHeight + 16 >= newHeight) {
-            consoleOutput.parentElement.style.height = `${newHeight}px`;
-            if (newHeight <= 0) {
-                consoleVisible = false;
-                consoleOutput.style.overflowY = "hidden";
-            } else if (newHeight > 0) {
-                consoleVisible = true;
-                consoleOutput.style.overflowY = "scroll";
-            }
-        }
-        clearConsole(!consoleVisible);
-    };
-
-    resizeHandle.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        consoleOutput.style.userSelect = "none";
-        window.addEventListener("mousemove", onConsoleResize);
-    });
-    window.addEventListener("mouseup", (e) => {
-        consoleOutput.style.userSelect = "text";
-        window.removeEventListener("mousemove", onConsoleResize);
-    });
-
-    let lastY = window.innerHeight;
-    window.addEventListener("resize", (e) => {
-        let difference = window.innerHeight - lastY;
-        if (difference < 0) {
-            if (modpackContainer.offsetHeight + 16 < consoleOutput.parentElement.offsetHeight - difference) {
-                let newHeight = consoleOutput.parentElement.offsetHeight + difference;
-                consoleOutput.parentElement.style.height = `${newHeight}px`;
-            }
-        }
-        lastY = window.innerHeight;
     });
 
 });
 
-ipcRenderer.on("app-version", (event, version) => {
-
+ipcRenderer.on("app-version", (_, version) => {
     let versionElement = document.getElementById("app-version");
     versionElement.textContent += version;
-
 });
 
-ipcRenderer.on("load-modpacks", (event, modpacks) => {
+ipcRenderer.on("load-modpacks", (_, configs) => {
 
-    let modpackContainer = document.getElementById("modpack-container");
-    let modpackContextMenu = document.getElementById("modpack-context-menu");
+    const instanceContainer = document.getElementById("modpack-container");
 
-    let modpackProperties = document.getElementById("modpack-properties");
-    let modpackPropertiesTable = document.getElementById("modpack-properties-table");
-    
-    modpackContainer.innerHTML = "";
-    for (let i = 0; i < modpacks.length; i++) {
+    /* In case of a reload */
+    instances.forEach((instance) => {
+        instance.destroy();
+    });
+    instances.length = 0;
 
-        let modpack = modpacks[i];
-        loadedConfigs[modpack["id"]] = modpacks[i];
+    configs.forEach((config) => {
+        instances.push(new Instance(config));
+    });
 
-        let item = document.createElement("div");
-        item.setAttribute("id", modpack["id"]);
-        item.setAttribute("name", modpack["manifest"]["name"]);
-        item.setAttribute("hover", false);
-        item.setAttribute("running", false);
-        item.setAttribute("contextmenu", false);
-        item.classList.add("modpack-item");
-    
-        let icon = document.createElement("img");
-        icon.src = "../../assets/images/modpack.png";
-        item.appendChild(icon);
+    instances.sort(({ config: { manifest: a } }, { config: { manifest: b } }) => {
+        let nameA = a.name.toLowerCase();
+        let nameB = b.name.toLowerCase();
+        return nameA.localeCompare(nameB);
+    });
 
-        let statusBar = document.createElement("div");
-        statusBar.classList.add("status-bar");
-        statusBar.appendChild(document.createElement("div")).classList.add("line", "progress");
-        statusBar.appendChild(document.createElement("div")).classList.add("line", "infinite-increase");
-        statusBar.appendChild(document.createElement("div")).classList.add("line", "infinite-decrease");
-        statusBar.setMode = function(mode) {
-
-            if (this.getAttribute("mode") === mode) return;
-        
-            switch (mode) {
-    
-                case "NONE":
-                    this.style.display = "none";
-                    this.children[0].style.display = "none";
-                    this.children[1].style.display = "none";
-                    this.children[2].style.display = "none";
-                    break;
-    
-                case "PROGRESS":
-                    this.style.display = "block";
-                    this.children[0].style.display = "block";
-                    this.children[1].style.display = "none";
-                    this.children[2].style.display = "none";
-                    break;
-    
-                case "INFINITE":
-                    this.style.display = "block";
-                    this.children[0].style.display = "none";
-                    this.children[1].style.display = "block";
-                    this.children[2].style.display = "block";
-                    break;
-    
-                default:
-                    return;
-    
-            }
-    
-            this.setAttribute("mode", mode);
-
-        };
-        statusBar.setValue = function(value) {
-            this.children[0].style.width = `${value}%`;
-        }
-        statusBar.setMode("NONE");
-        item.appendChild(statusBar);
-
-        let statusCircle = document.createElement("div");
-        statusCircle.classList.add("status-circle");
-        statusCircle.setAttribute("state", "DEFAULT");
-        item.appendChild(statusCircle);
-    
-        item.addEventListener("click", (event) => {
-
-            let target = event.currentTarget;
-            if (target.getAttribute("running") === "false") {
-        
-                target.querySelector(".status-bar").setMode("INFINITE");
-                target.setAttribute("running", true);
-    
-                ipcRenderer.send("launch-modpack", {
-                    id: target.getAttribute("id"),
-                    vma: target.getAttribute("vma"),
-                    url: target.getAttribute("url"),
-                    directory: target.getAttribute("directory")
-                });
-    
-            }
-
-        });
-
-        item.addEventListener("mouseenter", () => { item.setAttribute("hover", true); });
-        item.addEventListener("mouseleave", () => {
-            if (item.getAttribute("contextmenu") === "false") {
-                item.setAttribute("hover", false);
-            }
-        });
-
-        item.addEventListener("contextmenu", (event) => {
-
-            event.preventDefault();
-
-            let last = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
-            if (last) {
-                last.setAttribute("hover", false);
-                last.setAttribute("contextmenu", false);
-            }
-
-            modpackContextMenu.innerHTML = "";
-            [
-                {
-                    "name": item.getAttribute("running") === "true" ? "Stop" : "Start",
-                    "action": function(modpack) {
-                        if (item.getAttribute("running") === "true") {
-                            ipcRenderer.send("terminate-modpack", item.getAttribute("id"));
-                        } else {
-                            modpack.click();
-                        }
-                    }
-                },
-                {
-                    "name": "Open Folder",
-                    "action": function(modpack) {
-                        let instanceConfig = loadedConfigs[modpack.getAttribute("id")];
-                        ipcRenderer.send("open-instance-folder", instanceConfig["id"]);
-                    }
-                },
-                {
-                    "name": "Properties",
-                    "action": function(modpack) {
-
-                        const windowTitle = modpackProperties.querySelector(".modpack-window-title");
-                        let modpackName = modpack.getAttribute("name");
-                        if (modpackName) {
-                            windowTitle.textContent = modpackName.substring(0, 40);
-                            if (modpackName.length > 40) {
-                                windowTitle.textContent += "...";
-                            }
-                        }
-
-                        Array.from(modpackPropertiesTable.querySelectorAll("tr:has(input)"))
-                            .filter(e => e.hasAttribute("path"))
-                            .forEach((element) => {
-                                element.setAttribute("config-id", modpack.getAttribute("id"));
-                                let path = element.getAttribute("path").split(".");
-                                let input = element.querySelector("input");
-                                let currentObject = loadedConfigs[element.getAttribute("config-id")];
-                                for (const key of path) {
-                                    if (typeof currentObject !== "object" || !currentObject.hasOwnProperty(key)) {
-                                        currentObject = undefined;
-                                        break;
-                                    }
-                                    currentObject = currentObject[key];
-                                }
-                                if (Array.isArray(currentObject)) {
-                                    currentObject = currentObject.join(", ");
-                                }
-                                if (typeof currentObject !== "undefined") {
-                                    input.value = currentObject;
-                                } else {
-                                    input.value = "None";
-                                }
-                                if (input.hasAttribute("input-id")) {
-                                    let inputId = input.getAttribute("input-id");
-                                    InputElement.registry.find(x => inputId && x.id == inputId)
-                                        ?.save();
-                                }
-                        });
-                        modpackProperties.show();
-
-                    }
-                }
-            ].forEach((object) => {
-        
-                let item = document.createElement("div");
-                item.classList.add("context-menu-item");
-                item.textContent = object.name;
-                item.onclick = () => {
-        
-                    let modpack = modpackContainer.querySelector(".modpack-item[contextmenu=true]");
-                    if (modpack) {
-                        object.action(modpack);
-                    }
-        
-                };
-        
-                modpackContextMenu.appendChild(item);
-        
-            });
-
-            item.setAttribute("contextmenu", true);
-            modpackContextMenu.classList.add("active");
-            modpackContextMenu.style.top = `${item.offsetTop + event.offsetY + 1}px`;
-            modpackContextMenu.style.left = `${item.offsetLeft + event.offsetX + 1}px`;
-
-        });
-
-        modpackContainer.appendChild(item);
-
-    }
-
-    let modpackCount = document.getElementById("modpack-count");
-    modpackCount.textContent = modpacks.length + (modpacks.length === 1 ? " modpack" : " modpacks");
+    instances.forEach((instance) => {
+        instanceContainer.appendChild(instance.icon.get());
+    });
 
     ipcRenderer.send("load-icons");
 
@@ -644,7 +161,9 @@ ipcRenderer.on("load-icons", (_, icons) => {
 
     let modpackContainer = document.getElementById("modpack-container");
     for (const [id, icon] of Object.entries(icons)) {
-        const modpackIcon = modpackContainer.querySelector(`.modpack-item[id="${id}"] img`);
+        const modpackIcon = modpackContainer.querySelector(
+            `.instance-icon[id="${id}"] img`
+        );
         modpackIcon.src = `${icon}?${new Date().getTime()}`;
     }
 
@@ -695,7 +214,7 @@ ipcRenderer.on("load-settings", (event, settings) => {
         let valueElement = document.createElement("td");
 
         if (InputType.hasOwnProperty(key)) {
-            if (InputType[key]["value"] === InputValue.BOOLEAN) {
+            if (InputType[key]["value"] === InputValue.Boolean) {
                 valueInputBox = new SelectBox({
                     default: value,
                     options: {
@@ -703,21 +222,21 @@ ipcRenderer.on("load-settings", (event, settings) => {
                         "Disabled": false
                     }
                 });
-            } else if (InputType[key]["value"] === InputValue.DIRECTORY || InputType[key]["value"] === InputValue.FILE) {
+            } else if (InputType[key]["value"] === InputValue.Directory || InputType[key]["value"] === InputValue.File) {
                 valueInputBox = new PathBox({
                     default: value,
-                    isDirectory: InputType[key]["value"] === InputValue.DIRECTORY,
+                    isDirectory: InputType[key]["value"] === InputValue.Directory,
                     fileTypes: InputType[key]["fileTypes"]
                 });
             }
         } else {
-            valueInputBox = new InputElement("text", { default: value });
+            valueInputBox = new InputBox({ default: value });
         }
 
-        valueInputBox.put(valueElement);
         setting.appendChild(keyElement);
         setting.appendChild(valueElement);
         settingsTable.appendChild(setting);
+        valueElement.appendChild(valueInputBox.get());
 
         inputList.push(valueInputBox);
         valueInputBox.save();
@@ -751,71 +270,70 @@ ipcRenderer.on("load-settings", (event, settings) => {
 
 });
 
-ipcRenderer.on("modpack-download-progress", (event, id, progress) => {
+ipcRenderer.on("modpack-download-progress", (_, id, progress) => {
 
-    let modpack = document.getElementById(id);
-    let percentage = (progress.loaded.size / progress.total.size) * 100;
+    let progressPercentage = (progress.loaded.size / progress.total.size) * 100;
 
-    modpack.children[1].setMode("PROGRESS");
-    modpack.children[1].setValue(percentage);
+    let loadedMB = (progress.loaded.size / 1000000).toFixed(2);
+    let totalMB = (progress.total.size / 1000000).toFixed(2);
 
-});
-
-ipcRenderer.on("modpack-start", (event, id) => {
-
-    let modpack = document.getElementById(id);
-
-    modpack.children[1].setMode("INFINITE");
-    modpack.children[2].setAttribute("state", "STARTING");
-
-    appendConsole(consoleOutput, ">>> Modpack '" + modpack.getAttribute("name") + "' is starting ...\n");
-
-});
-
-ipcRenderer.on("modpack-stdout", (event, id, data) => {
-
-    let modpack = document.getElementById(id);
-
-    /*if (data.indexOf("[FML]: Forge Mod Loader has successfully loaded") !== -1) {
-        modpack.children[1].setMode("NONE");
-        modpack.children[2].setAttribute("state", "RUNNING");
-    }*/
-
-    if (data.indexOf("LWJGL") !== -1) {
-        modpack.children[1].setMode("NONE");
-        modpack.children[2].setAttribute("state", "RUNNING");
+    const instance = instances.find(i => i.id === id);
+    if (instance) {
+        instance.update({
+            state: InstanceState.Fetching,
+            progressSize: `${loadedMB} / ${totalMB} MB`,
+            progressValue: progressPercentage,
+            progressText: progress.file
+        });
     }
 
-    appendConsole(consoleOutput, new String(data));
+});
 
+ipcRenderer.on("modpack-start", (_, id, pid) => {
+    const instance = instances.find(i => i.id === id);
+    if (instance) {
+        instance.update({
+            processId: pid,
+            progressText: "Starting"
+        });
+    }
+});
+
+ipcRenderer.on("modpack-stdout", (_, id, data) => {
+    if (data.indexOf("LWJGL") !== -1) {
+        const instance = instances.find(i => i.id === id);
+        if (instance && instance.activeState["state"] > InstanceState.Idle) {
+            instance.update({
+                state: InstanceState.Running
+            });
+        }
+    }
 });
 
 ipcRenderer.on("modpack-stderr", (event, id, data) => {
-    appendConsole(consoleOutput, new String(data));
+
 });
 
 ipcRenderer.on("modpack-error", (event, id, error) => {
-
-    let modpack = document.getElementById(id);
-
-    modpack.setAttribute("running", false);
-    modpack.children[1].setMode("NONE");
-    modpack.children[2].setAttribute("state", "DEFAULT");
-
-    appendConsole(consoleOutput, new String(error));
-
+    const instance = instances.find(i => i.id === id);
+    if (instance) {
+        instance.update({
+            state: InstanceState.Idle,
+            exitError: error,
+            progressText: `⚠️ ${error}`
+        });
+    }
 });
 
 ipcRenderer.on("modpack-exit", (event, id, code) => {
-
-    let modpack = document.getElementById(id);
-
-    modpack.setAttribute("running", false);
-    modpack.children[1].setMode("NONE");
-    modpack.children[2].setAttribute("state", "DEFAULT");
-
-    appendConsole(consoleOutput, ">>> Exited with code: " + new String(code));
-
+    const instance = instances.find(i => i.id === id);
+    if (instance) {
+        instance.update({
+            state: InstanceState.Idle,
+            exitCode: code,
+            progressText: `⚠️ The process exited with code ${code}`
+        });
+    }
 });
 
 ipcRenderer.on("modpack-add", (event, modpack, error) => {
@@ -827,6 +345,8 @@ ipcRenderer.on("modpack-add", (event, modpack, error) => {
 });
 
 ipcRenderer.on("load-changelog", (event, html) => {
+
+    // this is wrong
 
     document.getElementById("changelog-content").innerHTML = html;
 
@@ -852,19 +372,11 @@ function onSaveSettings() {
 
         let key = setting.getAttribute("setting-name");
         let inputId = setting.querySelector("input")?.getAttribute("input-id");
-        let inputElement = InputElement.registry.find(x => inputId && x.id == inputId);
+        let inputElement = CustomElement.registry.find(x => inputId && x.id == inputId);
 
         if (inputElement) {
             let value = inputElement.value();
             inputElement.save();
-            /*switch (setting.getAttribute("data-type")) {
-                case "number":
-                    value = Number(value);
-                    break;
-                case "boolean":
-                    value = (value === "true");
-                    break;
-            }*/
             settings[key] = value;
         }
 

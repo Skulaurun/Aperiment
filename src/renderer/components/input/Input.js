@@ -20,38 +20,33 @@
 
 const { ipcRenderer } = require("electron");
 
-export class InputElement {
+import { CustomElement } from "../../ElementBuilder.js";
+export class InputBox extends CustomElement {
 
-    static lastId = 0;
-    static registry = [];
-
-    constructor(className, options) {
-        this.id = InputElement.lastId++;
-        this.className = className;
-        this.options = options;
-        this._createElement();
+    constructor(options) {
+        super(
+            Object.assign({ className: "input-box" }, options)
+        );
     }
 
-    _createElement() {
+    _createElement(children = []) {
 
-        this.parentElement = document.createElement("div");
-        this.parentElement.classList.add(
-            "input-parent-element",
-            `input-${this.className}`
-        );
+        super._createElement([
+            {
+                type: "input",
+                attributeList: {
+                    "type": "text"
+                },
+                classList: ["input-box"],
+                assign: "inputBox"
+            },
+            ...children
+        ]);
 
-        this.inputBox = document.createElement("input");
-        this.inputBox.setAttribute("input-id", this.id);
-        this.inputBox.setAttribute("type", "text");
-        this.inputBox.classList.add("input-box");
         this.previousValue = null;
-
         if (this.options["default"]) {
             this.inputBox.value = this.options["default"];
         }
-
-        this.parentElement.appendChild(this.inputBox);
-        InputElement.registry.push(this);
 
     }
 
@@ -65,24 +60,13 @@ export class InputElement {
         }
     }
 
-    insert(position, targetElement) {
-        targetElement.insertAdjacentElement(position, this.parentElement);
+    value() {
+        return this.inputBox.value;
     }
-
-    put(otherElement) {
-        otherElement.appendChild(this.parentElement);
-    }
-
-    destroy() {
-        this.parentElement.remove();
-        InputElement.registry = InputElement.registry.filter(element => element !== this);
-    }
-
-    value() { return this.inputBox.value; }
 
 }
 
-export class SelectBox extends InputElement {
+export class SelectBox extends InputBox {
 
     static visibleMenu = null;
 
@@ -91,35 +75,41 @@ export class SelectBox extends InputElement {
         options: { "Enabled": true, "Disabled": false }
     */
     constructor(options) {
-        super("select-box", options);
+        super(
+            Object.assign({ className: "select-box" }, options)
+        );
         this.isMenuOpen = false;
         this.hasFocus = false;
     }
 
     _createElement() {
 
-        super._createElement();
-        this.inputBox.setAttribute("readonly", true);
-
-        const arrowDown = document.createElement("div");
-        arrowDown.addEventListener("click", () => { this.hasFocus = true; });
-        arrowDown.classList.add("arrow-down");
-
-        this.selectMenu = document.createElement("div");
-        this.selectMenu.classList.add("select-menu");
-
-        let firstOption = null;
-        let defaultOption = null;
-        for (const [label, value] of Object.entries(this.options["options"])) {
-            const option = document.createElement("div");
-            option.classList.add("menu-option");
-            option.textContent = label;
-            this.selectMenu.appendChild(option);
-            if (firstOption == null) { firstOption = option; }
-            if (this.options["default"] == value) {
-                defaultOption = option;
+        super._createElement([
+            {
+                type: "div",
+                classList: ["arrow-down"],
+                listeners: {
+                    "click": () => { this.hasFocus = true; }
+                }
+            },
+            {
+                type: "div",
+                classList: ["select-menu"],
+                assign: "selectMenu",
+                children: Object.keys(this.options["options"]).map((label) => {
+                    return {
+                        type: "div",
+                        classList: ["menu-option"],
+                        textContent: label
+                    }
+                })
             }
-        }
+        ]);
+
+        const firstOption = Object.keys(this.options["options"])
+            .shift();
+        const [defaultOption, _] = Object.entries(this.options["options"])
+            .find(([_, value]) => this.options["default"] === value );
 
         if (defaultOption) {
             this._onSelect(defaultOption);
@@ -129,9 +119,6 @@ export class SelectBox extends InputElement {
             }
         }
 
-        this.parentElement.appendChild(arrowDown);
-        this.parentElement.appendChild(this.selectMenu);
-
         const changeState = () => {
             this.isMenuOpen ? this._hideMenu() : this._showMenu();
             if (this.isMenuOpen) {
@@ -139,15 +126,16 @@ export class SelectBox extends InputElement {
             }
         }
 
-        this.parentElement.addEventListener("click", (event) => {
+        this.inputBox.setAttribute("readonly", true);
+        this.customElement.addEventListener("click", (event) => {
             if (event.target && event.target.classList.contains("menu-option")) {
-                this._onSelect(event.target);
+                this._onSelect(event.target.textContent);
             }
             changeState();
         });
 
-        this.parentElement.addEventListener("focusin", () => { this.hasFocus = true; });
-        this.parentElement.addEventListener("focusout", () => { this.hasFocus = false; });
+        this.customElement.addEventListener("focusin", () => { this.hasFocus = true; });
+        this.customElement.addEventListener("focusout", () => { this.hasFocus = false; });
 
     }
 
@@ -162,8 +150,8 @@ export class SelectBox extends InputElement {
     }
 
     _onSelect(option) {
-        this.inputBox.value = option.textContent;
-        this.selectedValue = this.options["options"][option.textContent];
+        this.inputBox.value = option;
+        this.selectedValue = this.options["options"][option];
     }
 
     save() {
@@ -185,35 +173,34 @@ export class SelectBox extends InputElement {
 }
 
 document.addEventListener("click", () => {
-    InputElement.registry.filter(element => element.className === "select-box").forEach((selectBox) => {
+    CustomElement.registry.filter(element => element.className === "select-box").forEach((selectBox) => {
         if (SelectBox.visibleMenu != selectBox || !selectBox.hasFocus) {
             selectBox._hideMenu();
         }
     });
 });
 
-export class PathBox extends InputElement {
+export class PathBox extends InputBox {
 
     /*
         Options Example
         options: { isDirectory: true, fileTypes: [] }
     */
     constructor(options) {
-        super("path-box", options);
+        super(
+            Object.assign({ className: "path-box" }, options)
+        );
     }
 
     _createElement() {
-
-        super._createElement();
-
-        const browseButton = document.createElement("div");
-        browseButton.classList.add("browse-button");
-        browseButton.textContent = "...";
-
-        browseButton.addEventListener("click", this.openDialog.bind(this));
-
-        this.parentElement.appendChild(browseButton);
-
+        super._createElement([{
+            type: "div",
+            classList: ["browse-button"],
+            textContent: "...",
+            listeners: {
+                "click": this.openDialog.bind(this)
+            }
+        }]);
     }
 
     _onChange(filePath) {
@@ -232,5 +219,5 @@ export class PathBox extends InputElement {
 }
 
 ipcRenderer.on("open-file", (_, inputId, filePath) => {
-    InputElement.registry.find(x => x.id === inputId)?._onChange(filePath);
+    CustomElement.registry.find(x => x.id === inputId)?._onChange(filePath);
 });

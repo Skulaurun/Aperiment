@@ -1,0 +1,84 @@
+.custom-instance-icon {
+    position: relative;
+    display: inline-block;
+    margin: 8px;
+    width: 72px;
+    height: 72px;
+}
+.custom-instance-icon .instance-icon,
+.custom-instance-icon .instance-icon img {
+    width: 100%;
+    height: 100%;
+}
+.custom-instance-icon .instance-icon:hover > * {
+    transition-duration: 0.2s;
+    transform: translateY(-4px);
+}
+.custom-instance-icon .instance-icon .progress-bar {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 10px;
+    width: 70%;
+    height: 5px;
+    margin: auto;
+    overflow-x: hidden;
+    border-radius: 8px;
+    border: 1px solid rgb(30, 30, 30);
+    background-color: rgb(30, 30, 30);
+}
+.custom-instance-icon .instance-icon .progress-bar .line {
+    z-index: 1;
+    position: absolute;
+    height: 100%;
+    background: rgb(17, 255, 69);
+    border-radius: 8px;
+}
+.custom-instance-icon .instance-icon .status-circle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    border: 2.5px solid rgb(45, 45, 45);
+    border-radius: 8px;
+}
+.custom-instance-icon .instance-icon .status-circle[state=default] {
+    background-color: rgb(54, 181, 255);
+}
+.custom-instance-icon .instance-icon .status-circle[state=starting] {
+    animation: modpack-starting 1s infinite;
+}
+.custom-instance-icon .instance-icon .status-circle[state=running] {
+    background-color: rgb(54, 214, 89);
+}
+.custom-instance-icon .instance-icon:hover::before {
+    content: attr(name);
+    position: absolute;
+    top: 80px;
+    margin: auto;
+    text-align: center;
+    border-radius: 4px;
+    background-color: rgb(30, 30, 30);
+    overflow: hidden;
+    width: 72px;
+    padding: 8px;
+    left: -10px;
+    word-break: break-word;
+    vertical-align: middle;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    border: 2px solid rgb(69, 234, 105);
+    box-shadow: 0 0 2px rgb(69, 234, 105);
+}
+.custom-instance-icon .instance-icon:hover::after {
+    content: "";
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent rgb(60, 207, 92) transparent;
+}

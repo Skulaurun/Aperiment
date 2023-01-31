@@ -1,0 +1,42 @@
+.progress-bar,
+.progress-bar > * {
+    visibility: hidden;
+}
+.progress-bar[mode=progress],
+.progress-bar[mode=progress] .line.progress {
+    visibility: visible;
+}
+.progress-bar[mode=infinite],
+.progress-bar[mode=infinite] .line.infinite-increase,
+.progress-bar[mode=infinite] .line.infinite-decrease {
+    visibility: visible;
+}
+.progress-bar {
+    position: relative;
+    overflow-x: hidden;
+}
+.progress-bar .line {
+    position: absolute;
+    z-index: 1;
+    height: 100%;
+    background: rgb(17, 255, 69);
+}
+.progress-bar .line.progress {
+    transition-duration: 0.2s;
+    transition-property: width;
+}
+.progress-bar .line.infinite-increase {
+    animation: increase 2s infinite;
+}
+.progress-bar .line.infinite-decrease {
+    animation: decrease 2s 0.5s infinite;
+}
+
+@keyframes increase {
+    from { left: -5%; width: 5%; }
+    to { left: 130%; width: 100%; }
+}
+@keyframes decrease {
+    from { left: -80%; width: 80%; }
+    to { left: 110%; width: 10%; }
+}

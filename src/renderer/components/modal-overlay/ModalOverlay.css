@@ -1,0 +1,242 @@
+.overlay-element {
+    position: absolute;
+    display: none;
+    width: 100%;
+    height: 100%;
+    z-index: 999999;
+    background-color: transparent;
+    transition-duration: 0.5s;
+}
+.overlay-active {
+    display: block;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.custom-launch-overlay .display-element {
+    position: absolute;
+    left: 0; right: 0;
+    top: 0; bottom: 0;
+    padding: 8px;
+    margin: auto;
+    max-width: 600px;
+    height: 80%;
+    background-color: rgb(36, 36, 36);
+    border-top: 3px solid white;
+    border-bottom: 3px solid white;
+    box-shadow: 5px 10px 20px rgb(10, 10, 10);
+    animation: append-animate 0.1s linear;
+}
+.custom-launch-overlay .display-element .close-button {
+    position: absolute;
+    top: -29px; right: -26px;
+    width: 24px;
+    height: 24px;
+    border-radius: 16px;
+    background-color: rgb(33, 33, 33);
+}
+.custom-launch-overlay .display-element .close-button:hover > * {
+    stroke: white;
+}
+.custom-launch-overlay .display-element .close-button > * {
+    shape-rendering: crispEdges;
+    stroke: rgb(220, 220, 220);
+    stroke-width: 4px;
+}
+
+.custom-launch-overlay .content-wrapper {
+    width: 100%;
+    height: 100%;
+    padding: 8px;
+    padding-top: 0px;
+    padding-right: 16px;
+    overflow-y: scroll;
+}
+
+.custom-launch-overlay h2 {
+    position: sticky;
+    z-index: 1000000;
+    top: 0;
+    text-align: center;
+    padding-top: 8px;
+    padding-bottom: 16px;
+    border-bottom: 3px solid white;
+    background-color: rgb(36, 36, 36);
+}
+
+.custom-launch-overlay .gallery-image {
+    width: 100%;
+    height: 300px;
+    margin-bottom: 16px;
+    object-fit: cover;
+    border-bottom: 3px solid white;
+}
+
+.custom-launch-overlay[state=idle] .progress-wrapper,
+.custom-launch-overlay[state=running] .progress-wrapper {
+    display: none;
+}
+.custom-launch-overlay .progress-wrapper {
+    margin-top: 20px;
+    margin-bottom: 16px;
+    border: 3px solid white;
+}
+
+.custom-launch-overlay .progress-bar {
+    width: 100%;
+    height: 16px;
+    border: 2px solid rgb(20, 20, 20);
+    background-color: rgb(25, 25, 25);
+}
+
+.custom-launch-overlay .progress-text {
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: bold;
+    float: left;
+    margin-bottom: 4px;
+}
+.custom-launch-overlay .progress-size {
+    float: right;
+}
+
+.custom-launch-overlay .progress-bar[visible=false],
+.custom-launch-overlay .progress-wrapper[visible=false],
+.custom-launch-overlay .instance-settings[visible=false] {
+    display: none;
+}
+
+.custom-launch-overlay .progress-wrapper:has(> .custom-progress-bar[visible=false]) {
+    height: 42px;
+}
+
+.custom-launch-overlay .instance-settings {
+    margin-top: 8px;
+}
+
+.custom-launch-overlay .progress-wrapper,
+.custom-launch-overlay .instance-description {
+    padding: 8px;
+    background-color: rgb(28, 28, 28);
+}
+
+.custom-launch-overlay .instance-description {
+    height: 80%;
+}
+
+.custom-launch-overlay .instance-description .description-heading {
+    display: inline-block;
+    font-weight: bold;
+    padding-bottom: 2px;
+    margin-bottom: 8px;
+    text-decoration: underline;
+}
+.custom-launch-overlay .instance-description .description-heading + p {
+    margin-bottom: 8px;
+    text-align: justify;
+    white-space: pre-wrap;
+}
+
+.custom-launch-overlay .button-wrapper {
+    display: flex;
+    gap: 8px;
+}
+
+.custom-launch-overlay button {
+    width: 100%;
+    height: 32px;
+    border: none;
+    outline: none;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+}
+
+.custom-launch-overlay .custom-input-box,
+.custom-launch-overlay .custom-select-box,
+.custom-launch-overlay .custom-path-box {
+    border-bottom: 1px solid white;
+}
+
+.custom-launch-overlay .modpack-properties-table {
+    padding: 8px;
+}
+
+.custom-launch-overlay .instance-description {
+    margin-top: 16px;
+}
+
+.custom-launch-overlay .options-button {
+    position: relative;
+    width: 34px;
+}
+.custom-launch-overlay .options-button img {
+    width: 100%;
+    height: 100%;
+}
+.custom-launch-overlay .options-button {
+    border: 2px solid rgb(135, 135, 135);
+    background-color: rgb(175, 175, 175);
+}
+.custom-launch-overlay .options-button:not(:disabled):hover {
+    background-color: rgb(185, 185, 185);
+}
+.custom-launch-overlay .options-button:not(:disabled):active {
+    background-color: rgb(195, 195, 195);
+}
+
+.custom-launch-overlay .options-button:disabled {
+    border: 2px solid rgb(94, 94, 94);
+    background-color: rgb(135, 135, 135);
+}
+.custom-launch-overlay .options-button:disabled img {
+    filter: brightness(80%);
+}
+
+.custom-launch-overlay .button-green {
+    border: 2px solid rgb(52, 139, 71);
+    background-color: rgb(68, 180, 93);
+}
+.custom-launch-overlay .button-green:disabled {
+    border: 2px solid rgb(40, 104, 54);
+    background-color: rgb(51, 133, 69);
+}
+.custom-launch-overlay .button-green:not(:disabled):hover {
+    background-color: rgb(72, 189, 98);
+}
+.custom-launch-overlay .button-green:not(:disabled):active {
+    background-color: rgb(80, 203, 107);
+}
+
+.custom-launch-overlay .button-red {
+    border: 2px solid rgb(139, 52, 52);
+    background-color: rgb(180, 68, 68);
+}
+.custom-launch-overlay .button-red:not(:disabled):hover {
+    background-color: rgb(194, 74, 74);
+}
+.custom-launch-overlay .button-red:not(:disabled):active {
+    background-color: rgb(209, 79, 79);
+}
+
+.custom-launch-overlay .button-blue {
+    border: 2px solid rgb(52, 62, 139);
+    background-color: rgb(68, 105, 180);
+}
+.custom-launch-overlay .button-blue:not(:disabled):hover {
+    background-color: rgb(74, 118, 194);
+}
+.custom-launch-overlay .button-blue:not(:disabled):active {
+    background-color: rgb(79, 153, 209);
+}
+
+@keyframes append-animate {
+	from {
+		transform: scale(0.8);
+		opacity: 0;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;	
+	}
+}

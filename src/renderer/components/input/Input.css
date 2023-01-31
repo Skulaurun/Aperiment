@@ -18,14 +18,28 @@
  *
  */
 
-.input-parent-element {
+.custom-input-box,
+.custom-select-box,
+.custom-path-box {
     position: relative;
 }
 
-.input-select-box .input-box {
+.custom-input-box input,
+.custom-select-box input,
+.custom-path-box input {
+    width: 100%;
+    padding: 3px 6px 3px 6px;
+    font-size: 18px;
+    color: rgb(230, 230, 230);
+    border: none;
+    outline: none;
+    background: none;
+}
+
+.custom-select-box .input-box {
     cursor: pointer;
 }
-.input-select-box .arrow-down {
+.custom-select-box .arrow-down {
     position: absolute;
     top: 8px;
     right: 4px;
@@ -37,7 +51,7 @@
     transform: rotate(45deg);
     cursor: pointer;
 }
-.input-select-box .select-menu {
+.custom-select-box .select-menu {
     position: absolute;
     z-index: 1;
     width: 100%;
@@ -47,27 +61,27 @@
     background-color: rgb(40, 40, 40);
     border: 1px solid white;
 }
-.input-select-box .menu-option:not(:first-child) {
+.custom-select-box .menu-option:not(:first-child) {
     margin-top: 4px;
 }
-.input-select-box .menu-option:hover {
+.custom-select-box .menu-option:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
-.input-select-box .select-visible {
+.custom-select-box .select-visible {
     visibility: visible;
 }
 
-.input-path-box {
+.custom-path-box {
     display: flex;
     align-items: center;
     justify-content: center;
 }
-.input-path-box .browse-button {
+.custom-path-box .browse-button {
     padding: 2px;
     cursor: pointer;
     text-transform: uppercase;
     font-weight: bold;
 }
-.input-path-box .browse-button:hover {
+.custom-path-box .browse-button:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
