@@ -35,14 +35,19 @@ export class Instance {
             state: InstanceState.Preparing,
             progressText: "Preparing"
         });
-        ipcRenderer.send("launch-modpack", { id: this.id });
+        ipcRenderer.send("launch-instance", { id: this.id });
     }
 
     terminate() {
         this.update({
             state: InstanceState.Idle
         });
-        ipcRenderer.send("terminate-modpack", this.id);
+        ipcRenderer.send("terminate-instance", this.id);
+    }
+
+    reload(config) {
+        this.config = config;
+        Instance.launchOverlay.update();
     }
 
     update(updateObject) {

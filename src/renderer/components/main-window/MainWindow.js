@@ -33,6 +33,10 @@ import { InputBox, SelectBox, PathBox } from "../input/Input.js";
 
 let instances = [];
 
+window.addEventListener("error", ({ error }) => {
+    ipcRenderer.send("renderer-error", error.stack || error);
+});
+
 document.addEventListener("DOMContentLoaded", () => {
 
     Global.addWindowControls([
@@ -88,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
         button.textContent = "+";
         button.setAttribute("url", title);
         button.addEventListener("click", () => {
-            ipcRenderer.send("add-modpack", url);
+            ipcRenderer.send("new-instance", url);
         });
         let entry = document.createElement("div");
         entry.classList.add("modpack-entry");
@@ -97,12 +101,10 @@ document.addEventListener("DOMContentLoaded", () => {
         modpackStoreList.appendChild(entry);
     }
 
-    ipcRenderer.send("app-version");
-
     let modpackSearchBar = document.getElementById("modpack-search-bar");
     document.getElementById("add-modpack-button").addEventListener("click", () => {
         if (modpackSearchBar.value != "") {
-            ipcRenderer.send("add-modpack", modpackSearchBar.value);
+            ipcRenderer.send("new-instance", modpackSearchBar.value);
         }
     });
 
@@ -122,24 +124,128 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    ipcRenderer.send("main-window-load");
+
 });
 
-ipcRenderer.on("app-version", (_, version) => {
-    let versionElement = document.getElementById("app-version");
-    versionElement.textContent += version;
+ipcRenderer.on("main-window-load", (_, toLoad) => {
+
+    const versionElement = document.getElementById("app-version");
+    const changelogElement = document.getElementById("changelog-content");
+
+    /* Load App Version -> Homepage */
+    versionElement.textContent = toLoad["appVersion"];
+
+    /* Load Changelog -> Homepage */
+    changelogElement.innerHTML = toLoad["changelog"];
+    Array.from(document.querySelectorAll(".changelog-content a")).forEach((button) => {
+        button.addEventListener("click", (event) => {
+            event.preventDefault();
+            ipcRenderer.send("open-link", event.target.getAttribute("href"));
+        });
+    });
+
+    /* Load Settings -> Aperiment Settings */
+    legacyLoadSettings(toLoad["settings"]);
+
+    /* Load Instances -> Modpack Library */
+    loadInstances(toLoad);
+
+    ipcRenderer.send("app-load-finish");
+
 });
 
-ipcRenderer.on("load-modpacks", (_, configs) => {
+ipcRenderer.on("new-instance", (_, toLoad, error) => {
+    if (!error) {
+        loadInstances(toLoad);
+        const config = toLoad.loadedConfigs[0];
+        Popup.alert(`Added '${config.manifest["name"]}' to library. 📚`, Popup.type.SUCCESS);
+    } else {
+        Popup.alert(error, Popup.type.ERROR);
+    }
+});
+
+ipcRenderer.on("instance-download-progress", (_, id, progress) => {
+
+    let progressPercentage = (progress.loaded.size / progress.total.size) * 100;
+
+    let loadedMB = (progress.loaded.size / 1000000).toFixed(2);
+    let totalMB = (progress.total.size / 1000000).toFixed(2);
+
+    const instance = instances.find(i => i.id === id);
+    if (instance) {
+        instance.update({
+            state: InstanceState.Fetching,
+            progressSize: `${loadedMB} / ${totalMB} MB`,
+            progressValue: progressPercentage,
+            progressText: progress.file
+        });
+    }
+
+});
+
+ipcRenderer.on("instance-start", (_, id, pid) => {
+    const instance = instances.find(i => i.id === id);
+    if (instance) {
+        instance.update({
+            processId: pid,
+            progressText: "Starting"
+        });
+    }
+});
+
+ipcRenderer.on("instance-stdout", (_, id, data) => {
+    if (data.indexOf("LWJGL") !== -1) {
+        const instance = instances.find(i => i.id === id);
+        if (instance && instance.activeState["state"] > InstanceState.Idle) {
+            instance.update({
+                state: InstanceState.Running
+            });
+        }
+    }
+});
+
+ipcRenderer.on("instance-stderr", (event, id, data) => {
+
+});
+
+ipcRenderer.on("instance-error", (event, id, error) => {
+    const instance = instances.find(i => i.id === id);
+    if (instance) {
+        instance.update({
+            state: InstanceState.Idle,
+            exitError: error,
+            progressText: `⚠️ ${error}`
+        });
+    }
+});
+
+ipcRenderer.on("instance-exit", (event, id, code) => {
+    const instance = instances.find(i => i.id === id);
+    if (instance) {
+        instance.update({
+            state: InstanceState.Idle,
+            exitCode: code,
+            progressText: `⚠️ The process exited with code ${code}`
+        });
+    }
+});
+
+ipcRenderer.on("instance-remote", (_, id, config) => {
+    const instance = instances.find(i => i.id === id);
+    instance?.reload(config);
+});
+
+ipcRenderer.on("force-click", (_, selector) => {
+    document.querySelector(selector)?.click();
+});
+
+function loadInstances(toLoad) {
 
     const instanceContainer = document.getElementById("modpack-container");
 
-    /* In case of a reload */
-    instances.forEach((instance) => {
-        instance.destroy();
-    });
-    instances.length = 0;
-
-    configs.forEach((config) => {
+    /* Load Instances -> Modpack Library */
+    toLoad["loadedConfigs"].forEach((config) => {
         instances.push(new Instance(config));
     });
 
@@ -149,29 +255,24 @@ ipcRenderer.on("load-modpacks", (_, configs) => {
         return nameA.localeCompare(nameB);
     });
 
+    instanceContainer.innerHTML = "";
     instances.forEach((instance) => {
         instanceContainer.appendChild(instance.icon.get());
     });
 
-    ipcRenderer.send("load-icons");
-
-});
-
-ipcRenderer.on("load-icons", (_, icons) => {
-
-    let modpackContainer = document.getElementById("modpack-container");
-    for (const [id, icon] of Object.entries(icons)) {
-        const modpackIcon = modpackContainer.querySelector(
-            `.instance-icon[id="${id}"] img`
-        );
-        modpackIcon.src = `${icon}?${new Date().getTime()}`;
+    /* Load Instance Icons -> Modpack Library */
+    for (const [id, icon] of Object.entries(toLoad["loadedIcons"])) {
+        if (icon) {
+            const instanceIcon = instanceContainer.querySelector(
+                `.instance-icon[id="${id}"] img`
+            );
+            instanceIcon.src = `${icon}?${new Date().getTime()}`;
+        }
     }
 
-    ipcRenderer.send("app-load-finish");
+}
 
-});
-
-ipcRenderer.on("load-settings", (event, settings) => {
+function legacyLoadSettings(settings) {
     
     let settingCategory = {
         "general": "General",
@@ -268,100 +369,7 @@ ipcRenderer.on("load-settings", (event, settings) => {
 
     onSaveSettings();
 
-});
-
-ipcRenderer.on("modpack-download-progress", (_, id, progress) => {
-
-    let progressPercentage = (progress.loaded.size / progress.total.size) * 100;
-
-    let loadedMB = (progress.loaded.size / 1000000).toFixed(2);
-    let totalMB = (progress.total.size / 1000000).toFixed(2);
-
-    const instance = instances.find(i => i.id === id);
-    if (instance) {
-        instance.update({
-            state: InstanceState.Fetching,
-            progressSize: `${loadedMB} / ${totalMB} MB`,
-            progressValue: progressPercentage,
-            progressText: progress.file
-        });
-    }
-
-});
-
-ipcRenderer.on("modpack-start", (_, id, pid) => {
-    const instance = instances.find(i => i.id === id);
-    if (instance) {
-        instance.update({
-            processId: pid,
-            progressText: "Starting"
-        });
-    }
-});
-
-ipcRenderer.on("modpack-stdout", (_, id, data) => {
-    if (data.indexOf("LWJGL") !== -1) {
-        const instance = instances.find(i => i.id === id);
-        if (instance && instance.activeState["state"] > InstanceState.Idle) {
-            instance.update({
-                state: InstanceState.Running
-            });
-        }
-    }
-});
-
-ipcRenderer.on("modpack-stderr", (event, id, data) => {
-
-});
-
-ipcRenderer.on("modpack-error", (event, id, error) => {
-    const instance = instances.find(i => i.id === id);
-    if (instance) {
-        instance.update({
-            state: InstanceState.Idle,
-            exitError: error,
-            progressText: `⚠️ ${error}`
-        });
-    }
-});
-
-ipcRenderer.on("modpack-exit", (event, id, code) => {
-    const instance = instances.find(i => i.id === id);
-    if (instance) {
-        instance.update({
-            state: InstanceState.Idle,
-            exitCode: code,
-            progressText: `⚠️ The process exited with code ${code}`
-        });
-    }
-});
-
-ipcRenderer.on("modpack-add", (event, modpack, error) => {
-    if (!error) {
-        Popup.alert(`Added '${modpack.name}' to library. 📚`, Popup.type.SUCCESS);
-    } else {
-        Popup.alert(error, Popup.type.ERROR);
-    }
-});
-
-ipcRenderer.on("load-changelog", (event, html) => {
-
-    // this is wrong
-
-    document.getElementById("changelog-content").innerHTML = html;
-
-    Array.from(document.querySelectorAll(".changelog-content a")).forEach((button) => {
-        button.addEventListener("click", (event) => {
-            event.preventDefault();
-            ipcRenderer.send("open-link", event.target.getAttribute("href"));
-        });
-    });
-
-});
-
-ipcRenderer.on("force-click", (_, selector) => {
-    document.querySelector(selector)?.click();
-});
+};
 
 function onSaveSettings() {
 
@@ -371,7 +379,7 @@ function onSaveSettings() {
     for (const setting of Array.from(settingsTable.querySelectorAll("tr[data-type]"))) {
 
         let key = setting.getAttribute("setting-name");
-        let inputId = setting.querySelector("input")?.getAttribute("input-id");
+        let inputId = setting.querySelector(".custom-element")?.getAttribute("custom-id");
         let inputElement = CustomElement.registry.find(x => inputId && x.id == inputId);
 
         if (inputElement) {

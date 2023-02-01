@@ -300,48 +300,6 @@ ipcMain.once("app-start", () => {
         }
     });
 
-    loadChangelog();
-    
-    loginWindow.once("ready-to-show", () => {
-
-        mainWindow.once("ready-to-show", async () => {
-
-            let configList = await instanceManager.loadConfigs();
-            configList = Object.values(configList);
-
-            mainWindow.send("load-modpacks", configList);
-            mainWindow.send("load-settings", config.get());
-
-            if (configList.length > 0) log.info(`Successfully loaded ${configList.length} modpacks.`);
-            else log.info("No modpacks to load.");
-
-            if (config.isLegacy()) {
-                const minecraftPath = config.get('minecraftDirectory');
-                try {
-                    await migrateLegacyFiles(minecraftPath);
-                } catch (error) {
-                    log.error(`Failed to migrate instances at '${minecraftPath}'. ${error}`);
-                }
-            }
-
-            user.loginFromMemory().then(() => {
-                mainWindow.show();
-                log.info(`Successfully reauthenticated as '${user.nickname}'.`);
-            }).catch((error) => {
-                loginWindow.show();
-                log.error(`Could not reauthenticate user. ${error}`);
-            }).finally(() => {
-                loadWindow.destroy();
-            });
-
-        });
-
-        mainWindow.loadFile(
-            "src/renderer/components/main-window/MainWindow.html"
-        );
-
-    });
-
     loginWindow.once("closed", () => {
         loginWindow = null;
         app.quit();
@@ -353,22 +311,65 @@ ipcMain.once("app-start", () => {
         app.quit();
     });
 
+    loginWindow.once("ready-to-show", () => {
+        mainWindow.loadFile(
+            "src/renderer/components/main-window/MainWindow.html"
+        );
+    });
+
     loginWindow.loadFile(
         "src/renderer/components/login-window/LoginWindow.html"
     );
 
 });
 
-ipcMain.on("app-version", (event) => {
+ipcMain.on("main-window-load", async () => {
 
-    let sender = event.sender;
-    if (!sender) return;
+    let configList = await instanceManager.loadConfigs();
+    configList = Object.values(configList);
 
-    sender.send("app-version", app.getVersion());
+    let loadedIcons = await instanceManager.loadIcons();
+    let changelogHTML = await loadChangelog() || "Failed to load CHANGELOG.txt!";
+
+    const toSend = {
+        appVersion: app.getVersion(),
+        loadedConfigs: configList,
+        loadedIcons: loadedIcons,
+        settings: config.get(),
+        changelog: changelogHTML
+    };
+
+    if (configList.length > 0) {
+        log.info(`Successfully loaded ${configList.length} modpacks.`);
+    } else {
+        log.info("No modpacks to load.");
+    }
+
+    if (config.isLegacy()) {
+        const minecraftPath = config.get('minecraftDirectory');
+        try {
+            await migrateLegacyFiles(minecraftPath);
+        } catch (error) {
+            log.error(`Failed to migrate instances at '${minecraftPath}'. ${error}`);
+        }
+    }
+
+    mainWindow?.send("main-window-load", toSend);
 
 });
 
 ipcMain.on("app-load-finish", () => {
+
+    user.loginFromMemory().then(() => {
+        mainWindow.show();
+        log.info(`Successfully reauthenticated as '${user.nickname}'.`);
+    }).catch((error) => {
+        loginWindow.show();
+        log.error(`Could not reauthenticate user. ${error}`);
+    }).finally(() => {
+        loadWindow.destroy();
+    });
+
     if (!isLoaded) {
         const loadFinish = () => {
             commandQueue.forEach((command) => {
@@ -385,6 +386,13 @@ ipcMain.on("app-load-finish", () => {
             });
         }
     }
+
+});
+
+ipcMain.on("renderer-error", (_, error) => {
+    Log.getLogger("renderer").error(
+        `An unhandled exception occurred in renderer process. ${error}`
+    );
 });
 
 ipcMain.on("window-close", (event) => {
@@ -428,39 +436,36 @@ ipcMain.on("user-logout", (event) => {
 
 });
 
-ipcMain.on("add-modpack", async (event, url) => {
+ipcMain.on("new-instance", async (_, url) => {
 
     if (instanceManager.findRemote(url)) {
-        mainWindow.send("modpack-add", null, `A modpack with the same remote URL already exists in the library!`);
+        mainWindow.send("new-instance", null, `A modpack with the same remote URL already exists in the library!`);
         return;
     }
 
     try {
         const instanceConfig = await instanceManager.addFromRemote(url);
-        instanceManager.fetchIcon(instanceConfig['id'])
-            .then((iconPath) => {
-                if (iconPath) {
-                    mainWindow?.send("load-icons", {
-                        [instanceConfig['id']]: iconPath
-                    });
-                }
-            })
+        const iconPath = await instanceManager.fetchIcon(instanceConfig['id'])
             .catch((error) => {
                 log.error(`Could not fetch icon for modpack '${instanceConfig['id']}'. ${error}`);
             });
         instanceManager.saveConfig(instanceConfig['id']);
-        mainWindow.send("modpack-add", instanceConfig['manifest']);
-        mainWindow.send("load-modpacks", Object.values(instanceManager.loadedConfigs));
-        ipcMain.once("app-load-finish", () => {
-            ipcMain.emit("new-instance-config", {}, instanceConfig);
+        mainWindow.send('new-instance', {
+            loadedConfigs: [instanceConfig],
+            loadedIcons: {
+                [instanceConfig['id']]: iconPath
+            }
+        });
+        ipcMain.once('app-load-finish', () => { // this will break
+            ipcMain.emit('new-instance-config', {}, instanceConfig);
         });
     } catch (error) {
-        mainWindow.send("modpack-add", null, `${error}`);
+        mainWindow.send('new-instance', null, `${error}`);
     }
 
 });
 
-ipcMain.on("launch-modpack", async (event, options) => {
+ipcMain.on("launch-instance", async (event, options) => {
 
     if (!instanceManager.isActive(options.id)) {
 
@@ -475,43 +480,46 @@ ipcMain.on("launch-modpack", async (event, options) => {
             log.error(`Could not fetch icon for modpack '${options.id}'. ${error}`);
         });
 
+        /* Instance Config is fetched by InstanceManager.js */
+        mainWindow?.send("instance-remote", options.id, instanceManager.loadedConfigs[options.id]);
+
         /*
             Modpack download progress is currently displayed in the form of a green progress bar,
             which is insufficient for debugging purposes.
             The names of the files currently being downloaded should be logged into a special debug window.
         */
         eventEmitter.on('download-progress', (progress) => {
-            mainWindow?.send("modpack-download-progress", options.id, progress);
+            mainWindow?.send("instance-download-progress", options.id, progress);
         });
         eventEmitter.on('process-start', (pid) => {
-            mainWindow?.send("modpack-start", options.id, pid);
+            mainWindow?.send("instance-start", options.id, pid);
         });
         /*
             Errors generated by Java process and sent to stdout/stderr,
             should be displayed/logged into a special debug window.
         */
         eventEmitter.on('process-stdout', (data) => {
-            mainWindow?.send("modpack-stdout", options.id, data.toString());
+            mainWindow?.send("instance-stdout", options.id, data.toString());
         });
         eventEmitter.on('process-stderr', (data) => {
-            mainWindow?.send("modpack-stderr", options.id, data.toString());
+            mainWindow?.send("instance-stderr", options.id, data.toString());
         });
         eventEmitter.on('process-exit', (code) => {
             if (instanceManager.isActive(options.id)) {
                 /* destroyInstance triggers another process-exit event */
                 instanceManager.destroyInstance(options.id);
             }
-            mainWindow?.send("modpack-exit", options.id, code);
+            mainWindow?.send("instance-exit", options.id, code);
         });
         eventEmitter.on('internal-error', (error) => {
             if (error.name !== "AbortError" && !axios.isCancel(error)) {
                 error = `${error.stack}`;
-                let modpackName = instanceManager.loadedConfigs[options.id]?.manifest?.name;
-                log.error(`Modpack '${modpackName || options.id}' has encountered an unexpected error. ${error}`);
-                mainWindow?.send("modpack-error", options.id, error);
+                let instanceName = instanceManager.loadedConfigs[options.id]?.manifest?.name;
+                log.error(`Modpack '${instanceName || options.id}' has encountered an unexpected error. ${error}`);
+                mainWindow?.send("instance-error", options.id, error);
             } else {
                 /* TODO: Get abort reason from abortSignal. */
-                mainWindow?.send("modpack-error", options.id, "Error: The operation was aborted (user-request)");
+                mainWindow?.send("instance-error", options.id, "Error: The operation was aborted (user-request)");
                 eventEmitter.emit('process-exit', 'user-request');
             }
             eventEmitter.emit('process-exit', 'internal-error');
@@ -523,7 +531,7 @@ ipcMain.on("launch-modpack", async (event, options) => {
 
 });
 
-ipcMain.on("terminate-modpack", (event, id) => {
+ipcMain.on("terminate-instance", (event, id) => {
     if (instanceManager.isActive(id)) {
         instanceManager.destroyInstance(id, 'user-request');
     }
@@ -537,11 +545,6 @@ ipcMain.on("save-instance-config", (event, instanceConfig) => {
         );
         instanceManager.saveConfig(instanceConfig['id']);
     }
-});
-
-ipcMain.on("load-icons", async () => {
-    const loadedIcons = await instanceManager.loadIcons();
-    mainWindow?.send("load-icons", loadedIcons);
 });
 
 ipcMain.on("open-instance-folder", (_, loadedId) => {
@@ -624,9 +627,7 @@ async function loadChangelog() {
         }
 
         if (listOpen) { outputHTMLBuffer += "</div>"; }
-        mainWindow.once("ready-to-show", () => {
-            mainWindow.send("load-changelog", outputHTMLBuffer);
-        });
+        return outputHTMLBuffer;
         
     } catch (error) {
         log.error(`Failed to load a changelog. ${error}`);
