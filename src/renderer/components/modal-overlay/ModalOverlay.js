@@ -250,7 +250,7 @@ export class LaunchOverlay extends ModalOverlay {
             this.galleryWrapper.setAttribute("go-left", galleryIndex - 1 >= 0);
             this.galleryImage.src = manifest["gallery"][galleryIndex];
         } else {
-            this.galleryImage.src = "";
+            this.galleryImage.src = "../../assets/images/gallery-placeholder.png";
             this.galleryWrapper.setAttribute("go-left", false);
             this.galleryWrapper.setAttribute("go-right", false);
         }
