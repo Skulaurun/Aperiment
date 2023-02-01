@@ -15,6 +15,7 @@ export class Instance {
         this.id = this.config.id;
 
         this.icon = new InstanceIcon({ instanceConfig: this.config });
+        this.galleryIndex = 0;
 
         this.activeState = {
             state: InstanceState.Idle,
@@ -89,6 +90,18 @@ export class Instance {
             case InstanceState.Running:
                 progressBar.setMode(ProgressBarMode.None);
                 break;
+        }
+    }
+
+    traverseGallery(direction) {
+        if (direction > 0) {
+            if (this.galleryIndex + 1 < (this.config.manifest["gallery"] || []).length) {
+                this.galleryIndex++;
+            }
+        } else {
+            if (this.galleryIndex - 1 >= 0) {
+                this.galleryIndex--;
+            }
         }
     }
 

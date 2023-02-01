@@ -70,9 +70,44 @@ export class LaunchOverlay extends ModalOverlay {
                 children: [
                     { type: "h2", classList: ["instance-title"], assign: "instanceTitle" },
                     {
-                        type: "img",
-                        classList: ["gallery-image"],
-                        assign: "galleryImage"
+                        type: "div",
+                        classList: ["gallery-wrapper"],
+                        assign: "galleryWrapper",
+                        children: [
+                            {
+                                type: "img",
+                                classList: ["gallery-image"],
+                                assign: "galleryImage"
+                            },
+                            {
+                                type: "img",
+                                classList: ["next-image"],
+                                attributeList: { "src": "../../assets/images/arrow.png" },
+                                listeners: {
+                                    "click": () => { this._traverseGallery(1); }
+                                }
+                            },
+                            {
+                                type: "img",
+                                classList: ["previous-image"],
+                                attributeList: { "src": "../../assets/images/arrow.png" },
+                                listeners: {
+                                    "click": () => { this._traverseGallery(-1); }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        type: "div",
+                        classList: ["version-wrapper"],
+                        children: [
+                            { type: "div", textContent: "Version: " },
+                            {
+                                type: "div",
+                                classList: ["instance-version"],
+                                assign: "instanceVersion"
+                            }
+                        ]
                     },
                     {
                         type: "div",
@@ -203,6 +238,24 @@ export class LaunchOverlay extends ModalOverlay {
         this.instanceSettings.setAttribute("visible", isVisible);
     }
 
+    _traverseGallery(direction) {
+        this.instance.traverseGallery(direction);
+        this.updateGallery();
+    }
+
+    updateGallery() {
+        let { galleryIndex, config: { manifest } } = this.instance;
+        if (Array.isArray(manifest["gallery"]) && manifest["gallery"].length > 0) {
+            this.galleryWrapper.setAttribute("go-right", galleryIndex + 1 < manifest["gallery"].length);
+            this.galleryWrapper.setAttribute("go-left", galleryIndex - 1 >= 0);
+            this.galleryImage.src = manifest["gallery"][galleryIndex];
+        } else {
+            this.galleryImage.src = "";
+            this.galleryWrapper.setAttribute("go-left", false);
+            this.galleryWrapper.setAttribute("go-right", false);
+        }
+    }
+
     display(instance) {
         this.instance = instance;
         this.update();
@@ -246,7 +299,6 @@ export class LaunchOverlay extends ModalOverlay {
             if (activeState["state"] === InstanceState.Running) {
                 this.progressBar.get().setAttribute("visible", false);
                 activeState["progressText"] = `✅ The Process is running. PID: ${activeState["processId"]}`;
-                activeState["progressSize"] = "";
             } else {
                 this.progressBar.get().setAttribute("visible", true);
             }
@@ -267,22 +319,21 @@ export class LaunchOverlay extends ModalOverlay {
             }
         }
 
+        if (activeState["state"] !== InstanceState.Fetching) {
+            activeState["progressSize"] = "";
+        }
+
         this.progressText.textContent = activeState["progressText"];
         this.progressSize.textContent = activeState["progressSize"];
 
-        this.instanceTitle.textContent = this.instance.config.manifest["name"];
+        const { config, manifest } = this.instance.config;
 
-        this.instanceDescription.textContent = (
-            this.instance.config.manifest["description"] || ""
-        );
+        this.instanceTitle.textContent = manifest["name"] || "Untitled";
+        this.instanceDescription.textContent = manifest["description"] || "";
+        this.instanceCreators.textContent = (manifest["creators"] || []).join(", ");
+        this.instanceCredits.textContent = (manifest["credits"] || []).join(", ");
 
-        this.instanceCreators.textContent = (
-            this.instance.config.manifest["creators"] || []
-        ).join(", ");
-
-        this.instanceCredits.textContent = (
-            this.instance.config.manifest["credits"] || []
-        ).join(", ");
+        this.instanceVersion.textContent = config["version"] || "Any";
 
         this.instanceChangelog.innerHTML = "";
         for (const version of this.instance.config.manifest["versions"]) {
@@ -291,9 +342,7 @@ export class LaunchOverlay extends ModalOverlay {
             }
         }
 
-        if (Array.isArray(this.instance.config.manifest["gallery"])) {
-            this.galleryImage.src = this.instance.config.manifest["gallery"][0];
-        }
+        this.updateGallery();
 
     }
 
