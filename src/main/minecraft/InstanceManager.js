@@ -112,6 +112,10 @@ module.exports = class InstanceManager {
         this._parseManifest(object['manifest']);
 
         this._configureManifest(object);
+
+        if (typeof object['createdAt'] !== 'number') {
+            object['createdAt'] = Date.now();
+        }
         
         return object;
     }
@@ -353,7 +357,8 @@ module.exports = class InstanceManager {
         let instanceConfig = {
             'id': null, /* Keep ID at the top */
             'manifest': this._parseManifest(manifest),
-            'config': config
+            'config': config,
+            'createdAt': Date.now()
         };
         this._configureManifest(instanceConfig);
 
