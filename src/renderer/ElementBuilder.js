@@ -84,9 +84,9 @@ export default class ElementBuilder {
     }
 
     static buildTo(parentElement, buildTemplate, assignObject) {
-        parentElement.appendChild(
-            ElementBuilder.build(buildTemplate, assignObject)
-        );
+        [...ElementBuilder.build(buildTemplate, assignObject)].forEach((element) => {
+            parentElement.appendChild(element);
+        });
     }
 
 }
