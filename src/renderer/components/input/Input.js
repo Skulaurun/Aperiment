@@ -205,6 +205,7 @@ export class PathBox extends InputBox {
 
     _onChange(filePath) {
         this.inputBox.value = filePath;
+        this.inputBox.focus();
     }
 
     openDialog() {

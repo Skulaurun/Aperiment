@@ -1,4 +1,4 @@
-import CustomElement from "./ElementBuilder.js";
+import CustomElement from "./CustomElement.js";
 import InstanceIcon from "./components/instance-icon/InstanceIcon.js";
 import { LaunchOverlay } from "./components/modal-overlay/ModalOverlay.js";
 import { InstanceState, ProgressBarMode } from "./GlobalEnum.js";
