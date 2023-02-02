@@ -335,6 +335,9 @@ export class LaunchOverlay extends ModalOverlay {
                 }
                 activeState["progressText"] = activeState["progressText"].substring(0, allowedLength + 1);
             }
+            if (activeState["progressValue"] == 100) {
+                activeState["progressText"] = "Extracting";
+            }
         }
 
         if (activeState["state"] !== InstanceState.Fetching) {
