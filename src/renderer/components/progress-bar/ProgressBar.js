@@ -1,5 +1,5 @@
-import { CustomElement } from "../../ElementBuilder.js";
-import { ProgressBarMode } from "../../Enum.js";
+import CustomElement from "../../CustomElement.js";
+import { ProgressBarMode } from "../../GlobalEnum.js";
 
 export default class ProgressBar extends CustomElement {
 

@@ -171,7 +171,7 @@ app.once("ready", () => {
     });
 
     loadWindow.loadFile(
-        "src/renderer/components/load-window/LoadWindow.html"
+        "src/renderer/views/load-window/LoadWindow.html"
     );
 
     loadWindow.once("ready-to-show", async () => {
@@ -313,12 +313,12 @@ ipcMain.once("app-start", () => {
 
     loginWindow.once("ready-to-show", () => {
         mainWindow.loadFile(
-            "src/renderer/components/main-window/MainWindow.html"
+            "src/renderer/views/main-window/MainWindow.html"
         );
     });
 
     loginWindow.loadFile(
-        "src/renderer/components/login-window/LoginWindow.html"
+        "src/renderer/views/login-window/LoginWindow.html"
     );
 
 });

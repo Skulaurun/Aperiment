@@ -24,14 +24,16 @@
 */
 const { ipcRenderer } = require("electron");
 
-import Popup from "../popup/Popup.js";
-import Global from "../global/Global.js";
-import { Instance } from "../../Instance.js";
-import { CustomElement } from "../../ElementBuilder.js";
-import { InputType, InputValue, InstanceState } from "../../Enum.js";
-import { InputBox, SelectBox, PathBox } from "../input/Input.js";
+import Global from "../../components/global/Global.js";
+import Popup from "../../components/popup/Popup.js";
+import Instance from "../../Instance.js";
+import CustomElement from "../../CustomElement.js";
+import ElementBuilder from "../../ElementBuilder.js";
+import { InputBox, SelectBox, PathBox } from "../../components/input/Input.js";
+import { InputType, InputValue, InstanceState, PopupType } from "../../GlobalEnum.js";
 
 let instances = [];
+let popup = new Popup();
 
 window.addEventListener("error", ({ error }) => {
     ipcRenderer.send("renderer-error", error.stack || error);
@@ -73,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    Popup.parent = document.querySelector(".page-item[name=browse]");
+    popup.parent = document.querySelector(".page-item[name=browse]");
 
     const modpackStoreList = document.getElementById("modpack-store-list");
     const officialModpacks = {
@@ -83,23 +85,28 @@ document.addEventListener("DOMContentLoaded", () => {
         "SkulTech Alpha 2.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a2.0.0.json"
     };
 
-    for (const [name, url] of Object.entries(officialModpacks)) {
-        let title = document.createElement("div");
-        title.classList.add("entry-name");
-        title.textContent = name;
-        let button = document.createElement("button");
-        button.classList.add("settings-button", "store-add-button");
-        button.textContent = "+";
-        button.setAttribute("url", title);
-        button.addEventListener("click", () => {
-            ipcRenderer.send("new-instance", url);
-        });
-        let entry = document.createElement("div");
-        entry.classList.add("modpack-entry");
-        entry.appendChild(title);
-        entry.appendChild(button);
-        modpackStoreList.appendChild(entry);
-    }
+    ElementBuilder.buildTo(modpackStoreList, Object.entries(officialModpacks).map(([name, url]) => {
+        return {
+            type: "div",
+            classList: ["modpack-entry"],
+            children: [
+                {
+                    type: "div",
+                    classList: ["entry-name"],
+                    textContent: name
+                },
+                {
+                    type: "button",
+                    classList: ["settings-button", "store-add-button"],
+                    textContent: "+",
+                    attributeList: { url: url },
+                    listeners: {
+                        click: () => { ipcRenderer.send("new-instance", url); }
+                    }
+                }
+            ]
+        };
+    }));
 
     let modpackSearchBar = document.getElementById("modpack-search-bar");
     document.getElementById("add-modpack-button").addEventListener("click", () => {
@@ -159,9 +166,9 @@ ipcRenderer.on("new-instance", (_, toLoad, error) => {
     if (!error) {
         loadInstances(toLoad);
         const config = toLoad.loadedConfigs[0];
-        Popup.alert(`Added '${config.manifest["name"]}' to library. 📚`, Popup.type.SUCCESS);
+        popup.alert(`Added '${config.manifest["name"]}' to library. 📚`, PopupType.Success);
     } else {
-        Popup.alert(error, Popup.type.ERROR);
+        popup.alert(error, PopupType.Error);
     }
 });
 

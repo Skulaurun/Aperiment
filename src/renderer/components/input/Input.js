@@ -20,7 +20,7 @@
 
 const { ipcRenderer } = require("electron");
 
-import { CustomElement } from "../../ElementBuilder.js";
+import CustomElement from "../../CustomElement.js";
 export class InputBox extends CustomElement {
 
     constructor(options) {

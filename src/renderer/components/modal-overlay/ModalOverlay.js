@@ -1,8 +1,8 @@
 import Global from "../global/Global.js";
-import { CustomElement } from "../../ElementBuilder.js";
-import { InputBox, PathBox } from "../../components/input/Input.js";
 import ProgressBar from "../progress-bar/ProgressBar.js";
-import { InputType, InstanceState } from "../../Enum.js";
+import CustomElement from "../../CustomElement.js";
+import { InputBox, PathBox } from "../../components/input/Input.js";
+import { InputType, InstanceState } from "../../GlobalEnum.js";
 
 export class ModalOverlay extends CustomElement {
 

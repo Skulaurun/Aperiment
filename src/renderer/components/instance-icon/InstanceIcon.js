@@ -1,4 +1,4 @@
-import { CustomElement } from "../../ElementBuilder.js";
+import CustomElement from "../../CustomElement.js";
 import ProgressBar from "../progress-bar/ProgressBar.js";
 
 export default class InstanceIcon extends CustomElement {

@@ -18,7 +18,7 @@
  *
  */
 
-import Global from "../global/Global.js";
+import Global from "../../components/global/Global.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 

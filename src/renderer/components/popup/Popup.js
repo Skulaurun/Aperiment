@@ -24,16 +24,19 @@
  *  - https://www.skulaurun.eu/gamebook2
  */
 
-export default {
-    
-    maxQueueLength: 5,
-    alertDuration: 6,
-    queue: [],
-    parent: null,
-    type: Object.freeze({"SUCCESS": "popup-success", "INFO": "popup-info", "WARNING": "popup-warning", "ERROR": "popup-error"}),
-    option: Object.freeze({"YES": 0, "NO": 1}),
+import { PopupType } from "../../GlobalEnum.js";
 
-    popElement: function(element) {
+export default class Popup {
+    
+    static MaxQueueLength = 5;
+    static AlertDuration = 6;
+
+    constructor(parent) {
+        this.parent = parent || document.body;
+        this.queue = [];
+    }
+
+    popElement(element) {
 
         element = element || this.queue.pop();
 
@@ -57,9 +60,9 @@ export default {
 
         return element;
 
-    },
+    }
 
-    injectElement: function(element) {
+    injectElement(element) {
 
         let root = document.getElementById("popup-queue");
 
@@ -70,7 +73,7 @@ export default {
             this.parent.appendChild(root);
         }
 
-        if (this.queue.length >= this.maxQueueLength) {
+        if (this.queue.length >= Popup.MaxQueueLength) {
             this.popElement();
         }
 
@@ -83,7 +86,7 @@ export default {
 
         setTimeout(() => {
             this.popElement();
-        }, this.alertDuration * 1000);
+        }, Popup.AlertDuration * 1000);
 
         element.addEventListener("click", (e) => {
             e = e || window.event;
@@ -91,19 +94,19 @@ export default {
             this.popElement(target);
         });
 
-    },
+    }
 
-    alert: function(content, type) {
+    alert(content, type) {
         
         let box = document.createElement("div");
         box.classList.add("unselectable");
         box.classList.add("popup-alert");
         box.classList.add("hidden");
-        box.classList.add(type || this.type.INFO);
+        box.classList.add(type || PopupType.Info);
         box.textContent = content;
 
         this.injectElement(box);
 
     }
 
-};
+}

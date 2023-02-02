@@ -1,11 +1,11 @@
+import CustomElement from "./ElementBuilder.js";
 import InstanceIcon from "./components/instance-icon/InstanceIcon.js";
 import { LaunchOverlay } from "./components/modal-overlay/ModalOverlay.js";
-import { CustomElement } from "./ElementBuilder.js";
-import { InstanceState, ProgressBarMode } from "./Enum.js";
+import { InstanceState, ProgressBarMode } from "./GlobalEnum.js";
 
 const { ipcRenderer } = require("electron");
 
-export class Instance {
+export default class Instance {
 
     static launchOverlay = new LaunchOverlay();
 

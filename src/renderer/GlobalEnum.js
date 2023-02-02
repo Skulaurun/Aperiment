@@ -18,6 +18,13 @@ export const InputValue = Object.freeze({
     "Text": 3
 });
 
+export const PopupType = Object.freeze({
+    "Success": "popup-success",
+    "Info": "popup-info",
+    "Warning": "popup-warning",
+    "Error": "popup-error"
+});
+
 export const InputType = Object.freeze({
 
     /* Aperiment Settings */
