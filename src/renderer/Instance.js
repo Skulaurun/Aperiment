@@ -105,6 +105,10 @@ export class Instance {
         }
     }
 
+    openFolder() {
+        ipcRenderer.send("open-instance-folder", this.id);
+    }
+
     loadSettings(settingsElement) {
         Array.from(settingsElement.querySelectorAll("tr:has(input)"))
             .filter(e => e.hasAttribute("path"))

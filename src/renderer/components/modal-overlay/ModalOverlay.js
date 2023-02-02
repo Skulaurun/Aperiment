@@ -129,6 +129,20 @@ export class LaunchOverlay extends ModalOverlay {
                             },
                             {
                                 type: "button",
+                                classList: ["folder-button"],
+                                assign: "folderButton",
+                                children: [
+                                    {
+                                        type: "img",
+                                        attributeList: { "src": "../../assets/images/folder.png" }
+                                    }
+                                ],
+                                listeners: {
+                                    "click": () => { this._openFolder(); }
+                                }
+                            },
+                            {
+                                type: "button",
                                 classList: ["start-button", "button-green"],
                                 assign: "startButton",
                                 textContent: "Launch",
@@ -241,6 +255,10 @@ export class LaunchOverlay extends ModalOverlay {
     _traverseGallery(direction) {
         this.instance.traverseGallery(direction);
         this.updateGallery();
+    }
+
+    _openFolder() {
+        this.instance.openFolder();
     }
 
     updateGallery() {
