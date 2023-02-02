@@ -21,8 +21,7 @@
     "electron-updater": "^4.3.5",
     "file-type": "^16.5.4",
     "log4js": "^6.7.1",
-    "unzipper": "^0.10.11",
-    "valid-url": "^1.0.9"
+    "unzipper": "^0.10.11"
   },
   "repository": {
     "type": "git",
