@@ -89,9 +89,7 @@
         background-color: rgb(37, 148, 61);
     }
     50% {
-        border: 2.5px solid rgb(37, 148, 61);
         background-color: rgb(58, 227, 94);
-        box-shadow: 0 0 10px 1.5px rgb(58, 227, 94);
     }
     100% {
         background-color: rgb(37, 148, 61);
