@@ -43,10 +43,11 @@
     border-radius: 8px;
 }
 .custom-instance-icon .instance-icon .status-circle[state=default] {
-    background-color: rgb(54, 181, 255);
+    background-color: rgb(150, 150, 150);
 }
 .custom-instance-icon .instance-icon .status-circle[state=starting] {
-    animation: modpack-starting 1s infinite;
+    animation: instance-starting 1s infinite;
+    transition-duration: 0.1s;
 }
 .custom-instance-icon .instance-icon .status-circle[state=running] {
     background-color: rgb(54, 214, 89);
@@ -81,4 +82,18 @@
     border-width: 5px;
     border-style: solid;
     border-color: transparent transparent rgb(60, 207, 92) transparent;
+}
+
+@keyframes instance-starting {
+    0% {
+        background-color: rgb(37, 148, 61);
+    }
+    50% {
+        border: 2.5px solid rgb(37, 148, 61);
+        background-color: rgb(58, 227, 94);
+        box-shadow: 0 0 10px 1.5px rgb(58, 227, 94);
+    }
+    100% {
+        background-color: rgb(37, 148, 61);
+    }
 }
