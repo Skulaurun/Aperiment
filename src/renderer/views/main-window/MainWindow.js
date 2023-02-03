@@ -239,9 +239,14 @@ ipcRenderer.on("instance-exit", (event, id, code) => {
     }
 });
 
-ipcRenderer.on("instance-remote", (_, id, config) => {
+ipcRenderer.on("instance-update", (_, id, config, icon) => {
     const instance = instances.find(i => i.id === id);
-    instance?.reload(config);
+    if (instance) {
+        if (icon) {
+            instance.setIcon(icon);
+        }
+        instance.reload(config);
+    }
 });
 
 ipcRenderer.on("force-click", (_, selector) => {

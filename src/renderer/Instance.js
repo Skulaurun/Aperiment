@@ -60,7 +60,7 @@ export default class Instance {
             state: InstanceState.Preparing,
             progressText: "Preparing"
         });
-        ipcRenderer.send("launch-instance", { id: this.id });
+        ipcRenderer.send("launch-instance", this.id);
     }
 
     terminate() {
@@ -134,6 +134,10 @@ export default class Instance {
 
     openFolder() {
         ipcRenderer.send("open-instance-folder", this.id);
+    }
+
+    setIcon(url) {
+        this.icon.updateNoCache(url);
     }
 
     loadSettings(settingsElement) {

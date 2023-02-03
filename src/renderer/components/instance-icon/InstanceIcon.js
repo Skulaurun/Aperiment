@@ -61,4 +61,8 @@ export default class InstanceIcon extends CustomElement {
         }]);
     }
 
+    updateNoCache(url) {
+        this.imageIcon.src = `${url}?${new Date().getTime()}`;
+    }
+
 }
