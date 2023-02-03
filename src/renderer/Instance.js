@@ -99,9 +99,11 @@ export default class Instance {
         switch (this.activeState["state"]) {
             case InstanceState.Idle:
                 progressBar.setMode(ProgressBarMode.None);
+                progressBar.setValue(0);
                 break;
             case InstanceState.Preparing:
                 progressBar.setMode(ProgressBarMode.Infinite);
+                progressBar.setValue(0);
                 break;
             case InstanceState.Fetching:
                 progressBar.setMode(ProgressBarMode.Progress);
@@ -109,6 +111,7 @@ export default class Instance {
                 break;
             case InstanceState.Running:
                 progressBar.setMode(ProgressBarMode.None);
+                progressBar.setValue(0);
                 break;
         }
     }

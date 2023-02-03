@@ -30,7 +30,9 @@
     width: 100%;
     height: 100%;
 }
-.custom-instance-icon .instance-icon:hover > * {
+.custom-instance-icon .instance-icon:hover img,
+.custom-instance-icon .instance-icon:hover .progress-bar,
+.custom-instance-icon .instance-icon:hover .status-circle {
     transition-duration: 0.2s;
     transform: translateY(-4px);
 }
@@ -67,7 +69,6 @@
 }
 .custom-instance-icon .instance-icon .status-circle[state=starting] {
     animation: instance-starting 1s infinite;
-    transition-duration: 0.1s;
 }
 .custom-instance-icon .instance-icon .status-circle[state=running] {
     background-color: rgb(54, 214, 89);
