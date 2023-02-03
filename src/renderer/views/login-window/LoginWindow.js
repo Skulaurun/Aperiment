@@ -20,6 +20,12 @@
 
 import Global from "../../components/global/Global.js";
 
+/*
+    Electron does not support ES6 modules,
+    so we need to use CommonJS require() here.
+*/
+const { ipcRenderer } = require("electron");
+
 document.addEventListener("DOMContentLoaded", () => {
 
     Global.addWindowControls([

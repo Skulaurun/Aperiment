@@ -18,9 +18,14 @@
  *
  */
 
+import CustomElement from "../../CustomElement.js";
+
+/*
+    Electron does not support ES6 modules,
+    so we need to use CommonJS require() here.
+*/
 const { ipcRenderer } = require("electron");
 
-import CustomElement from "../../CustomElement.js";
 export class InputBox extends CustomElement {
 
     constructor(options) {

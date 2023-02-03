@@ -18,6 +18,10 @@
  *
  */
 
+/*
+    Electron does not support ES6 modules,
+    so we need to use CommonJS require() here.
+*/
 const { ipcRenderer } = require("electron");
 
 let statusBar = null;

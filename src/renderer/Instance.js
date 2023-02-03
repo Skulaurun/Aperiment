@@ -23,6 +23,10 @@ import InstanceIcon from "./components/instance-icon/InstanceIcon.js";
 import { LaunchOverlay } from "./components/modal-overlay/ModalOverlay.js";
 import { InstanceState, ProgressBarMode } from "./GlobalEnum.js";
 
+/*
+    Electron does not support ES6 modules,
+    so we need to use CommonJS require() here.
+*/
 const { ipcRenderer } = require("electron");
 
 export default class Instance {
