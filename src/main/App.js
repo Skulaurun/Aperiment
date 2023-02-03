@@ -102,17 +102,17 @@ function processArguments(arguments) {
                 switch(host) {
                     case 'launch':
                         const instanceConfig = instanceManager.findRemote(query["remote"]);
-                        const launch = (loadedId) => {
-                            mainWindow.send("force-click", `.menu-item[name=library]`);
-                            mainWindow.send("force-click", `[id='${loadedId}']`);
+                        const open = (loadedId) => {
+                            mainWindow?.send("force-click", `.menu-item[name=library]`);
+                            mainWindow?.send("force-click", `[id='${loadedId}']`);
                         };
                         if (instanceConfig) {
-                            launch(instanceConfig["id"]);
+                            open(instanceConfig["id"]);
                         } else {
-                            ipcMain.emit("add-modpack", {}, query["remote"]);
+                            ipcMain.emit("new-instance", {}, query["remote"]);
                             ipcMain.once("new-instance-config", (_, instanceConfig) => {
                                 if (instanceConfig && instanceConfig["config"]["remote"] === query["remote"]) {
-                                    launch(instanceConfig["id"]);
+                                    open(instanceConfig["id"]);
                                 }
                             });
                         }
@@ -455,9 +455,6 @@ ipcMain.on("new-instance", async (_, url) => {
             loadedIcons: {
                 [instanceConfig['id']]: iconPath
             }
-        });
-        ipcMain.once('app-load-finish', () => { // this will break
-            ipcMain.emit('new-instance-config', {}, instanceConfig);
         });
     } catch (error) {
         mainWindow.send('new-instance', null, `${error}`);

@@ -166,6 +166,7 @@ ipcRenderer.on("new-instance", (_, toLoad, error) => {
     if (!error) {
         loadInstances(toLoad);
         const config = toLoad.loadedConfigs[0];
+        ipcRenderer.send("new-instance-config", config);
         popup.alert(`Added '${config.manifest["name"]}' to library. 📚`, PopupType.Success);
     } else {
         popup.alert(error, PopupType.Error);
