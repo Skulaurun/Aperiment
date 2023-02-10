@@ -190,6 +190,9 @@
     text-align: justify;
     white-space: pre-wrap;
 }
+.custom-launch-overlay .instance-description .description-heading:has(+ p:empty) {
+    display: none;
+}
 
 .custom-launch-overlay .version-wrapper {
     text-transform: uppercase;
