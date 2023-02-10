@@ -1,3 +1,30 @@
+# 1.1.0
+- Escape HTML characters when loading CHANGELOG.TXT 1fccacae510a41060a7a8805853b33a7071e7d41
+- Run instance only when active (not terminated) 5f720dc814d42116fb2c4653c0ddfdb87f5c82c3 cb4bf3f5654cb97b508a3e3107e3fcb0ebc05d8b
+- Suppress error when remote manifest is unavailable 0cd35124081d1eb5c1b3c9c790107c5b71f028dd
+- Change close event from 'click' to 'mousedown' a5ac35eae08dcb769323ad5af8881fc57e16cb91
+- Hide empty description tags 379c02ab31a49a907aad874b2bf594698b213e81
+- Use path.delimiter instead of process.platform 641f3b25df9ef345ee2eaa916a3d3ad9ae520757
+- Auto-Download Java Runtime Environment 6e279aa7029d362648f6724a1678271f921e466e 97d4a194229a163c06d412fd463da705d26af8c1 7bb4b969224f998c180f15fb81a1ce308fb83f72
+- Use type=module for every <script> tag b72ea8bdb324ef5a867a467c9778a84993b0e155
+- Fix instance progress-bar bugs f81f1ab040ead07b21977d2b1fa43405f1a47be1
+- Add copyright notice to new files 1cab09b108d58ef412e1584576a806ceac77ba26 d6ff4e115e6cf1c2999ea0afb162b734a51673c9 53f43d36687c4d20fe914cc50b094ffc8fa1556d f72f0509969a50fe1f889f851e9a32e4fc5e76f8
+- Save instanceConfig createdAt date 618da2a5e2ecc416a6d109e885882f525b3bdd94
+- Remove unused package valid-url 5675884d5718dd078efd2e48c83a58245acb4eed
+- Update electron and electron-builder 000be4102a67504b0e94fcaedc1cfa4d1cdcf5b3
+- Add "Extracting" state to launch overlay 27c85d32b53fc941960a028653094c8fa4b97437
+- Refactoring: Renderer folder structure and imports 655cb5c2db97dee6242bd43d58ea13167a0894fd 05e718bd7b4e574d8414abdd269a661431bacf1a 2178e8af9262680d4d6627bde2d93fd5b71a71b1
+- Fix ElementBuilder.js buildTo() method b65b9db514d6173f2b09e2fb93072eae55fc9e84
+- CSS design details - store, library bf775f0a5982646da74cf2e57405508d3bc30157 be0dab6d1bfc178ba8b78c59ae1a14331344ae25
+- Add "Open Folder" launch overlay button bcd5c4c41da1935863c7573d9a0fe92e26470db0
+- Add modpack image gallery to LaunchOverlay c7221a099e337360729e53aaacbd637f5252eb71 21e123e0b65094c46978e0879371ba9b3d300c33
+- Rework IPC messaging between main <-> renderer 2e3339a81a4a60eeeb09520979e63668ad884ef9 141cff1ec51afbfd4f1f1e2fff9426b732b41aad f1ca7d122509d7a81e3c7a1e61b5b59e8698f84f
+- Remove console for stdout/stderr 24bc45ab896255a393feca1c1d515e607c68c1c2
+- Send process PID with 'process-start' event 7848d8e6152b4ef002a5be0e09290935beb2660f
+- Rework frontend/UI (+refactoring) 7ddf6290c6588bdf68470fcff526e61a3e509e51 5688d6423a35262663afd44e15b19bf3d3ad60dc d1f86dfe527875c81d26bf9408039f1077705d51 1bb2771491c81a664f13fdd10d60a7bd31891510
+- Ensure modpack exists when using aperiment:launch ed26bf4e5c0a33c752496de57b842dfe39c812b6
+- Add support for aperiment:// protocol on Windows 420fb3a0db6d628da103e0de35121d476614110e b91b5281a05e85d61c6dab937fe7e93ff096fb6b dcb98fd48bf26cb497022b7ad5107c5dc2bb225d
+
 # 1.0.1
 - Fix userInfo hardcoded to 'Herobrine' 2ff62d7a28ddfe3f12a356b95de79896b5b858b1
 
