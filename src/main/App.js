@@ -523,7 +523,9 @@ ipcMain.on("launch-instance", async (_, id) => {
         });
 
         if (instanceManager.isActive(id)) {
-            instanceManager.runInstance(id);
+            await instanceManager.runInstance(id);
+            /* A new version of the instance might have been installed by InstanceManager.js */
+            mainWindow?.send("instance-update", id, instanceManager.loadedConfigs[id], iconPath);
         }
 
     }
