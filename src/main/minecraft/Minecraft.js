@@ -500,7 +500,7 @@ module.exports = class Minecraft {
         libraries.forEach((library, index) => {
             string += library.path;
             if (index != libraries.length - 1) {
-                string += process.platform === "win32" ? ";" : ":"; // use path.delimiter
+                string += path.delimiter;
             }
         });
 
@@ -597,8 +597,6 @@ module.exports = class Minecraft {
         if (this.runtime['jvmArguments'] && this.runtime['jvmArguments'] != '' && /\s/.test(this.runtime['jvmArguments'])) {
             launchArguments = this.runtime['jvmArguments'].split(' ').concat(launchArguments);
         }
-
-        //let runtimePath = await FsUtil.resolveExecutable(this.runtime['path']); // wrong
 
         let runtimePath = path.join(
             this.cache,
