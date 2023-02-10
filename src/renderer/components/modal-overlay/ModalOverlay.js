@@ -366,7 +366,7 @@ export class LaunchOverlay extends ModalOverlay {
         }
 
         this.progressText.textContent = activeState["progressText"];
-        console.log(activeState["progressText"])
+        
         this.progressSize.textContent = activeState["progressSize"];
 
         const { config, manifest } = this.instance.config;
