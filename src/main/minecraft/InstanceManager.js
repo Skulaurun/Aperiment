@@ -33,6 +33,9 @@ const MinecraftForge = require("./MinecraftForge.js");
 const MinecraftFabric = require("./MinecraftFabric.js");
 const MinecraftExtension = require("./MinecraftExtension.js");
 
+const Log = require("./Log.js");
+const log = Log.getLogger("main");
+
 module.exports = class InstanceManager {
 
     static MANIFEST_VERSION = '1.0';
@@ -325,11 +328,11 @@ module.exports = class InstanceManager {
                     instanceConfig['manifestPath'] = manifestPath;
                     this.loadedConfigs[instanceConfig['id']] = instanceConfig;
                     this.saveConfig(instanceConfig['id']).catch((error) => {
-                        // log error
+                        log.error(`Failed to save instance config of '${instanceConfig['id']}'. ${error}`);
                     });
 
                 } catch (error) {
-                    // Log error
+                    log.error(`Failed to load instance config at '${manifestPath}'. ${error}`);
                 }
             }
         }
@@ -493,17 +496,15 @@ module.exports = class InstanceManager {
         };
 
         if (instanceConfig['config']['remote']) {
-
-            const { data: remoteManifest } = await axios.get(instanceConfig['config']['remote'], {
-                signal: abortSignal
-            });
     
             try {
+                const { data: remoteManifest } = await axios.get(instanceConfig['config']['remote'], {
+                    signal: abortSignal
+                });
                 instanceConfig['manifest'] = this._parseManifest(remoteManifest);
                 activeWrapper['hasRemote'] = true;
             } catch(error) {
-                // could not parse remote manifest, using local
-                // log error
+                log.warn(`Could not parse remote manifest at '${instanceConfig['config']['remote']}', local manifest will be used instead. ${error}`);
             }
 
             if (activeWrapper['hasRemote']) {
