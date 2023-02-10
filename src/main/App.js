@@ -522,7 +522,9 @@ ipcMain.on("launch-instance", async (_, id) => {
             eventEmitter.emit('process-exit', 'internal-error');
         });
 
-        instanceManager.runInstance(id);
+        if (instanceManager.isActive(id)) {
+            instanceManager.runInstance(id);
+        }
 
     }
 
