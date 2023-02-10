@@ -168,11 +168,11 @@ module.exports = class Minecraft {
 
             this._rethrowAbort(error);
 
-            let { data: versionManifest } = await axios.get(CommonRoute['VANILLA_META'], {
+            let { data: versionList } = await axios.get(CommonRoute['VANILLA_META'], {
                 signal: this.abortSignal
             });
 
-            for (const version of versionManifest["versions"]) {
+            for (const version of versionList["versions"]) {
                 if (version.id == this.version) {
 
                     let { data: content } = await axios.get(version["url"], {
