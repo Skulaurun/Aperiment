@@ -39,9 +39,10 @@ export class InputBox extends CustomElement {
         super._createElement([
             {
                 type: "input",
-                attributeList: {
-                    "type": "text"
-                },
+                attributeList: Object.assign(
+                    { "type": "text" },
+                    this.options["attributeList"]
+                ),
                 classList: ["input-box"],
                 assign: "inputBox"
             },

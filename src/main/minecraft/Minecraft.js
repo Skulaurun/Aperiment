@@ -40,6 +40,9 @@ module.exports = class Minecraft {
         this.runtime = options['minecraftRuntime'];
         this.extension = options['extensionPackage'];
 
+        /* Note: Convert value to boolean (isset) */
+        this.useLocalRuntime = !!this.runtime['path'];
+
         this.pathConfig = options['pathConfig'];
 
         /*
@@ -84,6 +87,59 @@ module.exports = class Minecraft {
             );
             
             return content;
+
+        }
+
+    }
+
+    async _fetchRuntimeManifest() {
+
+        let systemName = ({
+            "Windows_NT": "windows",
+            "Darwin": "mac-os",
+            "Linux": "linux"
+        })[os.type()];
+
+        if (os.type() === "Windows_NT") {
+            systemName += `-${arch()}`;
+        }
+
+        let runtimeManifest = path.join(
+            this.pathConfig['cache'],
+            `${this._runtimeVersion}-${systemName}.json`
+        );
+
+        try {
+            this._runtimeManifest = JSON.parse(
+                await fs.promises.readFile(
+                    runtimeManifest,
+                    { signal: this.abortSignal }
+                )
+            );
+        } catch (error) {
+
+            this._rethrowAbort(error);
+
+            let { data: platformManifest } = await axios.get(CommonRoute['JAVA_RUNTIME'], {
+                signal: this.abortSignal
+            });
+
+            let platformRuntime = platformManifest[systemName];
+            if (platformRuntime) {
+                let runtimeVersion = platformRuntime[this._runtimeVersion]?.at(0);
+                if (runtimeVersion) {
+                    let { data: manifestContent } = await axios.get(runtimeVersion['manifest']['url'], {
+                        signal: this.abortSignal
+                    });
+                    await fs.promises.mkdir(path.dirname(runtimeManifest), { recursive: true });
+                    await fs.promises.writeFile(
+                        runtimeManifest,
+                        JSON.stringify(manifestContent, null, 4),
+                        { signal: this.abortSignal }
+                    );
+                    this._runtimeManifest = manifestContent;
+                }
+            }
 
         }
 
@@ -145,6 +201,9 @@ module.exports = class Minecraft {
             throw new Error("Version not found.");
 
         }
+
+        this._runtimeVersion = this._manifest['javaVersion']?.component || 'jre-legacy';
+        await this._fetchRuntimeManifest();
 
     }
 
@@ -283,12 +342,34 @@ module.exports = class Minecraft {
         
     }
 
+    _getRuntime() {
+        let files = [];
+        if (!this.useLocalRuntime) {
+            for (const [name, object] of Object.entries(this._runtimeManifest["files"])) {
+                if (object["type"] === "file") {
+                    let artifact = object["downloads"]["raw"];
+                    files.push({
+                        name: path.basename(name),
+                        size: artifact.size,
+                        path: path.join(
+                            this.cache,
+                            `runtime/${this._runtimeVersion}/${name}`
+                        ),
+                        url: artifact.url
+                    });
+                }
+            }
+        }
+        return files;
+    }
+
     async _verifyFileIntegrity() {
 
         let queue = [], files = [];
         files = files.concat(this._getJars());
         files = files.concat(this._getAssets());
         files = files.concat(this._getLibraries());
+        files = files.concat(this._getRuntime());
 
         for (let i = 0; i < files.length; i++) {
 
@@ -419,7 +500,7 @@ module.exports = class Minecraft {
         libraries.forEach((library, index) => {
             string += library.path;
             if (index != libraries.length - 1) {
-                string += process.platform === "win32" ? ";" : ":";
+                string += process.platform === "win32" ? ";" : ":"; // use path.delimiter
             }
         });
 
@@ -517,7 +598,17 @@ module.exports = class Minecraft {
             launchArguments = this.runtime['jvmArguments'].split(' ').concat(launchArguments);
         }
 
-        this.process = spawn(this.runtime['path'], launchArguments, { cwd: this.path, signal: this.abortSignal });
+        //let runtimePath = await FsUtil.resolveExecutable(this.runtime['path']); // wrong
+
+        let runtimePath = path.join(
+            this.cache,
+            `runtime/${this._runtimeVersion}/bin/java.exe`
+        );
+        if (this.useLocalRuntime) {
+            runtimePath = this.runtime['path'];
+        }
+
+        this.process = spawn(runtimePath, launchArguments, { cwd: this.path, signal: this.abortSignal });
         this.process.stdout.on("data", (data) => {
             this.eventEmitter.emit('process-stdout', data); }
         );

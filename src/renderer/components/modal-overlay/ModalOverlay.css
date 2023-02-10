@@ -164,6 +164,10 @@
     margin-top: 16px;
 }
 
+.custom-launch-overlay .instance-settings input::-webkit-input-placeholder {
+    color: rgb(190, 190, 190);
+}
+
 .custom-launch-overlay .progress-wrapper,
 .custom-launch-overlay .instance-description {
     padding: 8px;

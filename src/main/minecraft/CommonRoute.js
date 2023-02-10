@@ -20,6 +20,8 @@
 
 module.exports = {
 
+    JAVA_RUNTIME: 'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json',
+
     VANILLA_ASSETS: 'https://resources.download.minecraft.net',
 
     VANILLA_LIBRARIES: 'https://libraries.minecraft.net',

@@ -178,8 +178,8 @@ module.exports = class InstanceManager {
             object['config']['runtime'] = {};
         }
 
-        // Note: Property path cannot be empty.
-        if (!object['config']['runtime']['path']) {
+        // Note: Property path can be empty.
+        if (typeof object['config']['runtime']['path'] !== 'string') {
             object['config']['runtime']['path'] = this.defaultConfig['runtime']['path'];
         }
 

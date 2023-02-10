@@ -212,7 +212,10 @@ export class LaunchOverlay extends ModalOverlay {
                                         element: new PathBox({
                                             default: "",
                                             isDirectory: false,
-                                            fileTypes: InputType["java"]["fileTypes"]
+                                            fileTypes: InputType["java"]["fileTypes"],
+                                            attributeList: {
+                                                placeholder: "<Auto-Download JRE>"
+                                            }
                                         })
                                     }
                                 ]
