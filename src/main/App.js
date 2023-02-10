@@ -199,7 +199,7 @@ app.once("ready", () => {
         instanceManager = new InstanceManager(config.get('minecraftDirectory'));
         instanceManager.setDefaultConfig({
             "runtime": {
-                "path": "java",
+                "path": "",
                 "jvmArguments": ""
             }
         });
