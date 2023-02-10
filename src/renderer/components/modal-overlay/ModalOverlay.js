@@ -361,13 +361,12 @@ export class LaunchOverlay extends ModalOverlay {
             if (activeState["progressValue"] == 100) {
                 activeState["progressText"] = "Extracting";
             }
-        }
-
-        if (activeState["state"] !== InstanceState.Fetching) {
+        } else {
             activeState["progressSize"] = "";
         }
 
         this.progressText.textContent = activeState["progressText"];
+        console.log(activeState["progressText"])
         this.progressSize.textContent = activeState["progressSize"];
 
         const { config, manifest } = this.instance.config;

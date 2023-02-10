@@ -168,20 +168,17 @@ module.exports = class Minecraft {
 
             this._rethrowAbort(error);
 
-            let response = await axios.get(CommonRoute['VANILLA_META'], {
+            let { data: versionManifest } = await axios.get(CommonRoute['VANILLA_META'], {
                 signal: this.abortSignal
             });
-            let versions = response.data["versions"];
 
-            for (let i = 0; i < versions.length; i++) {
-
-                let version = versions[i];
-
+            for (const version of versionManifest["versions"]) {
                 if (version.id == this.version) {
 
                     let { data: content } = await axios.get(version["url"], {
                         signal: this.abortSignal
                     });
+
                     await fs.promises.mkdir(path.dirname(versionManifest), { recursive: true });
                     await fs.promises.writeFile(
                         versionManifest,
@@ -192,13 +189,12 @@ module.exports = class Minecraft {
                     content["assetIndex"]["objects"] = (await this._fetchAssetIndex(content))["objects"];
                     this._manifest = content;
 
-                    return;
-
                 }
-
             }
 
-            throw new Error("Version not found.");
+            if (!this._manifest) {
+                throw new Error(`Version ${this.version} wasn't found in the version manifest.`);
+            }
 
         }
 

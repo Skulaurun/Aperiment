@@ -196,6 +196,7 @@ ipcRenderer.on("instance-start", (_, id, pid) => {
     const instance = instances.find(i => i.id === id);
     if (instance) {
         instance.update({
+            state: InstanceState.Preparing,
             processId: pid,
             progressText: "Starting"
         });
