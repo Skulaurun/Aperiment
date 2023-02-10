@@ -33,7 +33,7 @@ const MinecraftForge = require("./MinecraftForge.js");
 const MinecraftFabric = require("./MinecraftFabric.js");
 const MinecraftExtension = require("./MinecraftExtension.js");
 
-const Log = require("./Log.js");
+const Log = require("../Log.js");
 const log = Log.getLogger("main");
 
 module.exports = class InstanceManager {
