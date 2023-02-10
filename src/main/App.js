@@ -598,11 +598,20 @@ async function loadChangelog() {
             : path.join(__dirname, "../../CHANGELOG.txt");
         const changelog = (await fs.promises.readFile(changelogPath)).toString();
 
+        const escapeHTML = (string) => {
+            return string.replaceAll(`&`, "&amp;")
+                .replaceAll(`<`, "&lt;")
+                .replaceAll(`>`, "&gt;")
+                .replaceAll(`\"`, "&quot;")
+                .replaceAll(`\'`, "&#039;");
+        };
+
         let listOpen = false;
         let outputHTMLBuffer = "";
         for (let line of changelog.split("\n")) {
             line = line.trim();
             if (line) {
+                line = escapeHTML(line);
                 if (line.startsWith("#")) {
                     line = line.substring(1).trim();
                     if (listOpen) { outputHTMLBuffer += "</div>"; }
