@@ -36,7 +36,7 @@ export class ModalOverlay extends CustomElement {
             assign: "overlayElement",
             classList: ["overlay-element"],
             listeners: {
-                "click": (event) => {
+                "mousedown": (event) => {
                     if (this.overlayElement === event.target) {
                         this.hide();
                     }
