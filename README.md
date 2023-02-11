@@ -12,11 +12,11 @@ Aperiment's main purpose is to provide an easy way of manipulating SkulTech-X-Pe
 
 ## Minecraft Version Support
 
-| Type | Version |
-| :---------------: | :----------: |
-| Minecraft | 1.7.10 - 1.18.2+ |
-| Fabric | 0.1.0.48 - 0.14.10+ |
-| Forge | 10.13.0.1150 - 40.1.84+ |
+| Type              | Version                 |
+| :---------------: | :---------------------: |
+| Minecraft         | 1.7.10 - 1.18.2+        |
+| Fabric            | 0.1.0.48 - 0.14.10+     |
+| Forge             | 10.13.0.1150 - 40.1.84+ |
 
 ## Manifest Format
 
@@ -31,39 +31,38 @@ To create your own pack, you need to host a JSON Manifest, for example on GitHub
   ],
   "credits": [
     "Helpful Person #1"
-    // ... credit mod authors ...
   ],
   "gallery": [
-    "https://examplepack.cz/path/to/image.png" // Supported: Any image/xxx mime type
+    "https://examplepack.cz/path/to/image.png"
   ],
-  "icon": "https://examplepack.cz/path/to/icon_64x64.gif", // Supported: png, jpeg, webp, gif
-  "description": "This is just an example...", // Newline \n supported
-  "versions": [ // The launcher will always install the newest version.
+  "icon": "https://examplepack.cz/path/to/icon_64x64.gif",
+  "description": "This is just an example...",
+  "versions": [
     {
-      "id": "3.0.0", // ID of the version, HAS TO BE VALID SEMVER! - https://semver.org/
-      "fabric": "0.14.10", // Install Fabric Loader
-      "vanilla": "1.12.2", // Install Vanilla Minecraft, THIS IS ALWAYS REQUIRED!
-      "extension": { // Download extra files, e. g. mods, shaders, resourcepacks, etc.
-        "size": 0, // Remote file size
+      "id": "3.0.0",
+      "fabric": "0.14.10",
+      "vanilla": "1.12.2",
+      "extension": {
+        "size": 230522658,
         "url": "https://examplepack.cz/path/to/fabricmods_3.0.0.zip"
       },
-      "changelog": "Fabric is better than Forge!" // Newline \n supported
+      "changelog": "Fabric is better than Forge!"
     },
     {
       "id": "2.0.0",
-      "forge": "1.12.2-14.23.5.2847", // Install Forge Mod Loader (FML)
+      "forge": "1.12.2-14.23.5.2847",
       "vanilla": "1.12.2",
       "extension": {
-        "size": 0,
+        "size": 109791834,
         "url": "https://examplepack.cz/path/to/forgemods_2.0.0.zip"
       },
       "changelog": "Vanilla is boring..."
     },
     {
       "id": "1.0.0",
-      "vanilla": "1.12.2", // This pack is vanilla only!
-      "extension": { // Download resourcepacks, saves, servers.dat, ...
-        "size": 0,
+      "vanilla": "1.12.2",
+      "extension": {
+        "size": 111930143,
         "url": "https://examplepack.cz/path/to/pack_1.0.0.zip"
       }
     }
@@ -74,3 +73,28 @@ To create your own pack, you need to host a JSON Manifest, for example on GitHub
   }
 }
 ```
+
+`<name>` - Incredible pack name!<br>
+`<creators>` - Who created the pack? Was it you?<br>
+`[credits]` - Who made the pack possible? E. g. mod authors.<br>
+
+`[icon]` - Icon URL, supported MIME types: png, jpeg, webp, gif.<br>
+`[gallery]` - Image URLs, supported MIME types: image/xxxx.<br>
+`[description]` - Description, newline \n supported.
+
+`<version/id>` - Has to be valid [semver](https://semver.org)!<br>
+`<version/vanilla>` - Minecraft version, see [supported versions](https://github.com/Skulaurun/Aperiment#minecraft-version-support).<br>
+`[version/forge]` - Mod Loader (Forge) version, see [supported versions](https://github.com/Skulaurun/Aperiment#minecraft-version-support).<br>
+`[version/fabric]` - Mod Loader (Fabric) version, see [supported versions](https://github.com/Skulaurun/Aperiment#minecraft-version-support).<br>
+`[version/extension]` - Extra files: mods, shaders, resourcepacks, saves, etc.<br>
+`[version/changelog]` - Version changelog, newline \n supported.
+
+`<extension/url>` - Remote file URL.<br>
+`<extension/size>` - Size of remote file in bytes.
+
+`<_MANIFEST_VERSION_>` - Aperiment Manifest version.
+
+`[default/jvmArguments]` - Default JVM arguments, e.g. for minimum memory requirements.
+
+## License
+Aperiment is available under the **GNU General Public License v3.0**. See [`LICENSE.md`](https://github.com/Skulaurun/Aperiment/blob/master/LICENSE).
