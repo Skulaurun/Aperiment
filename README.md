@@ -1,4 +1,9 @@
 # Aperiment (Aper)
+[![release](https://img.shields.io/github/v/release/Skulaurun/Aperiment?color=blue)](https://github.com/Skulaurun/Aperiment/releases/latest)
+[![license](https://img.shields.io/github/license/Skulaurun/Aperiment?color=blue)](https://github.com/Skulaurun/Aperiment/blob/main/LICENSE)
+[![commit activity](https://img.shields.io/github/commit-activity/m/Skulaurun/Aperiment?color=limegreen)](#)
+[![downloads](https://img.shields.io/github/downloads/Skulaurun/Aperiment/total?color=limegreen)](#)
+
 *Custom Minecraft Launcher*
 
 Aperiment's main purpose is to provide an easy way of manipulating SkulTech-X-Periment modpacks and all other modpacks, which use the Aperiment Manifest Format. This is the launcher's 7th generation. First version was released on 18 July 2018.
