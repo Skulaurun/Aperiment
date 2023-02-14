@@ -97,7 +97,10 @@ export class LaunchOverlay extends ModalOverlay {
                             {
                                 type: "img",
                                 classList: ["gallery-image"],
-                                assign: "galleryImage"
+                                assign: "galleryImage",
+                                listeners: {
+                                    "load": () => { this.galleryImage.classList.add("visible"); }
+                                }
                             },
                             {
                                 type: "img",
@@ -276,7 +279,9 @@ export class LaunchOverlay extends ModalOverlay {
     }
 
     _traverseGallery(direction) {
-        this.instance.traverseGallery(direction);
+        if (this.instance.traverseGallery(direction)) {
+            this.galleryImage.classList.remove("visible");
+        }
         this.updateGallery();
     }
 

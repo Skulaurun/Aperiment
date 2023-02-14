@@ -124,10 +124,12 @@ export default class Instance {
         if (direction > 0) {
             if (this.galleryIndex + 1 < (this.config.manifest["gallery"] || []).length) {
                 this.galleryIndex++;
+                return true;
             }
         } else {
             if (this.galleryIndex - 1 >= 0) {
                 this.galleryIndex--;
+                return true;
             }
         }
     }
