@@ -356,7 +356,7 @@ export class LaunchOverlay extends ModalOverlay {
         }
 
         if (activeState["state"] === InstanceState.Fetching) {
-            let allowedLength = 60;
+            let allowedLength = 58;
             if (typeof activeState["progressText"] === "string") {
                 if (typeof activeState["progressSize"] === "string") {
                     allowedLength -= activeState["progressSize"].length;

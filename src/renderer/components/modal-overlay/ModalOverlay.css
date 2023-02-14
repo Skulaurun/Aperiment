@@ -185,29 +185,31 @@
     color: rgb(190, 190, 190);
 }
 
-.custom-launch-overlay .progress-wrapper,
-.custom-launch-overlay .instance-description {
+.custom-launch-overlay .progress-wrapper {
     padding: 8px;
-    background-color: rgb(28, 28, 28);
 }
 
 .custom-launch-overlay .instance-description {
     height: 80%;
+    font-size: 18px;
 }
 
 .custom-launch-overlay .instance-description .description-heading {
-    display: inline-block;
+    display: block;
     font-weight: bold;
     padding-bottom: 2px;
-    margin-bottom: 8px;
-    text-decoration: underline;
+    margin-bottom: 2px;
+    font-size: 16px;
 }
 .custom-launch-overlay .instance-description .description-heading + p {
+    padding: 8px;
     margin-bottom: 8px;
     text-align: justify;
     white-space: pre-wrap;
+    background-color: rgb(28, 28, 28);
 }
-.custom-launch-overlay .instance-description .description-heading:has(+ p:empty) {
+.custom-launch-overlay .instance-description .description-heading:has(+ p:empty),
+.custom-launch-overlay .instance-description .description-heading + p:empty {
     display: none;
 }
 
