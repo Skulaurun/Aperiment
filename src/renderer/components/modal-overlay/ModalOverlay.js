@@ -302,9 +302,14 @@ export class LaunchOverlay extends ModalOverlay {
         }
     }
 
+    beforeShow() {
+        this.galleryImage.classList.remove("visible");
+    }
+
     display(instance) {
         this.instance = instance;
         this.update();
+        this.beforeShow();
         this.show();
     }
 
