@@ -99,7 +99,7 @@ export class LaunchOverlay extends ModalOverlay {
                                 classList: ["gallery-image"],
                                 assign: "galleryImage",
                                 listeners: {
-                                    "load": () => { this.galleryImage.classList.add("visible"); }
+                                    "load": () => { this._loadGallery(); }
                                 }
                             },
                             {
@@ -271,6 +271,10 @@ export class LaunchOverlay extends ModalOverlay {
         }
     }
 
+    _openFolder() {
+        this.instance.openFolder();
+    }
+
     _toggleSettings(isVisible) {
         if (typeof isVisible === "undefined") {
             isVisible = this.instanceSettings.getAttribute("visible") !== "true";
@@ -282,14 +286,10 @@ export class LaunchOverlay extends ModalOverlay {
         if (this.instance.traverseGallery(direction)) {
             this.galleryImage.classList.remove("visible");
         }
-        this.updateGallery();
+        this._updateGallery();
     }
 
-    _openFolder() {
-        this.instance.openFolder();
-    }
-
-    updateGallery() {
+    _updateGallery() {
         let { galleryIndex, config: { manifest } } = this.instance;
         if (Array.isArray(manifest["gallery"]) && manifest["gallery"].length > 0) {
             this.galleryWrapper.setAttribute("go-right", galleryIndex + 1 < manifest["gallery"].length);
@@ -302,14 +302,22 @@ export class LaunchOverlay extends ModalOverlay {
         }
     }
 
-    beforeShow() {
+    _loadGallery() {
+        this.galleryImage.classList.add("visible");
+    }
+
+    _firstUpdate() {
         this.galleryImage.classList.remove("visible");
+        this.galleryImage.classList.add("no-duration");
+        setTimeout(() => {
+            this.galleryImage.classList.remove("no-duration");
+        }, 100); /* If loaded in 100ms, do not show load spinner. */
     }
 
     display(instance) {
         this.instance = instance;
+        this._firstUpdate();
         this.update();
-        this.beforeShow();
         this.show();
     }
 
@@ -395,7 +403,7 @@ export class LaunchOverlay extends ModalOverlay {
             }
         }
 
-        this.updateGallery();
+        this._updateGallery();
 
     }
 
