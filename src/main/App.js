@@ -714,6 +714,10 @@ async function migrateLegacyFiles(minecraftPath) {
         }
     } catch {}
 
+    let toLoad = {
+        loadedConfigs: [],
+        loadedIcons: {}
+    };
     for (const entry of entryList) {
         try {
             const metaPath = path.join(
@@ -730,15 +734,10 @@ async function migrateLegacyFiles(minecraftPath) {
             if (typeof instanceConfig['manifest']['currentVersion'] !== 'undefined') {
                 delete instanceConfig['manifest']['currentVersion'];
             }
-            instanceManager.fetchIcon(instanceConfig['id'])
-                .then((iconPath) => {
-                    if (iconPath) {
-                        mainWindow?.send("load-icons", {
-                            [instanceConfig['id']]: iconPath
-                        });
-                    }
-                })
-                .catch(()=>{});
+            const iconPath = await instanceManager.fetchIcon(instanceConfig['id'])
+                .catch((error) => {
+                    log.error(`Could not fetch icon for modpack '${instanceConfig['id']}'. ${error}`);
+                });
             const candidateModpack = modpackList.find((modpack) => {
                 let normalizedName = (modpack['name'] || '')
                     .trim()
@@ -755,6 +754,8 @@ async function migrateLegacyFiles(minecraftPath) {
             );
             await fs.promises.mkdir(instanceManager.pathConfig['manifests'], { recursive: true });
             await instanceManager.saveConfig(instanceConfig['id']);
+            toLoad['loadedIcons'][instanceConfig['id']] = iconPath;
+            toLoad['loadedConfigs'].push(instanceConfig);
             await fs.promises.unlink(path.join(
                 instancePath,
                 `${instanceConfig['id']}/meta.json`
@@ -764,6 +765,6 @@ async function migrateLegacyFiles(minecraftPath) {
         }
     }
 
-    mainWindow?.send('load-modpacks', Object.values(instanceManager.loadedConfigs));
+    mainWindow?.send('load-instances', toLoad);
 
 }
