@@ -208,8 +208,15 @@ export default class Instance {
 
     }
 
+    delete(keepFiles) {
+        ipcRenderer.send("delete-instance", this.id, keepFiles);
+    }
+
     destroy() {
-        this.instanceIcon.remove();
+        this.icon.remove();
+        if (Instance.launchOverlay.instance === this) {
+            Instance.launchOverlay.hide();
+        }
     }
     
 }

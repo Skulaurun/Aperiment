@@ -222,6 +222,57 @@ export class LaunchOverlay extends ModalOverlay {
                                         })
                                     }
                                 ]
+                            },
+                            {
+                                type: "tr",
+                                children: [
+                                    { type: "td", textContent: "Danger Zone 🚨" },
+                                    {
+                                        type: "div",
+                                        classList: ["danger-zone"],
+                                        assign: "dangerZone",
+                                        attributeList: { "visible": false },
+                                        children: [
+                                            {
+                                                type: "p",
+                                                assign: "dangerText",
+                                                textContent: "Show More"
+                                            },
+                                            {
+                                                type: "div",
+                                                classList: ["danger-button"]
+                                            }
+                                        ],
+                                        listeners: {
+                                            "click": () => { this._toggleDanger(); }
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                type: "tr",
+                                classList: ["danger-content"],
+                                children: [
+                                    {
+                                        type: "td",
+                                        attributeList: { "colspan": "2" },
+                                        children: [
+                                            {
+                                                type: "div",
+                                                classList: ["danger-notice"],
+                                                textContent: "🚥 All your save files and in-game progress will be lost!"
+                                            },
+                                            {
+                                                type: "button",
+                                                classList: ["delete-button", "button-red"],
+                                                textContent: "Delete",
+                                                listeners: {
+                                                    "click": () => { this._onDelete(); }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -271,15 +322,32 @@ export class LaunchOverlay extends ModalOverlay {
         }
     }
 
+    _onDelete() {
+        this.instance.delete(false);
+    }
+
     _openFolder() {
         this.instance.openFolder();
     }
 
-    _toggleSettings(isVisible) {
-        if (typeof isVisible === "undefined") {
-            isVisible = this.instanceSettings.getAttribute("visible") !== "true";
+    _toggle(property, attribute, isOn) {
+        if (typeof isOn === "undefined") {
+            isOn = this[property].getAttribute(attribute) !== "true";
         }
-        this.instanceSettings.setAttribute("visible", isVisible);
+        this[property].setAttribute(attribute, isOn);
+        return isOn;
+    }
+
+    _toggleSettings(isVisible) {
+        this._toggle("instanceSettings", "visible", isVisible);
+    }
+
+    _toggleDanger(isVisible) {
+        if (this._toggle("dangerZone", "visible", isVisible)) {
+            this.dangerText.textContent = "Show Less";
+        } else {
+            this.dangerText.textContent = "Show More";
+        }
     }
 
     _traverseGallery(direction) {
@@ -312,6 +380,7 @@ export class LaunchOverlay extends ModalOverlay {
         setTimeout(() => {
             this.galleryImage.classList.remove("no-duration");
         }, 100); /* If loaded in 100ms, do not show load spinner. */
+        this._toggleDanger(false);
     }
 
     display(instance) {
@@ -365,6 +434,9 @@ export class LaunchOverlay extends ModalOverlay {
             /* Options Button */
             this._toggleSettings(false);
             this.optionsButton.disabled = true;
+            
+            /* Danger Zone */
+            this._toggleDanger(false);
 
         }
 

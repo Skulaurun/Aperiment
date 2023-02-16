@@ -188,6 +188,64 @@
     color: rgb(190, 190, 190);
 }
 
+.custom-launch-overlay .instance-settings .danger-zone {
+    position: relative;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    height: 35px;
+    gap: 8px;
+}
+.custom-launch-overlay .instance-settings .danger-zone p {
+    display: inline-block;
+    text-transform: uppercase;
+    font-size: 14px;
+    font-weight: bold;
+    vertical-align: middle;
+    user-select: none;
+}
+.custom-launch-overlay .instance-settings .danger-button {
+    position: relative;
+    display: inline-block;
+    padding: 4px;
+    border: solid white;
+    border-width: 0px 2px 2px 0px;
+    transition-duration: 0.6s;
+    transform: rotate(-45deg);
+    transition-property: transform;
+    transform-origin: 70% 70%;
+    margin-bottom: 4px;
+}
+.custom-launch-overlay .instance-settings .danger-zone:hover .danger-button {
+    border: solid rgb(54, 214, 89);
+    border-width: 0px 2px 2px 0px;
+}
+.custom-launch-overlay .instance-settings .danger-zone[visible=true] .danger-button {
+    transform: rotate(45deg);
+}
+
+.custom-launch-overlay .instance-settings .danger-content {
+    display: none;
+    user-select: none;
+}
+.custom-launch-overlay .instance-settings .danger-content .danger-notice {
+    display: inline-block;
+    text-transform: initial;
+    line-height: 32px;
+}
+.custom-launch-overlay .instance-settings .danger-content .delete-button {
+    width: auto;
+    padding-left: 8px;
+    padding-right: 8px;
+    float: right;
+}
+.custom-launch-overlay .instance-settings .danger-content .delete-button img {
+    height: 100%;
+}
+.custom-launch-overlay .instance-settings:has(.danger-zone[visible=true]) .danger-content {
+    display: table-row;
+}
+
 .custom-launch-overlay .progress-wrapper {
     padding: 8px;
 }

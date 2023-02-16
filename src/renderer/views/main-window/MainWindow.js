@@ -173,6 +173,12 @@ ipcRenderer.on("new-instance", (_, toLoad, error) => {
     }
 });
 
+ipcRenderer.on("delete-instance", (_, id) => {
+    instances.find(i => i.id === id)
+        ?.destroy();
+    instances = instances.filter(i => i.id !== id);
+});
+
 ipcRenderer.on("instance-download-progress", (_, id, progress) => {
 
     let progressPercentage = (progress.loaded.size / progress.total.size) * 100;

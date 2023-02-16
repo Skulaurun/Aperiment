@@ -572,6 +572,17 @@ module.exports = class InstanceManager {
 
     }
 
+    unloadConfig(loadedId) {
+
+        let instanceConfig = this._getInstance(loadedId, { isActive: false });
+
+        delete this.loadedIcons[loadedId];
+        delete this.loadedConfigs[loadedId];
+
+        return instanceConfig;
+        
+    }
+
     setUserInfo(userInfo) {
         this.userInfo = userInfo;
     }

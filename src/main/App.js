@@ -462,6 +462,29 @@ ipcMain.on("new-instance", async (_, url) => {
 
 });
 
+ipcMain.on("delete-instance", async (_, id, keepFiles) => {
+
+    if (instanceManager.isActive(id)) {
+        instanceManager.destroyInstance(id, 'delete-request');
+    }
+
+    if (instanceManager.isLoaded(id)) {
+
+        let unloadedConfig = instanceManager.unloadConfig(id);
+        await fs.promises.unlink(unloadedConfig['manifestPath']);
+
+        if (!keepFiles) {
+            /* This needs to be in sync with InstanceManager.js */
+            const instancePath = path.join(instanceManager.pathConfig['instances'], id);
+            await fs.promises.rm(instancePath, { recursive: true, force: true });
+        }
+
+        mainWindow?.send('delete-instance', id);
+
+    }
+
+});
+
 ipcMain.on("launch-instance", async (_, id) => {
 
     if (!instanceManager.isActive(id)) {
