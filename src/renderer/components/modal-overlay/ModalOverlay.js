@@ -404,6 +404,7 @@ export class LaunchOverlay extends ModalOverlay {
             this.startButton.textContent = "Launch";
             this.startButton.classList.add("button-green");
             this.startButton.classList.remove("button-blue");
+            this.startButton.removeAttribute("disabled");
 
             /* Progress Bar */
             this.progressWrapper.setAttribute("visible", false);
@@ -419,9 +420,14 @@ export class LaunchOverlay extends ModalOverlay {
         } else {
 
             /* Start Button */
-            this.startButton.textContent = "Terminate";
-            this.startButton.classList.add("button-blue");
-            this.startButton.classList.remove("button-green");
+            if (activeState["enableTerminate"]) {
+                this.startButton.textContent = "Terminate";
+                this.startButton.classList.add("button-blue");
+                this.startButton.classList.remove("button-green");
+                this.startButton.removeAttribute("disabled");
+            } else {
+                this.startButton.setAttribute("disabled", "true");
+            }
 
             this.progressWrapper.setAttribute("visible", true);
             if (activeState["state"] === InstanceState.Running) {
@@ -474,6 +480,8 @@ export class LaunchOverlay extends ModalOverlay {
                 this.instanceChangelog.innerHTML += `<b>${version["id"]}</b>\n${version["changelog"]}\n`;
             }
         }
+
+        console.log(activeState);
 
         this._updateGallery();
 

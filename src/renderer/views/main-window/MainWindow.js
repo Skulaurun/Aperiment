@@ -260,6 +260,15 @@ ipcRenderer.on("instance-update", (_, id, config, icon) => {
     }
 });
 
+ipcRenderer.on("instance-active", (_, id) => {
+    const instance = instances.find(i => i.id === id);
+    if (instance) {
+        instance.update({
+            enableTerminate: true
+        });
+    }
+});
+
 ipcRenderer.on("force-click", (_, selector) => {
     document.querySelector(selector)?.click();
 });

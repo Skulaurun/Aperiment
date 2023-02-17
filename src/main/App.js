@@ -496,10 +496,12 @@ ipcMain.on("launch-instance", async (_, id) => {
         });
 
         const eventEmitter = await instanceManager.createInstance(id);
+        /* The instance can now be terminated. */
+        mainWindow?.send("instance-active", id);
+
         const iconPath = await instanceManager.fetchIcon(id).catch((error) => {
             log.error(`Could not fetch icon for modpack '${id}'. ${error}`);
         });
-
         /* Instance Config is fetched by InstanceManager.js */
         mainWindow?.send("instance-update", id, instanceManager.loadedConfigs[id], iconPath);
 

@@ -43,6 +43,7 @@ export default class Instance {
 
         this.activeState = {
             state: InstanceState.Idle,
+            enableTerminate: false,
             processId: null,
             progressSize: null,
             progressValue: null,
@@ -65,7 +66,9 @@ export default class Instance {
 
     terminate() {
         this.update({
-            state: InstanceState.Idle
+            state: InstanceState.Idle,
+            enableTerminate: false,
+            progressText: `⚠️ The process exited with code internal-error`
         });
         ipcRenderer.send("terminate-instance", this.id);
     }
