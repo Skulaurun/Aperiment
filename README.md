@@ -100,5 +100,70 @@ To create your own pack, you need to host a JSON Manifest, for example on GitHub
 
 `[default/jvmArguments]` - Default JVM arguments, e.g. for minimum memory requirements.
 
+## Extension ZIP
+Download an example [here](https://www.dropbox.com/s/bblcjk7wbdt351q/skultech-1.4.1.zip?dl=1).<br>
+
+The file/folder structure of extension .zip:
+```
+example.zip
+ | - mods
+ | - config
+ | - saves
+ | - resourcepacks
+ | - servers.dat
+ | - ...
+ | - actions.json
+```
+
+Everything is optional except `actions.json`.
+
+### Example of `actions.json`
+```json
+[
+  {
+    "name": "config/",
+    "action": "REPLACE"
+  },
+  {
+    "name": "mods/",
+    "action": "DELETE"
+  },
+  {
+    "name": "resourcepacks/",
+    "action": "REPLACE"
+  },
+  {
+    "name": "saves/",
+    "action": "REPLACE"
+  },
+  {
+    "name": "servers.dat",
+    "action": "ADD"
+  }
+]
+```
+
+`ADD` - Extract the file from the zip only if it does not already exist.<br>
+`REPLACE` - Rewrite the file if it exists otherwise create.<br>
+`DELETE` - Delete target folder, extract everything again.<br>
+
+This is useful when you don't want to delete user specific configuration when updating a pack.
+
+Note: This system is deprecated, and will most likely be replaced in the future, while still supporting the old one.
+
+## URI 'aperiment://' Handler
+⚠️ Warning, so far Windows only!
+
+Open hyperlinks with (external application) Aperiment.<br>
+```html
+<a href="aperiment:launch?remote=https://www.skulaurun.eu/skultech/manifest.json">Open in Aperiment</a>
+```
+Note: Users of your website need to install Aperiment beforehand.
+
+## Plans for the future
+- Support downloading mods from CurseForge or Modrinth.
+- Add alternative pack update system, via "patches" (separate versions into "base" and "patch").
+- Create central manifest database, hosted on my servers, fetch and add packs from the database through the launcher directly.
+
 ## License
 Aperiment is available under the **GNU General Public License v3.0**. See [`LICENSE.md`](https://github.com/Skulaurun/Aperiment/blob/master/LICENSE).
