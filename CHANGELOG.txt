@@ -1,3 +1,13 @@
+# 1.2.0
+- Update copyright year to 2023 aab2b8b2d2a3e49270a3e14ab068a8105b008267 ebabca930c176bec8809f71194d5e094d728a167
+- Fix launch overlay UI bugs c04609f90b7b10312c0e768ab86c76511c0a39f4
+- Fix legacy instance migrate function 4a2d21482922ab13186a3076aa26ede2b2446726
+- Add 'danger zone' for instance delete 100e227fc86ae5ae1fd377720dada1aa85a589e2
+- No load spinner when the image is loaded in 10ms 10939e196acbcf0f59b7f33a30e6d9accb841027
+- Reset load spinner state on ModalOverlay display 902b431718b2bf27c722a96fc8886194b3a7a252
+- Modal Overlay small design improvements c1c1beef0b96d64169a2ed48d3bc4652bec09646
+- Add loading spinner to instance image gallery be93b2a26a2daa34c27b6f5f5532b47074de41b1
+
 # 1.1.0
 - Escape HTML characters when loading CHANGELOG.TXT 1fccacae510a41060a7a8805853b33a7071e7d41
 - Run instance only when active (not terminated) 5f720dc814d42116fb2c4653c0ddfdb87f5c82c3 cb4bf3f5654cb97b508a3e3107e3fcb0ebc05d8b
