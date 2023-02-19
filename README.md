@@ -104,7 +104,7 @@ To create your own pack, you need to host a JSON Manifest, for example on GitHub
 `[default/jvmArguments]` - Default JVM arguments, e.g. for minimum memory requirements.
 
 ## 📦 Extension ZIP
-An Extension ZIP is an extension to the base game: saves, shaders, mods, resourcepacks, etc. The extension is extracted to the runtime instance folder aka `.minecraft`.
+Extension ZIP is an extension to the base game: saves, shaders, mods, resourcepacks, etc. The extension is extracted to the runtime instance folder aka `.minecraft`.
 
 Download an example [here](https://www.dropbox.com/s/bblcjk7wbdt351q/skultech-1.4.1.zip?dl=1).<br>
 
@@ -148,7 +148,7 @@ An `action` specifies how to treat zip entries.
   }
 ]
 ```
-When a user installs the pack, we provide him with a default/official server, thus the `servers.dat` file. The `ADD` action means, that the file is extracted from the .zip only when it does not already exist. We don't want the user to lost their servers when the pack is updated.
+When a user installs the pack, we provide him with a default/official server, thus the `servers.dat` file. The `ADD` action means, that the file is extracted from the .zip only when it does not already exist. We don't want the user to lose their servers when the pack is updated.
 
 For specific pack experience, we might have configured some mods, and we want these configuration files to remain the same, even if the user changed them. The `REPLACE` action means, that all files are awalys extracted from the .zip for the mods we provided custom configuration files. While the user still retaining his other (not so important) mod configs, e. g. client-side BetterFoliage, etc.
 
