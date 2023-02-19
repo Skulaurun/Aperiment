@@ -9,12 +9,12 @@ Aperiment's main purpose is to provide an easy way of manipulating SkulTech-X-Pe
 
 > *Motto: Make modpacks playable with a few clicks.*
 
-## Platform Support
+## 🪨 Platform Support
 
 - Windows
 - Linux
 
-## Minecraft Version Support
+## 🌷 Minecraft Version Support
 
 | Type              | Version                 |
 | :---------------: | :---------------------: |
@@ -22,7 +22,10 @@ Aperiment's main purpose is to provide an easy way of manipulating SkulTech-X-Pe
 | Fabric            | 0.1.0.48 - 0.14.10+     |
 | Forge             | 10.13.0.1150 - 40.1.84+ |
 
-## Manifest Format
+## 🧊 UI Preview
+![aperiment ui](https://cdn.discordapp.com/attachments/587327745961230339/1076680460807192576/image.png)
+
+## 📜 Manifest Format
 
 To create your own pack, you need to host a JSON Manifest, for example on GitHub.
 
@@ -100,10 +103,12 @@ To create your own pack, you need to host a JSON Manifest, for example on GitHub
 
 `[default/jvmArguments]` - Default JVM arguments, e.g. for minimum memory requirements.
 
-## Extension ZIP
+## 📦 Extension ZIP
+An Extension ZIP is an extension to the base game: saves, shaders, mods, resourcepacks, etc. The extension is extracted to the runtime instance folder aka `.minecraft`.
+
 Download an example [here](https://www.dropbox.com/s/bblcjk7wbdt351q/skultech-1.4.1.zip?dl=1).<br>
 
-The file/folder structure of extension .zip:
+File structure of Extension ZIP:
 ```
 example.zip
  | - mods
@@ -118,6 +123,7 @@ example.zip
 Everything is optional except `actions.json`.
 
 ### Example of `actions.json`
+An `action` specifies how to treat zip entries.
 ```json
 [
   {
@@ -142,28 +148,31 @@ Everything is optional except `actions.json`.
   }
 ]
 ```
+When a user installs the pack, we provide him with a default/official server, thus the `servers.dat` file. The `ADD` action means, that the file is extracted from the .zip only when it does not already exist. We don't want the user to lost their servers when the pack is updated.
 
-`ADD` - Extract the file from the zip only if it does not already exist.<br>
-`REPLACE` - Rewrite the file if it exists otherwise create.<br>
-`DELETE` - Delete target folder, extract everything again.<br>
+For specific pack experience, we might have configured some mods, and we want these configuration files to remain the same, even if the user changed them. The `REPLACE` action means, that all files are awalys extracted from the .zip for the mods we provided custom configuration files. While the user still retaining his other (not so important) mod configs, e. g. client-side BetterFoliage, etc.
 
-This is useful when you don't want to delete user specific configuration when updating a pack.
+To play on our official server, we don't allow any client-side modifications, the user wouldn't connect if they had different mod set. The `DELETE` action means, that everything (in this folder) is extracted again from the .zip, any user modification is lost in the process as the folder on the disk is deleted.
 
-Note: This system is deprecated, and will most likely be replaced in the future, while still supporting the old one.
+### Allowed Actions
 
-## URI 'aperiment://' Handler
+`ADD` - Extract the file only if it does not already exist.<br>
+`REPLACE` - Extract the file always (rewrite), other files are kept.<br>
+`DELETE` - Extract the file always (rewrite), other files are deleted.<br>
+
+## 🔍 URI 'aperiment://' Handler
 ⚠️ Warning, so far Windows only!
 
-Open hyperlinks with (external application) Aperiment.<br>
+Open web hyperlinks with (external application) Aperiment.<br>
 ```html
 <a href="aperiment:launch?remote=https://www.skulaurun.eu/skultech/manifest.json">Open in Aperiment</a>
 ```
-Note: Users of your website need to install Aperiment beforehand.
+Note: Aperiment needs to be installed on the client's computer in order for this link to work.
 
-## Plans for the future
-- Support downloading mods from CurseForge or Modrinth.
-- Add alternative pack update system, via "patches" (separate versions into "base" and "patch").
-- Create central manifest database, hosted on my servers, fetch and add packs from the database through the launcher directly.
+## 📑 TODO List
+- Support CurseForge and Modrinth as mod sources.
+- Alternative pack update system, separate versions into "base" and "patch".
+- Central manifest database, differentiate between verified manifests and 3rd party potentially dangerous.
 
-## License
+## 💖 License
 Aperiment is available under the **GNU General Public License v3.0**. See [`LICENSE.md`](https://github.com/Skulaurun/Aperiment/blob/master/LICENSE).
