@@ -242,8 +242,10 @@ ipcMain.once("app-start", () => {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
     loginWindow = new BrowserWindow({
         title: "Aperiment",
-        width: Math.round(width / 4),
-        height: Math.round(height / 2),
+        width: Math.max(480, Math.round(width / 4)),
+        height: Math.max(540, Math.round(height / 2)),
+        minWidth: 480,
+        minHeight: 540,
         show: false,
         frame: false,
         resizable: false,
@@ -287,8 +289,8 @@ ipcMain.once("app-start", () => {
 
     mainWindow = new BrowserWindow({
         title: "Aperiment",
-        width: Math.round(width / 1.5),
-        height: Math.round(height / 1.5),
+        width: Math.max(800, Math.round(width / 1.5)),
+        height: Math.max(440, Math.round(height / 1.5)),
         minWidth: 800,
         minHeight: 440,
         show: false,
