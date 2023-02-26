@@ -481,8 +481,6 @@ export class LaunchOverlay extends ModalOverlay {
             }
         }
 
-        console.log(activeState);
-
         this._updateGallery();
 
     }
