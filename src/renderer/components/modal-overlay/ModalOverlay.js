@@ -260,7 +260,10 @@ export class LaunchOverlay extends ModalOverlay {
                                             {
                                                 type: "div",
                                                 classList: ["danger-notice"],
-                                                textContent: "🚥 All your save files and in-game progress will be lost!"
+                                                children: [
+                                                    { type: "p", textContent: "🚩 Deleting the instance will erase all user data!" },
+                                                    { type: "p", textContent: "These include your: worlds, screenshots, configuration, etc." }
+                                                ]
                                             },
                                             {
                                                 type: "button",

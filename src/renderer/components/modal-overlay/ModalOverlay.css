@@ -233,6 +233,9 @@
     text-transform: initial;
     line-height: 32px;
 }
+.custom-launch-overlay .instance-settings .danger-content .danger-notice > p:not(:first-of-type) {
+    margin-left: 22px;
+}
 .custom-launch-overlay .instance-settings .danger-content .delete-button {
     width: auto;
     padding-left: 8px;
