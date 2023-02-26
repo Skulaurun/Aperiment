@@ -1,3 +1,7 @@
+# 1.2.1
+- Fix Instance loadSettings() to save previous value 0c3c08a53cc49f572908001db4f0050fa96cb893
+- Set Login Window minimum WxH to 480x540 fdf37b4a4081eae904605253c7061884db425998
+
 # 1.2.0
 - Update copyright year to 2023 aab2b8b2d2a3e49270a3e14ab068a8105b008267 ebabca930c176bec8809f71194d5e094d728a167
 - Fix launch overlay UI bugs c04609f90b7b10312c0e768ab86c76511c0a39f4
