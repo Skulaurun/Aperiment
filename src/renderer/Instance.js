@@ -167,12 +167,10 @@ export default class Instance {
                 } else {
                     input.value = "None";
                 }
-                if (input.hasAttribute("input-id")) {
-                    let inputId = element.querySelector(".custom-element")
-                        ?.getAttribute("custom-id");
-                    CustomElement.registry.find(x => inputId && x.id == inputId)
-                        ?.save();
-                }
+                let inputId = element.querySelector(".custom-element")
+                    ?.getAttribute("custom-id");
+                CustomElement.registry.find(x => inputId && x.id == inputId)
+                    ?.save();
         });
     }
 
