@@ -50,6 +50,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector(".page-item[name=library]")
         ?.appendChild(Instance.launchOverlay.get());
 
+    document.getElementById("browse-redirect").addEventListener("click", () => {
+        document.querySelector(".menu-item[name=browse]")?.click();
+    });
+
     Array.from(document.querySelectorAll("tr td.writable-input")).forEach((element) => {
         const inputType = InputType[element.getAttribute("input-type")];
         if (inputType["value"] === InputValue.File || inputType["value"] === InputValue.Directory) {

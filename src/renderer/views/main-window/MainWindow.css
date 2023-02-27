@@ -337,6 +337,28 @@
     line-height: 24px;
 }
 
+.page-item[name=library] .page-content:has(> .modpack-container:empty) .instance-container-empty {
+    display: flex;
+}
+.instance-container-empty {
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; bottom: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    height: 100%;
+    font-size: 32px;
+    color: rgb(100, 100, 100);
+    user-select: none;
+}
+.instance-container-empty #browse-redirect {
+    cursor: pointer;
+    color: rgb(54, 214, 89);
+}
+
 .context-menu {
     z-index: 1000;
     position: absolute;
