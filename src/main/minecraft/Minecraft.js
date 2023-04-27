@@ -34,6 +34,12 @@ module.exports = class Minecraft {
 
     constructor(options) {
 
+        this.os = ({
+            'Windows_NT': 'windows',
+            'Linux': 'linux',
+            'Darwin': 'osx'
+        })[os.type()];
+
         this.user = options['userInfo'];
         this.path = options['instancePath'];
         this.version = options['vanillaVersion'];
@@ -203,6 +209,38 @@ module.exports = class Minecraft {
 
     }
 
+    _isAllowed(library) {
+
+        let allowed = {
+            windows: false,
+            linux: false,
+            osx: false
+        };
+
+        if (library["rules"]) {
+            for (const rule of library.rules) {
+
+                let action = rule.action == "allow" ? true : false;
+
+                if (rule["os"]) {
+                    allowed[rule["os"]["name"]] = action;
+                } else {
+                    for (let key in allowed) {
+                        allowed[key] = action;
+                    }
+                }
+
+            }
+        } else {
+            for (let key in allowed) {
+                allowed[key] = true;
+            }
+        }
+
+        return allowed[this.os];
+
+    }
+
     _getLibraries() {
 
         let files = [];
@@ -211,38 +249,7 @@ module.exports = class Minecraft {
         for (let i = 0; i < libraries.length; i++) {
 
             let library = libraries[i];
-            let system = ({ "Windows_NT": "windows", "Linux": "linux", "Darwin": "osx" })[os.type()];
-
-            let allowed = {
-                windows: false,
-                linux: false,
-                osx: false
-            };
-
-            if (library.hasOwnProperty("rules")) {
-
-                for (let j = 0; j < library.rules.length; j++) {
-
-                    let rule = library.rules[j];
-                    let action = rule.action == "allow" ? true : false;
-
-                    if (rule.hasOwnProperty("os")) {
-                        allowed[rule["os"]["name"]] = action;
-                    } else {
-                        for (let key in allowed) {
-                            allowed[key] = action;
-                        }
-                    }
-
-                }
-
-            } else {
-                for (let key in allowed) {
-                    allowed[key] = true;
-                }
-            }
-
-            if(!allowed[system]) {
+            if (!this._isAllowed(library)) {
                 continue;
             }
 
@@ -251,9 +258,9 @@ module.exports = class Minecraft {
                 let classifiers = library["downloads"]["classifiers"];
 
                 let natives = null;
-                if (library.hasOwnProperty("natives") && library["natives"].hasOwnProperty(system)) {
+                if (library.hasOwnProperty("natives") && library["natives"].hasOwnProperty(this.os)) {
                     
-                    natives = library["natives"][system];
+                    natives = library["natives"][this.os];
                     natives = natives.replace("${arch}", arch() == "x86" ? "32" : "64");
 
                 }

@@ -131,8 +131,23 @@ module.exports = class MinecraftForge extends Minecraft {
         for (let i = 0; i < libraries.length; i++) {
 
             let library = libraries[i];
+
+            // Legacy Forge 'version.json' Support (1.6.2-9.10.0.797)
+            if (compareVersions(this.version, "1.6.4") !== 1) {
+                const descriptor = this._splitDescriptor(library["name"]);
+                if (descriptor.name == "minecraftforge") {
+                    library["name"] = `net.minecraftforge:forge:${this.forgeVersion}`;
+                }
+                if (!super._isAllowed(library)) {
+                    continue;
+                }
+                if (super._getLibraries().find(x => x.name == library["name"])) {
+                    continue;
+                }
+            }
+
             let { domain, name, version, jar, path } = this._splitDescriptor(library.name);
-            
+
             if (path.includes(this.forgeVersion)) {
                 path = path.replace(jar, `${name}-${version}-universal.jar`);
             }
