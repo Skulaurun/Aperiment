@@ -467,7 +467,7 @@ module.exports = class Minecraft {
 
     async _grabAssets(directory) {
 
-        await fs.promises.rmdir(directory, { recursive: true });
+        await fs.promises.rm(directory, { recursive: true, force: true });
         await fs.promises.mkdir(directory, { recursive: true });
 
         for (const [ filepath, { hash } ] of Object.entries(this._manifest["assetIndex"]["objects"])) {
@@ -510,6 +510,7 @@ module.exports = class Minecraft {
             "auth_uuid": this.user['UUID'],
             "auth_player_name": this.user['playerName'],
             "auth_access_token": this.user['accessToken'],
+            "auth_session": `token:${this.user['accessToken']}:${this.user['UUID']}`,
             "assets_root": path.join(this.cache, "assets"),
             "game_assets": path.join(this.cache, "assets/virtual/legacy"),
             "assets_index_name": this._manifest["assetIndex"]["id"],
@@ -543,25 +544,17 @@ module.exports = class Minecraft {
 
         let minecraftArguments = this._getMinecraftArguments();
         let javaArguments = this._getJavaArguments();
-        
+
         template = template.split(" ");
-        for (let i = 0; i < template.length; i += 2) {
-            
-            let key = template[i];
-            let value = template[i + 1];
-
-            if (value.startsWith("${") && value.endsWith("}")) {
-
-                let search = value.substring(2, value.length - 1);
-
-                if (minecraftArguments.hasOwnProperty(search)) {
-                    template[i + 1] = minecraftArguments[search];
+        for (let [index, argument] of Object.entries(template)) {
+            if (argument.startsWith("${") && argument.endsWith("}")) {
+                let name = argument.substring(2, argument.length - 1);
+                if (minecraftArguments.hasOwnProperty(name)) {
+                    template[index] = minecraftArguments[name];
                 } else {
-                    template[i + 1] = "{}";
+                    template[index] = "{}";
                 }
-
             }
-
         }
 
         return javaArguments.concat(template);
@@ -586,7 +579,9 @@ module.exports = class Minecraft {
         await fs.promises.mkdir(this.path, { recursive: true });
         await this._grabNatives(path.join(this.path, "natives"));
 
-        if (compareVersions(this.version, "1.7.2") !== 1) {
+        if (compareVersions(this.version, "1.6") === -1) {
+            await this._grabAssets(path.join(this.path, "resources"));
+        } else if (compareVersions(this.version, "1.7.2") !== 1) {
             await this._grabAssets(path.join(this.cache, "assets/virtual/legacy"));
         }
 
