@@ -86,7 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
         "SkulTech": "https://www.skulaurun.eu/skultech/manifest.json",
         "SkulTech Alpha 1.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a1.0.0.json",
         "SkulTech Alpha 1.5.7": "https://www.skulaurun.eu/skultech/legacy/skultech-a1.5.7.json",
-        "SkulTech Alpha 2.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a2.0.0.json"
+        "SkulTech Alpha 2.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a2.0.0.json",
+        "SkulTech Alpha 3.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a3.0.0.json"
     };
 
     ElementBuilder.buildTo(modpackStoreList, Object.entries(officialModpacks).map(([name, url]) => {
