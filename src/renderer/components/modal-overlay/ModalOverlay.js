@@ -393,7 +393,7 @@ export class LaunchOverlay extends ModalOverlay {
         this.show();
     }
 
-    update() {
+    update(eventSender) {
 
         const { activeState } = this.instance;
 
@@ -401,7 +401,9 @@ export class LaunchOverlay extends ModalOverlay {
 
         if (activeState["state"] === InstanceState.Idle) {
 
-            this.instance.loadSettings(this.instanceSettings);
+            if (!eventSender || this.instance === eventSender) {
+                this.instance.loadSettings(this.instanceSettings);   
+            }
 
             /* Start Button */
             this.startButton.textContent = "Launch";

@@ -98,7 +98,7 @@ export default class Instance {
         }
         this.updateProgress(this.icon.progressBar);
 
-        Instance.launchOverlay.update();
+        Instance.launchOverlay.update(this);
 
     }
 
