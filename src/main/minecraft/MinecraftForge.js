@@ -294,6 +294,26 @@ module.exports = class MinecraftForge extends Minecraft {
         }
     }
 
+    _getJars() {
+        let files = super._getJars();
+        if (compareVersions(this.forgeVersion, "1.6.1-8.9.0.749") === -1 && compareVersions(this.forgeVersion, "1.5.0-7.7.0.559") !== -1) {
+            let fileSize = {
+                "1.5": 200547,
+                "1.5.1": 200886,
+                "1.5.2": 201404
+            };
+            /* Technically this is not a jar. */
+            let fileName = `deobfuscation_data_${this.version}.zip`;
+            files.push({
+                name: fileName,
+                size: fileSize[this.version],
+                path: path.join(this.path, "lib", fileName),
+                url: `https://mirror.technicpack.net/Technic/lib/fml/${fileName}`
+            });
+        }
+        return files;
+    }
+
     _getLibraries() {
 
         let files = super._getLibraries();
