@@ -16,11 +16,11 @@ Aperiment's main purpose is to provide an easy way of manipulating SkulTech-X-Pe
 
 ## 🌷 Minecraft Version Support
 
-| Type              | Version                 |
-| :---------------: | :---------------------: |
-| Minecraft         | 1.0 - 1.18.2+           |
-| Fabric            | 0.1.0.48 - 0.14.10+     |
-| Forge             | 10.13.0.1150 - 40.1.84+ |
+| Type              | Version                    |
+| :---------------: | :------------------------: |
+| Minecraft         | 1.0 - 1.18.2+              |
+| Fabric            | 0.1.0.48 - 0.14.10+        |
+| Forge             | 1.4.0-5.0.0.320 - 40.1.84+ |
 
 ## 🧊 UI Preview
 ![aperiment ui](https://cdn.discordapp.com/attachments/587327745961230339/1076680460807192576/image.png)
