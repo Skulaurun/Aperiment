@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "electron": "^22.3.0",
-    "electron-builder": "^24.0.0-alpha.12"
+    "electron-builder": "^24.3.0"
   },
   "dependencies": {
     "arch": "^2.1.2",
