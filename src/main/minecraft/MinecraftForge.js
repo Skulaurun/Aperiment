@@ -26,6 +26,7 @@ const compareVersions = require("compare-versions");
 
 const Minecraft = require('./Minecraft.js');
 const CommonRoute = require('./CommonRoute.js');
+const JarUtil = require("../utils/JarUtil.js");
 
 module.exports = class MinecraftForge extends Minecraft {
 
@@ -152,7 +153,19 @@ module.exports = class MinecraftForge extends Minecraft {
                 path = path.replace(jar, `${name}-${version}-universal.jar`);
             }
 
-            let url = library.hasOwnProperty("url") ? `${CommonRoute['FORGE_LIBRARIES']}/${path}` : `${CommonRoute['VANILLA_LIBRARIES']}/${path}`;
+            let url = library["url"];
+            if (compareVersions(this.forgeVersion, "1.6.2-9.10.0.797") === -1) {
+                url = `${CommonRoute['FORGE_LIBRARIES']}/${path}`;
+            } else {
+                url = library.hasOwnProperty("url") ? `${CommonRoute['FORGE_LIBRARIES']}/${path}` : `${CommonRoute['VANILLA_LIBRARIES']}/${path}`;
+            }
+
+            if (compareVersions(this.forgeVersion, "1.6.1-8.9.0.753") === -1) {
+                if (name == "forge") {
+                    url = url.replace(".jar", ".zip");
+                }
+            }
+
             if (compareVersions(this.version, "1.13.2") !== -1 || compareVersions(this.forgeVersion, "1.12.2-14.23.5.2851") !== -1) {
                 if (library.hasOwnProperty("downloads") && library["downloads"].hasOwnProperty("artifact")
                     && library.downloads.artifact.hasOwnProperty("url") && library.downloads.artifact.url != "") {
@@ -198,23 +211,34 @@ module.exports = class MinecraftForge extends Minecraft {
 
             this._rethrowAbort(error);
 
-            // Edited to run Forge 1.13 and higher, this is a temporary solution!
-            let response = compareVersions(this.version, "1.13") !== -1 || compareVersions(this.forgeVersion, "1.12.2-14.23.5.2851") !== -1 ? await axios.get(`${CommonRoute['FORGE_LIBRARIES']}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`, {
-                responseType: "arraybuffer",
-                signal: this.abortSignal
-            }) : await axios.get(`${CommonRoute['FORGE_LIBRARIES']}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-universal.jar`, {
+            let forgeUrl = `${CommonRoute['FORGE_LIBRARIES']}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-installer.jar`;
+            if (compareVersions(this.version, "1.13") === -1 && compareVersions(this.forgeVersion, "1.12.2-14.23.5.2851") === -1) {
+                if (compareVersions(this.forgeVersion, "1.6.2-9.10.0.797") !== -1) {
+                    forgeUrl = `${CommonRoute['FORGE_LIBRARIES']}/net/minecraftforge/forge/${this.forgeVersion}/forge-${this.forgeVersion}-universal.jar`;
+                }
+            }
+
+            let response = await axios.get(forgeUrl, {
                 responseType: "arraybuffer",
                 signal: this.abortSignal
             });
 
             let buffer = Buffer.from(response.data, "binary");
             let directory = await unzipper.Open.buffer(buffer);
-            let file = directory.files.find(d => d.path === "version.json");
-            let content = JSON.parse(await file.buffer());
+
+            let content = {};
+            if (compareVersions(this.forgeVersion, "1.6.2-9.10.0.797") !== -1) {                
+                let file = directory.files.find(d => d.path === "version.json");
+                content = JSON.parse(await file.buffer());
+            } else {
+                let file = directory.files.find(d => d.path === "install_profile.json");
+                content = JSON.parse(await file.buffer());
+                content = content["versionInfo"];
+            }
 
             // Edited to run Forge 1.13 and higher, this is a temporary solution!
             if (compareVersions(this.version, "1.13") !== -1 || compareVersions(this.forgeVersion, "1.12.2-14.23.5.2851") !== -1) {
-                file = directory.files.find(d => d.path === "install_profile.json");
+                let file = directory.files.find(d => d.path === "install_profile.json");
                 let installProfile = JSON.parse(await file.buffer());
                 content["installLibraries"] = installProfile["libraries"];
             }
@@ -234,7 +258,40 @@ module.exports = class MinecraftForge extends Minecraft {
 
     async fetchManifest() {
         await super.fetchManifest();
-        await this._fetchForgeManifest();
+        if (compareVersions(this.forgeVersion, "1.5.2-7.8.0.684") !== -1) {
+            await this._fetchForgeManifest();
+        } else {
+            this._forgeManifest = {
+                minecraftArguments: this._manifest["minecraftArguments"],
+                mainClass: this._manifest["mainClass"],
+                libraries: [
+                    { name: `net.minecraftforge:forge:${this.forgeVersion}` },
+                    { name: "net.minecraftforge:legacyfixer:1.0" }
+                ]
+            };
+            if (compareVersions(this.forgeVersion, "1.5.0-7.7.0.559") !== -1) {
+                this._forgeManifest["libraries"].push(
+                    { name: "org.ow2.asm:asm-all:4.1" },
+                    { name: "net.sourceforge.argo:argo:3.2-small" },
+                    { name: "com.google.guava:guava:14.0-rc3" },
+                    { name: "org.bouncycastle:bcprov-jdk15on:148" },
+                    { name: "org.scala-lang:scala-library:2.10.0-custom" }
+                );
+            } else if (compareVersions(this.forgeVersion, "1.4.0-5.0.0.320") !== -1) {
+                this._forgeManifest["libraries"].push(
+                    { name: "org.ow2.asm:asm-all:4.0" },
+                    { name: "net.sourceforge.argo:argo:2.25" },
+                    { name: "com.google.guava:guava:12.0.1" }
+                );
+                if (compareVersions(this.forgeVersion, "1.4.5-6.4.2.444") !== -1) {
+                    // ORIGINAL FILE: bcprov-jdk15on-147.jar
+                    this._forgeManifest["libraries"].push(
+                        { name: "org.bouncycastle:bcprov-jdk15on:148" }
+                    );
+                }
+            }
+            await this._refactorForgeManifest(this._forgeManifest);
+        }
     }
 
     _getLibraries() {
@@ -320,6 +377,10 @@ module.exports = class MinecraftForge extends Minecraft {
 
         }
 
+        if (compareVersions(this.forgeVersion, "1.5.2-7.8.0.684") === -1) {
+            args.unshift("-Dfml.coreMods.load=net.minecraftforge.legacy._1_5_2.LibraryFixerCoremod");
+        }
+
         args[args.indexOf(this._manifest["mainClass"])] = this._forgeManifest["mainClass"];
 
         return args;
@@ -364,6 +425,17 @@ module.exports = class MinecraftForge extends Minecraft {
         }
 
         let launchArguments = this._buildLaunchArguments(this._forgeManifest["minecraftArguments"]);
+
+        /*
+            Legacy Forge version support,
+            Ignore META-INF/
+        */
+        if (compareVersions(this.forgeVersion, "1.6.2-9.10.0.797") === -1) {
+            const clientPath = this._getJars()[0]["path"];
+            const buffer = await fs.promises.readFile(clientPath);
+            JarUtil.trim(buffer, "META-INF/");
+            await fs.promises.writeFile(clientPath, buffer);
+        }
 
         await this._launch(launchArguments);
 
