@@ -1,3 +1,12 @@
+# 1.3.0
+- Add support for legacy Forge 1.4.0-5.0.0.320 2c104259bfb60da8bed71b958d33172103ac5c15 4007f4f015a5b58ca0308957f1ab3d5c6dbe0206
+- Add SkulTech Alpha 3.0.0 to official modpacks 429ce0822edd14cfc01de723aefc05d43f5f5041
+- Fix 'edit instance settings while downloading' c17cedf434d3c9f27eb82a063ce2d4ed6d66f496
+- Add support for legacy Forge 1.6.2-9.10.0.797 71cb94a0782245b998877094f8f50a4d7279b7e7
+- Add support for legacy Minecraft versions fe7223ab2c1c9e0beaca8fb85094980981edad72
+- Add empty modpack library notice 3b8c14a9d5cd41e7a4075e31968fe114a1dd7ae2
+- Make delete notice more user friendly 71d870fce2399aae9ddb7169c5fc9054586f66f5
+
 # 1.2.1
 - Fix Instance loadSettings() to save previous value 0c3c08a53cc49f572908001db4f0050fa96cb893
 - Set Login Window minimum WxH to 480x540 fdf37b4a4081eae904605253c7061884db425998
