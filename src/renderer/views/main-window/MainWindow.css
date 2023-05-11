@@ -382,7 +382,7 @@
     margin: auto;
 }
 
-.page-item[name=library] .page-content:has(> .modpack-container:empty) .instance-container-empty {
+.page-item[name=library] .library-wrapper:has(> .modpack-container:empty) .instance-container-empty {
     display: flex;
 }
 .instance-container-empty {
@@ -396,7 +396,7 @@
     text-align: center;
     height: 100%;
     font-size: 32px;
-    color: rgb(100, 100, 100);
+    color: white;
     user-select: none;
 }
 .instance-container-empty #browse-redirect {
