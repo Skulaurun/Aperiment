@@ -32,6 +32,10 @@
     background-color: rgba(0, 0, 0, 0.5);
 }
 
+.custom-launch-overlay:not(:has(> .overlay-active)) {
+    display: none;
+}
+
 .custom-launch-overlay .display-element {
     position: absolute;
     left: 0; right: 0;

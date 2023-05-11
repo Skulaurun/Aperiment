@@ -122,52 +122,16 @@
                 </div>
 
                 <div class="page-item" name="library">
-
-                    <div class="page-title">Modpack Library</div>
-
-                    <div class="page-content" id="modpack-page">
-
-                        <div id="modpack-container" class="modpack-container"></div>
-                        <div class="instance-container-empty">
-                            <p>The Modpack Library is empty.</p>
-                            <p>Go to <span id="browse-redirect">Browse Modpacks</span>.</p>
-                        </div>
-
-                        <div id="modpack-properties" class="modpack-properties">
-                            
-                            <div class="modpack-properties-header">
-                                <p class="modpack-window-title"></p>
-                                <svg width="18" height="18">
-                                    <line x1="30%" y1="30%" x2="70%" y2="70%"/>
-                                    <line x1="70%" y1="30%" x2="30%" y2="70%"/>
-                                </svg>
+                    <div class="page-content">
+                        <div class="library-wrapper">
+                            <p class="library-title">INSTANCE LIBRARY</p>
+                            <div id="modpack-container" class="modpack-container"></div>
+                            <div class="instance-container-empty">
+                                <p>The Modpack Library is empty.</p>
+                                <p>Go to <span id="browse-redirect">Browse Modpacks</span>.</p>
                             </div>
-
-                            <table id="modpack-properties-table" class="modpack-properties-table">
-                                <tbody>
-                                    <tr path="manifest.creators">
-                                        <td>Creators</td>
-                                        <td><input type="text" readonly></td>
-                                    </tr>
-                                    <tr path="manifest.description">
-                                        <td>Description</td>
-                                        <td><input type="text" readonly></td>
-                                    </tr>
-                                    <tr path="config.runtime.jvmArguments">
-                                        <td>JVM Arguments</td>
-                                        <td class="writable-input" input-type="jvmArguments"></td>
-                                    </tr>
-                                    <tr path="config.runtime.path">
-                                        <td>Java Executable</td>
-                                        <td class="writable-input" input-type="java"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
                         </div>
-
                     </div>
-
                 </div>
 
                 <div class="page-item" name="settings">
