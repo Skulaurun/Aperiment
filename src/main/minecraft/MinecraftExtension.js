@@ -65,6 +65,7 @@ module.exports = class MinecraftExtension {
             
             let item = actions.find(e => entry.path.startsWith(e.name)) || {};
             if (!item.hasOwnProperty("action")) {
+                entry.autodrain();
                 continue;
             }
 
