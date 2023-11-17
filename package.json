@@ -11,8 +11,8 @@
     "deploy:linux": "electron-builder --linux --publish always"
   },
   "devDependencies": {
-    "electron": "^22.3.0",
-    "electron-builder": "^24.3.0"
+    "electron": "^27.1.0",
+    "electron-builder": "^24.6.4"
   },
   "dependencies": {
     "arch": "^2.1.2",
@@ -21,7 +21,7 @@
     "electron-updater": "^4.3.5",
     "file-type": "^16.5.4",
     "log4js": "^6.7.1",
-    "unzipper": "^0.10.11"
+    "unzipper": "^0.10.14"
   },
   "repository": {
     "type": "git",
