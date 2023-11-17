@@ -595,6 +595,10 @@ module.exports = class InstanceManager {
         this._getInstance(loadedId, { isActive: false })['config'] = config;
     }
 
+    setManifest(loadedId, manifest) {
+        this._getInstance(loadedId, { isActive: false })['manifest'] = this._parseManifest(manifest);
+    }
+
     getInstancePath(loadedId) {
         let instanceConfig = this._getInstance(loadedId, { isActive: false });
         return path.join(

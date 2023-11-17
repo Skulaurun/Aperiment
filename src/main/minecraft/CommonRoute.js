@@ -29,6 +29,8 @@ module.exports = {
     FABRIC_LIBRARIES: 'https://maven.fabricmc.net',
 
     FABRIC_META: 'https://meta.fabricmc.net/v2',
-    VANILLA_META: 'https://launchermeta.mojang.com/mc/game/version_manifest.json'
+    VANILLA_META: 'https://launchermeta.mojang.com/mc/game/version_manifest.json',
+
+    FORGE_META: 'https://maven.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml'
 
 };

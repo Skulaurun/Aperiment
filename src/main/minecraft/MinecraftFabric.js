@@ -89,6 +89,7 @@ module.exports = class MinecraftFabric extends Minecraft {
         }
 
         manifest['launcherMeta']['libraries'] = libraries;
+        /* Possible Bug (mainClass not an array) */
         manifest['mainClass'] = manifest['launcherMeta']['mainClass']['client'];
 
     }
