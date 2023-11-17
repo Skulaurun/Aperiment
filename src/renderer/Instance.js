@@ -31,12 +31,16 @@ const { ipcRenderer } = require("electron");
 
 export default class Instance {
 
+    static versionList = null;
     static launchOverlay = new LaunchOverlay();
 
     constructor(instanceConfig) {
 
         this.config = instanceConfig;
         this.id = this.config.id;
+
+        this.isLocal = !this.config.config.remote;
+        this.version = this.config.manifest.versions[0];
 
         this.icon = new InstanceIcon({ instanceConfig: this.config });
         this.galleryIndex = 0;
@@ -207,6 +211,27 @@ export default class Instance {
             ipcRenderer.send("save-instance-config", this.config);
         }
 
+    }
+
+    saveLocal(version) {
+        this.version = version;
+        this.config.manifest.versions = [version];
+        ipcRenderer.send("save-instance-manifest", this.config);
+    }
+
+    getMinecraftList() {
+        /* 1.0 - 1.18.2+ */
+        return (Instance.versionList?.getMinecraft(true) || []);
+    }
+
+    getFabricList(version) {
+        /* 0.1.0.48 - 0.14.10+ */
+        return (Instance.versionList?.getFabric(version, false) || []);
+    }
+
+    getForgeList(version) {
+        /* 1.4.0-5.0.0.320 - 40.1.84+ */
+        return (Instance.versionList?.getForge(version, true) || []);
     }
 
     delete(keepFiles) {

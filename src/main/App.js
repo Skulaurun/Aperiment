@@ -31,6 +31,7 @@ const Log = require("./Log.js");
 const Config = require("./Config.js");
 const User = require("./auth/User.js");
 const InstanceManager = require("./minecraft/InstanceManager.js");
+const getVersionList = require("./minecraft/Meta.js");
 
 const DEVELOPER_MODE = process.argv.includes("--dev");
 const log = Log.getLogger("main");
@@ -165,6 +166,7 @@ app.once("ready", () => {
             nodeIntegration: true
         }
     });
+    //loadWindow.webContents.on("console-message", onRendererConsole);
     
     loadWindow.once("closed", () => {
         loadWindow = null;
@@ -256,6 +258,7 @@ ipcMain.once("app-start", () => {
             webviewTag: true
         }
     });
+    //loginWindow.webContents.on("console-message", onRendererConsole);
 
     const server = http.createServer(async (req, res) => {
 
@@ -301,6 +304,7 @@ ipcMain.once("app-start", () => {
             nodeIntegration: true
         }
     });
+    //mainWindow.webContents.on("console-message", onRendererConsole);
 
     loginWindow.once("closed", () => {
         loginWindow = null;
@@ -333,12 +337,17 @@ ipcMain.on("main-window-load", async () => {
     let loadedIcons = await instanceManager.loadIcons();
     let changelogHTML = await loadChangelog() || "Failed to load CHANGELOG.txt!";
 
+    let versionList = await getVersionList(
+        instanceManager.pathConfig['cache']
+    );
+
     const toSend = {
         appVersion: app.getVersion(),
         loadedConfigs: configList,
         loadedIcons: loadedIcons,
         settings: config.get(),
-        changelog: changelogHTML
+        changelog: changelogHTML,
+        versions: versionList
     };
 
     if (configList.length > 0) {
@@ -438,15 +447,18 @@ ipcMain.on("user-logout", (event) => {
 
 });
 
-ipcMain.on("new-instance", async (_, url) => {
+ipcMain.on("new-instance", async (_, object, isLocal = false) => {
 
-    if (instanceManager.findRemote(url)) {
+    if (!isLocal && instanceManager.findRemote(object)) {
         mainWindow.send("new-instance", null, `A modpack with the same remote URL already exists in the library!`);
         return;
     }
 
     try {
-        const instanceConfig = await instanceManager.addFromRemote(url);
+        const instanceConfig = (
+            isLocal ? instanceManager.addFromManifest(object)
+            : await instanceManager.addFromRemote(object)
+        );
         const iconPath = await instanceManager.fetchIcon(instanceConfig['id'])
             .catch((error) => {
                 log.error(`Could not fetch icon for modpack '${instanceConfig['id']}'. ${error}`);
@@ -457,7 +469,7 @@ ipcMain.on("new-instance", async (_, url) => {
             loadedIcons: {
                 [instanceConfig['id']]: iconPath
             }
-        });
+        }, null, isLocal);
     } catch (error) {
         mainWindow.send('new-instance', null, `${error}`);
     }
@@ -570,6 +582,15 @@ ipcMain.on("save-instance-config", (event, instanceConfig) => {
         instanceManager.setConfig(
             instanceConfig['id'],
             instanceConfig['config']
+        );
+        instanceManager.saveConfig(instanceConfig['id']);
+    }
+});
+ipcMain.on("save-instance-manifest", (_, instanceConfig) => {
+    if (instanceManager.isLoaded(instanceConfig['id'])) {
+        instanceManager.setManifest(
+            instanceConfig['id'],
+            instanceConfig['manifest']
         );
         instanceManager.saveConfig(instanceConfig['id']);
     }
@@ -772,3 +793,12 @@ async function migrateLegacyFiles(minecraftPath) {
     mainWindow?.send('load-instances', toLoad);
 
 }
+
+/*function onRendererConsole(event, level, message, line, sourceId) {
+    console.log(level, message, line, sourceId);
+    if (level == 3) {
+        Log.getLogger("renderer").error(
+            `${message}\n  at ${line} ${sourceId}`
+        );
+    }
+}*/

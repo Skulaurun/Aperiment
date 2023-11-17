@@ -21,7 +21,7 @@
 import Global from "../global/Global.js";
 import ProgressBar from "../progress-bar/ProgressBar.js";
 import CustomElement from "../../CustomElement.js";
-import { InputBox, PathBox } from "../../components/input/Input.js";
+import { InputBox, PathBox, SelectBox } from "../../components/input/Input.js";
 import { InputType, InstanceState } from "../../GlobalEnum.js";
 
 export class ModalOverlay extends CustomElement {
@@ -198,11 +198,56 @@ export class LaunchOverlay extends ModalOverlay {
                         children: [
                             {
                                 type: "tr",
+                                attributeList: { local: true },
+                                children: [
+                                    { type: "td", textContent: "Minecraft" },
+                                    {
+                                        element: new SelectBox({ isWritable: true, noSpell: true }),
+                                        assign: "minecraftVersion"
+                                    }
+                                ]
+                            },
+                            {
+                                type: "tr",
+                                attributeList: { local: true },
+                                children: [
+                                    { type: "td", textContent: "Loader" },
+                                    {
+                                        element: new SelectBox({
+                                            default: "None",
+                                            options: {
+                                                "None": "vanilla",
+                                                "Forge": "forge",
+                                                "Fabric": "fabric"
+                                            }
+                                        }),
+                                        assign: "loaderType"
+                                    }
+                                ]
+                            },
+                            {
+                                type: "tr",
+                                attributeList: { local: true, visible: false },
+                                assign: "loaderRow",
+                                children: [
+                                    {
+                                        type: "td",
+                                        textContent: "None",
+                                        assign: "loaderName"
+                                    },
+                                    {
+                                        element: new SelectBox({ isWritable: true, noSpell: true }),
+                                        assign: "loaderVersion"
+                                    }
+                                ]
+                            },
+                            {
+                                type: "tr",
                                 attributeList: { path: "config.runtime.jvmArguments" },
                                 children: [
                                     { type: "td", textContent: "JVM Arguments" },
                                     {
-                                        element: new InputBox({ default: "" })
+                                        element: new InputBox({ default: "", noSpell: true })
                                     }
                                 ]
                             },
@@ -215,6 +260,7 @@ export class LaunchOverlay extends ModalOverlay {
                                         element: new PathBox({
                                             default: "",
                                             isDirectory: false,
+                                            noSpell: true,
                                             fileTypes: InputType["java"]["fileTypes"],
                                             attributeList: {
                                                 placeholder: "<Auto-Download JRE>"
@@ -312,6 +358,32 @@ export class LaunchOverlay extends ModalOverlay {
                 ]
             }
         ]);
+        this.loaderType.addEventListener("change", (value, name, isInitial) => {
+            this.loaderRow.setAttribute("visible", value !== "vanilla");
+            this.loaderName.textContent = name;
+            this._loaderChange(
+                this.minecraftVersion.value()
+            );
+            if (!isInitial && this.loaderVersion.value()) {
+                this._saveLocal();
+            }
+        });
+        this.minecraftVersion.addEventListener("change", (value, _, isInitial) => {
+            this._loaderChange(value);
+            if (!isInitial && this.instance?.version?.vanilla !== value) {
+                this._saveLocal();
+            }
+        });
+        this.loaderVersion.addEventListener("change", (value, _, isInitial) => {
+            if (isInitial && !value) { /* No initial loader version. */
+                this.loaderType._onSelect("None");
+            }
+            if (!isInitial && this.instance?.version) {
+                if (this.instance.version[this.loaderType.value()] !== value) {
+                    this._saveLocal();
+                }
+            }
+        });
     }
 
     _onLaunchOrTerminate() {
@@ -384,6 +456,46 @@ export class LaunchOverlay extends ModalOverlay {
             this.galleryImage.classList.remove("no-duration");
         }, 100); /* If loaded in 100ms, do not show load spinner. */
         this._toggleDanger(false);
+    }
+
+    _populateMinecraft() {
+        this.minecraftVersion.populate(
+            this.instance.getMinecraftList()
+                .map(x => x.id)
+        );
+    }
+
+    _populateForge(vanilla) {
+        this.loaderVersion.populate(
+            this.instance.getForgeList(vanilla)
+                .map(x => x.id)
+        );
+    }
+
+    _populateFabric(vanilla) {
+        this.loaderVersion.populate(
+            this.instance.getFabricList(vanilla)
+                .map(x => x.id)
+        );
+    }
+
+    _loaderChange(vanilla) {
+        if (this.loaderType.value() === "forge") {
+            this._populateForge(vanilla);
+        } else if (this.loaderType.value() === "fabric") {
+            this._populateFabric(vanilla);
+        }
+    }
+
+    _saveLocal() {
+        let version = {
+            id: "1.0.0",
+            vanilla: this.minecraftVersion.value()
+        };
+        if (this.loaderType.value() !== "vanilla") {
+            version[this.loaderType.value()] = this.loaderVersion.value();
+        }
+        this.instance?.saveLocal(version);
     }
 
     display(instance) {
@@ -477,7 +589,32 @@ export class LaunchOverlay extends ModalOverlay {
         this.instanceCreators.textContent = (manifest["creators"] || []).join(", ");
         this.instanceCredits.textContent = (manifest["credits"] || []).join(", ");
 
-        this.instanceVersion.textContent = config["version"] || "Any";
+        if (!this.instance.isLocal) {
+            this.instanceVersion.textContent = config["version"] || "Any";
+            this.instanceSettings.setAttribute("hide-local", true);
+        } else {
+
+            this.instanceVersion.textContent = "Local";
+            this.instanceSettings.setAttribute("hide-local", false);
+            this._populateMinecraft();
+
+            const { vanilla, forge, fabric } = this.instance.version;
+            if (vanilla) {
+                this.minecraftVersion._onSelect(vanilla);
+            }
+            if (forge) {
+                this.loaderType._onSelect("Forge");
+                this._populateForge(vanilla);
+                this.loaderVersion._onSelect(forge);
+            } else if (fabric) {
+                this.loaderType._onSelect("Fabric");
+                this._populateFabric(vanilla);
+                this.loaderVersion._onSelect(fabric);
+            } else {
+                this.loaderType._onSelect("None");
+            }
+
+        }
 
         this.instanceChangelog.innerHTML = "";
         for (const version of this.instance.config.manifest["versions"]) {

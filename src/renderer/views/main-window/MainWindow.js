@@ -27,6 +27,7 @@ const { ipcRenderer } = require("electron");
 import Global from "../../components/global/Global.js";
 import Popup from "../../components/popup/Popup.js";
 import Instance from "../../Instance.js";
+import VersionList from "../../VersionList.js";
 import CustomElement from "../../CustomElement.js";
 import ElementBuilder from "../../ElementBuilder.js";
 import { InputBox, SelectBox, PathBox } from "../../components/input/Input.js";
@@ -52,6 +53,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("browse-redirect").addEventListener("click", () => {
         document.querySelector(".menu-item[name=browse]")?.click();
+    });
+
+    document.getElementById("add-instance-button").addEventListener("click", (event) => {
+        const { id: latestVersion } = Instance.versionList.getMinecraft(true)[0];
+        ipcRenderer.send("new-instance", {
+            name: "Untitled Instance",
+            description: "Newly created instance...",
+            versions: [ { id: "1.0.0", vanilla: latestVersion } ],
+            _MANIFEST_VERSION_: "1.0",
+            default: {
+                jvmArguments: "-Xms2048M -Xmx2048M"
+            }
+        }, true);
+        event.target.setAttribute("disabled", true);
     });
 
     Array.from(document.querySelectorAll("tr td.writable-input")).forEach((element) => {
@@ -84,10 +99,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const modpackStoreList = document.getElementById("modpack-store-list");
     const officialModpacks = {
         "SkulTech": "https://www.skulaurun.eu/skultech/manifest.json",
-        "SkulTech Alpha 1.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a1.0.0.json",
-        "SkulTech Alpha 1.5.7": "https://www.skulaurun.eu/skultech/legacy/skultech-a1.5.7.json",
+        "SkulTech Alpha 3.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a3.0.0.json",
         "SkulTech Alpha 2.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a2.0.0.json",
-        "SkulTech Alpha 3.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a3.0.0.json"
+        "SkulTech Alpha 1.5.7": "https://www.skulaurun.eu/skultech/legacy/skultech-a1.5.7.json",
+        "SkulTech Alpha 1.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a1.0.0.json"
     };
 
     ElementBuilder.buildTo(modpackStoreList, Object.entries(officialModpacks).map(([name, url]) => {
@@ -102,8 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 {
                     type: "button",
-                    classList: ["settings-button", "store-add-button"],
-                    textContent: "+",
+                    classList: ["add-button", "store-add-button"],
                     attributeList: { url: url },
                     listeners: {
                         click: () => { ipcRenderer.send("new-instance", url); }
@@ -157,6 +171,9 @@ ipcRenderer.on("main-window-load", (_, toLoad) => {
         });
     });
 
+    /* Load Version List -> Instance */
+    Instance.versionList = new VersionList(toLoad['versions']);
+
     /* Load Settings -> Aperiment Settings */
     legacyLoadSettings(toLoad["settings"]);
 
@@ -167,14 +184,22 @@ ipcRenderer.on("main-window-load", (_, toLoad) => {
 
 });
 
-ipcRenderer.on("new-instance", (_, toLoad, error) => {
+ipcRenderer.on("new-instance", (_, toLoad, error, isLocal) => {
     if (!error) {
         loadInstances(toLoad);
         const config = toLoad.loadedConfigs[0];
         ipcRenderer.send("new-instance-config", config);
         popup.alert(`Added '${config.manifest["name"]}' to library. 📚`, PopupType.Success);
+        if (isLocal) {
+            const { id } = toLoad["loadedConfigs"][0];
+            document.getElementById(id)?.click();
+        }
     } else {
         popup.alert(error, PopupType.Error);
+        console.error(error);
+    }
+    if (isLocal) {
+        document.getElementById("add-instance-button").removeAttribute("disabled");
     }
 });
 

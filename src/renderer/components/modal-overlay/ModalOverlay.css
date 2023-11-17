@@ -180,6 +180,11 @@
     display: none;
 }
 
+.custom-launch-overlay .instance-settings[hide-local=true] tr[local=true],
+.custom-launch-overlay .instance-settings tr[visible=false] {
+    display: none;
+}
+
 .custom-launch-overlay .progress-wrapper:has(> .custom-progress-bar[visible=false]) {
     height: 42px;
 }
