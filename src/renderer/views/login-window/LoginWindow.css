@@ -168,10 +168,30 @@ h1 {
 .background-content {
     position: absolute;
     z-index: 0;
+    width: 100%;
 }
-.background-content img {
+.background-content .loading-spinner {
+    display: block;
+    position: relative;
+    margin: auto;
     margin-top: 32px;
+    width: 52px;
+    height: 52px;
+    border: 2px solid white;
+    border-top: 2px solid rgb(54, 214, 89);
+    border-radius: 50%;
+    animation: image-load 0.8s linear infinite;
 }
 .background-content p {
-    margin-top: 8px;
+    margin-top: 16px;
+    font-style: italic;
+}
+
+@keyframes image-load {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
