@@ -26,6 +26,7 @@ export default class CustomElement {
     static registry = [];
 
     constructor(options) {
+        this.callbacks = {};
         this.options = options;
         this.className = options["className"] || "default";
         this.id = CustomElement.lastId++;
@@ -51,6 +52,22 @@ export default class CustomElement {
 
     appendChild(element) {
         this.customElement.appendChild(element);
+    }
+
+    addEventListener(name, callback) {
+        if (name && callback && typeof name === "string" && typeof callback === "function") {
+            if (!this.callbacks[name]) {
+                this.callbacks[name] = [callback];
+            } else {
+                this.callbacks[name].push(callback);
+            }
+        }
+    }
+
+    emit(name, ...args) {
+        this.callbacks[name]?.forEach((callback) => {
+            callback(...args);
+        });
     }
 
     get() { return this.customElement; }

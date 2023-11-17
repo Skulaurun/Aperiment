@@ -55,7 +55,9 @@
     position: absolute;
     z-index: 1;
     width: 100%;
+    max-height: 200px;
     padding: 8px;
+    overflow-y: auto;
     visibility: hidden;
     user-select: none;
     background-color: rgb(40, 40, 40);
@@ -66,6 +68,9 @@
 }
 .custom-select-box .menu-option:hover {
     background-color: rgba(255, 255, 255, 0.1);
+}
+.custom-select-box .menu-option[visible=false] {
+    display: none;
 }
 .custom-select-box .select-visible {
     visibility: visible;

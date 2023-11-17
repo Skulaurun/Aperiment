@@ -19,6 +19,7 @@
  */
 
 import CustomElement from "../../CustomElement.js";
+import ElementBuilder from "../../ElementBuilder.js";
 
 /*
     Electron does not support ES6 modules,
@@ -54,6 +55,10 @@ export class InputBox extends CustomElement {
             this.inputBox.value = this.options["default"];
         }
 
+        if (this.options["noSpell"] === true) {
+            this.inputBox.setAttribute("spellcheck", false);
+        }
+
     }
 
     save() {
@@ -86,6 +91,7 @@ export class SelectBox extends InputBox {
         );
         this.isMenuOpen = false;
         this.hasFocus = false;
+        this.isArray = false;
     }
 
     _createElement() {
@@ -102,28 +108,9 @@ export class SelectBox extends InputBox {
                 type: "div",
                 classList: ["select-menu"],
                 assign: "selectMenu",
-                children: Object.keys(this.options["options"]).map((label) => {
-                    return {
-                        type: "div",
-                        classList: ["menu-option"],
-                        textContent: label
-                    }
-                })
+                children: []
             }
         ]);
-
-        const firstOption = Object.keys(this.options["options"])
-            .shift();
-        const [defaultOption, _] = Object.entries(this.options["options"])
-            .find(([_, value]) => this.options["default"] === value );
-
-        if (defaultOption) {
-            this._onSelect(defaultOption);
-        } else {
-            if (firstOption) {
-                this._onSelect(firstOption);
-            }
-        }
 
         const changeState = () => {
             this.isMenuOpen ? this._hideMenu() : this._showMenu();
@@ -132,7 +119,20 @@ export class SelectBox extends InputBox {
             }
         }
 
-        this.inputBox.setAttribute("readonly", true);
+        if (this.options["options"]) {
+            this.populate();
+        }
+        if (!(this.options["isWritable"] === true)) {
+            this.inputBox.setAttribute("readonly", true);
+        }
+        this.inputBox.addEventListener("input", () => {
+            Array.from(this.selectMenu.children).forEach((child) => {
+                child.setAttribute("visible",
+                    child.textContent.toLowerCase().startsWith(this.inputBox.value.toLowerCase())
+                );
+            });
+        });
+
         this.customElement.addEventListener("click", (event) => {
             if (event.target && event.target.classList.contains("menu-option")) {
                 this._onSelect(event.target.textContent);
@@ -155,9 +155,51 @@ export class SelectBox extends InputBox {
         this.selectMenu.classList.remove("select-visible");
     }
 
-    _onSelect(option) {
+    _onSelect(option, isInitial) {
         this.inputBox.value = option;
-        this.selectedValue = this.options["options"][option];
+        this.selectedValue = !this.isArray
+            ? this.options["options"][option]
+            : option;
+        this.emit("change", this.selectedValue, option, isInitial);
+    }
+
+    populate(options) {
+
+        if (options) {
+            this.options["options"] = options;
+        }
+
+        this.isArray = Array.isArray(options);
+        options = !this.isArray ? Object.keys(this.options["options"])
+            : Object.values(this.options["options"]);
+
+        const templates = options.map((label) => {
+            return {
+                type: "div",
+                classList: ["menu-option"],
+                textContent: label
+            };
+        });
+
+        let defaultOption = null;
+        const firstOption = options.shift();
+
+        if (this.isArray) {
+            defaultOption = options.find((value) => this.options["default"] === value);
+        } else {
+            [defaultOption] = Object.entries(this.options["options"])
+                .find(([_, value]) => this.options["default"] === value) || [];
+        }
+
+        if (defaultOption) {
+            this._onSelect(defaultOption, true);
+        } else {
+            this._onSelect(firstOption || "", true);
+        }
+
+        this.selectMenu.innerHTML = "";
+        return ElementBuilder.buildTo(this.selectMenu, templates);
+
     }
 
     save() {
