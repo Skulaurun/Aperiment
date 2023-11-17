@@ -79,52 +79,53 @@
                                 Motto: Make modpacks playable with a few clicks. <br><br>
                                 <span class="paragraph-author">Adam Charvát (Skulaurun)</span>
                             </p>
-                            <h4>Credits 💎</h4>
-                            <p>Testing by:</p>
+                            <h4>Credits ⭐</h4>
+                            <p>Testing:</p>
                             <ul class="credit-list">
                                 <li>Jakub Janšta</li>
                                 <li>Jan Linduška</li>
                                 <li>Denis Ben-Chenni</li>
                                 <li>... and others who played SkulTech Release ...</li>
                             </ul>
-                            <p class="special-thanks">⭐ Special thanks to Jiří Linduška (Chikuahua).</p>
+                            <p>Initial support, feedback, testing:</p>
+                            <ul class="credit-list">
+                                <li>Jiří Linduška</li>
+                            </ul>
                         </div>
                     </div>
                     <div class="page-footer">
                         <div href="https://www.skulaurun.eu" class="footer-button href">🔗 skulaurun.eu</div>
-                        <div href="https://discord.gg/B4zqJRM" class="footer-button href">🔗 SkulTech Community Hub</div>
                         <p id="app-version">v</p>
                     </div>
                 </div>
 
                 <div class="page-item" name="browse">
-
-                    <div class="page-title">Browse Modpacks</div>
-
                     <div class="page-content">
-
-                        <img src="../../assets/images/store-background.png" class="store-background">
-
-                        <div class="page-wrapper">
-                            <div class="modpack-store-header">
-                                <input type="text" id="modpack-search-bar" class="modpack-search-bar" placeholder="enter modpack url">
-                                <button id="add-modpack-button" class="settings-button">ADD</button>
+                        <div class="browse-wrapper">
+                            <p class="browse-title">
+                                GET EXTENSIONS
+                            </p>
+                            <div class="browse-section external-packs">
+                                <div class="section-wrapper">
+                                    <input type="text" id="modpack-search-bar" class="modpack-search-bar" placeholder="enter extension url">
+                                    <button id="add-modpack-button" class="add-button"></button>
+                                </div>
                             </div>
-    
-                            <div class="modpack-store">
-                                <h1>Official modpacks:</h1>
+                            <div class="browse-section official-packs">
+                                <p class="section-title">OFFICIAL</p>
                                 <div class="modpack-entries" id="modpack-store-list"></div>
                             </div>
                         </div>
-
                     </div>
-
                 </div>
 
                 <div class="page-item" name="library">
                     <div class="page-content">
                         <div class="library-wrapper">
-                            <p class="library-title">INSTANCE LIBRARY</p>
+                            <p class="library-title">
+                                INSTANCE LIBRARY
+                                <button id="add-instance-button"></button>
+                            </p>
                             <div id="modpack-container" class="modpack-container"></div>
                             <div class="instance-container-empty">
                                 <p>The Instance Library is empty.</p>
