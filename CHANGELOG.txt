@@ -1,3 +1,13 @@
+# 1.4.0
+- Add local instance editing, tweak UI 35b27dfc92a55ca13cee3001997a352120025de7 ca761a91e053c772b5bf1c142df78c11d6a11bc4
+- UI Update - Browse, Library f9bf8e5838d8e0cd28e444c8f0ac84b1eb363137
+- Implement creation of local instances 8c436cbe467f71c6c07b8ca1472cc759479d4b3f bca6f1c6483ea40894f2c5d7025cad0cf6e67d68
+- Improve custom input elements (SelectBox) e5010413063f0b92e39037b663a83f0ded3df2b1
+- Add load spinner to LoginWindow 2e54072aa843cba8bdc8cf2d7c3ce1777acc318c
+- Update electron, electron-builder and unzipper c1c9c002d14c56a6db061a544c6ed1456eb3a8ff
+- Fix update stuck on "Extracting" 81b45f82de6f281386bed3cd43b83c2f0ef54038
+- Improve instance library UI 6dc228e8026222d8240bf5d5df9b212c970c58b9 301f653ba12f70a54ad217384992a0fcc1b50c83
+
 # 1.3.0
 - Add support for legacy Forge 1.4.0-5.0.0.320 2c104259bfb60da8bed71b958d33172103ac5c15 4007f4f015a5b58ca0308957f1ab3d5c6dbe0206
 - Add SkulTech Alpha 3.0.0 to official modpacks 429ce0822edd14cfc01de723aefc05d43f5f5041
