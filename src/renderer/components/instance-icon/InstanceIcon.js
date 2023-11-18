@@ -41,7 +41,7 @@ export default class InstanceIcon extends CustomElement {
                 {
                     type: "img",
                     attributeList: {
-                        "src": "../../assets/images/modpack.png"
+                        "src": "../../assets/images/default-instance.png"
                     },
                     assign: "imageIcon"
                 },
