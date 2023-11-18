@@ -85,6 +85,7 @@
     padding-bottom: 16px;
     border-bottom: 3px solid white;
     background-color: rgb(36, 36, 36);
+    outline: none;
 }
 
 .custom-launch-overlay .gallery-wrapper {
@@ -280,10 +281,17 @@
     text-align: justify;
     white-space: pre-wrap;
     background-color: rgb(28, 28, 28);
+    border: none;
+    outline: none;
 }
 .custom-launch-overlay .instance-description .description-heading:has(+ p:empty),
 .custom-launch-overlay .instance-description .description-heading + p:empty {
     display: none;
+}
+
+.custom-launch-overlay .instance-description .description-heading:has(+ p[contenteditable=true]),
+.custom-launch-overlay .instance-description .description-heading + p[contenteditable=true] {
+    display: block;
 }
 
 .custom-launch-overlay .version-wrapper {

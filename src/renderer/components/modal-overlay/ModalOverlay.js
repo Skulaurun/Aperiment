@@ -88,7 +88,20 @@ export class LaunchOverlay extends ModalOverlay {
                 type: "div",
                 classList: ["content-wrapper"],
                 children: [
-                    { type: "h2", classList: ["instance-title"], assign: "instanceTitle" },
+                    {
+                        type: "h2",
+                        classList: ["instance-title"],
+                        assign: "instanceTitle",
+                        attributeList: { "spellcheck": "false" },
+                        listeners: {
+                            "focusout": () => {
+                                if (!this.instanceTitle.textContent) {
+                                    this.instanceTitle.textContent = "Untitled Instance";
+                                }
+                                this.instance?.saveLocal({ name: this.instanceTitle.textContent });
+                            }
+                        }
+                    },
                     {
                         type: "div",
                         classList: ["gallery-wrapper"],
@@ -334,7 +347,16 @@ export class LaunchOverlay extends ModalOverlay {
                                 classList: ["description-heading"],
                                 textContent: "Description"
                             },
-                            { type: "p", assign: "instanceDescription" },
+                            {
+                                type: "p",
+                                assign: "instanceDescription",
+                                attributeList: { "spellcheck": "false" },
+                                listeners: {
+                                    "focusout": () => {
+                                        this.instance?.saveLocal({ description: this.instanceDescription.textContent });
+                                    }
+                                }
+                            },
                             {
                                 type: "span",
                                 classList: ["description-heading"],
@@ -495,7 +517,7 @@ export class LaunchOverlay extends ModalOverlay {
         if (this.loaderType.value() !== "vanilla") {
             version[this.loaderType.value()] = this.loaderVersion.value();
         }
-        this.instance?.saveLocal(version);
+        this.instance?.saveLocal({ version });
     }
 
     display(instance) {
@@ -579,10 +601,17 @@ export class LaunchOverlay extends ModalOverlay {
         }
 
         this.progressText.textContent = activeState["progressText"];
-        
         this.progressSize.textContent = activeState["progressSize"];
 
         const { config, manifest } = this.instance.config;
+
+        if (this.instance.isLocal) {
+            [this.instanceTitle, this.instanceDescription]
+                .forEach(x => x.setAttribute("contenteditable", true));
+        } else {
+            [this.instanceTitle, this.instanceDescription]
+                .forEach(x => x.removeAttribute("contenteditable"));
+        }
 
         this.instanceTitle.textContent = manifest["name"] || "Untitled";
         this.instanceDescription.textContent = manifest["description"] || "";

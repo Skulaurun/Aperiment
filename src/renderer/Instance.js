@@ -213,9 +213,19 @@ export default class Instance {
 
     }
 
-    saveLocal(version) {
-        this.version = version;
-        this.config.manifest.versions = [version];
+    saveLocal(object) {
+        if (object.version) {
+            this.version = object.version;
+            this.config.manifest.versions = [object.version];
+        }
+        if (object.name) {
+            this.icon.get().querySelector(".instance-icon")
+                ?.setAttribute("name", object.name);
+            this.config.manifest.name = object.name;
+        }
+        if (object.description || object.description == "") {
+            this.config.manifest.description = object.description;
+        }
         ipcRenderer.send("save-instance-manifest", this.config);
     }
 

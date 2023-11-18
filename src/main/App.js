@@ -347,7 +347,11 @@ ipcMain.on("main-window-load", async () => {
         loadedIcons: loadedIcons,
         settings: config.get(),
         changelog: changelogHTML,
-        versions: versionList
+        versions: versionList,
+        userInfo: {
+            UUID: user.id,
+            playerName: user.nickname
+        }
     };
 
     if (configList.length > 0) {

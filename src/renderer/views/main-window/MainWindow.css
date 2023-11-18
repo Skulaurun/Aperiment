@@ -246,7 +246,7 @@
     font-size: 19px;
     padding: 4px 6px 4px 6px;
     transition-duration: 0.5s;
-    border: 1px solid transparent;
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 .modpack-search-bar:focus {
     border-color: rgb(60, 207, 92);

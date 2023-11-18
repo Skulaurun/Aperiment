@@ -36,6 +36,11 @@ import { InputType, InputValue, InstanceState, PopupType } from "../../GlobalEnu
 let instances = [];
 let popup = new Popup();
 
+let userInfo = {
+    UUID: '25966168-dc9c-360c-8f32-ed022bfa1070',
+    playerName: 'Herobrine'
+};
+
 window.addEventListener("error", ({ error }) => {
     ipcRenderer.send("renderer-error", error.stack || error);
 });
@@ -59,7 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const { id: latestVersion } = Instance.versionList.getMinecraft(true)[0];
         ipcRenderer.send("new-instance", {
             name: "Untitled Instance",
-            description: "Newly created instance...",
+            description: `❤️ Look, ${userInfo.playerName} created a new instance.\n🧊 Minecraft: ${latestVersion}\n\nClick here to edit.`,
+            creators: [userInfo.playerName],
             versions: [ { id: "1.0.0", vanilla: latestVersion } ],
             _MANIFEST_VERSION_: "1.0",
             default: {
@@ -179,6 +185,9 @@ ipcRenderer.on("main-window-load", (_, toLoad) => {
 
     /* Load Instances -> Modpack Library */
     loadInstances(toLoad);
+
+    /* Store User Info */
+    userInfo = toLoad["userInfo"];
 
     ipcRenderer.send("app-load-finish");
 
