@@ -305,26 +305,27 @@
 .page-item[name=browse] #add-modpack-button::after {
     left: 3.5px;
 }
-.page-item[name=browse] .modpack-entry {
+.page-item[name=browse] .extension-entry {
     display: flex;
     align-items: center;
+    padding: 4px;
     transition-duration: 0.35s;
     transition-property: background-color;
 }
-.page-item[name=browse] .modpack-entry:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+.page-item[name=browse] .extension-entry:hover {
+    background-color: rgba(0, 0, 0, 0.1);
 }
-.page-item[name=browse] .modpack-entry:hover > .store-add-button {
+.page-item[name=browse] .extension-entry:hover > .store-add-button {
     visibility: visible;
     opacity: 1;
 }
-.page-item[name=browse] .modpack-entry:not(:first-child) {
-    margin-top: 8px;
+.page-item[name=browse] .extension-entry:not(:first-child) {
+    margin-top: 4px;
 }
 .page-item[name=browse] .entry-name {
     display: inline-block;
     font-size: 18px;
-    margin-right: 6px;
+    margin-right: 8px;
     user-select: none;
 }
 .external-packs .section-wrapper {

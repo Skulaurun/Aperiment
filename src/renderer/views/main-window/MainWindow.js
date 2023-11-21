@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ElementBuilder.buildTo(modpackStoreList, Object.entries(officialModpacks).map(([name, url]) => {
         return {
             type: "div",
-            classList: ["modpack-entry"],
+            classList: ["extension-entry"],
             children: [
                 {
                     type: "div",
