@@ -18,12 +18,12 @@ Aperiment's main purpose is to provide an easy way of manipulating SkulTech-X-Pe
 
 | Type              | Version                    |
 | :---------------: | :------------------------: |
-| Minecraft         | 1.0 - 1.18.2+              |
-| Fabric            | 0.1.0.48 - 0.14.10+        |
-| Forge             | 1.4.0-5.0.0.320 - 40.1.84+ |
+| Minecraft         | 1.0 - 1.20.4+              |
+| Fabric            | 0.1.0.48 - 0.15.7+         |
+| Forge             | 1.4.0-5.0.0.320 - 49.0.38+ |
 
 ## 🧊 UI Preview
-![aperiment ui](https://cdn.discordapp.com/attachments/587327745961230339/1076680460807192576/image.png)
+![aperiment ui](https://github.com/Skulaurun/Aperiment/assets/31413184/f780ac7a-5d4d-4b5e-be06-eb3750c2538e)
 
 ## 📜 Manifest Format
 
@@ -82,7 +82,7 @@ To create your own pack, you need to host a JSON Manifest, for example on GitHub
 ```
 
 `<name>` - Incredible pack name!<br>
-`<creators>` - Who created the pack? Was it you?<br>
+`<creators>` - Who created the pack?<br>
 `[credits]` - Who made the pack possible? E. g. mod authors.<br>
 
 `[icon]` - Icon URL, supported MIME types: png, jpeg, webp, gif.<br>
