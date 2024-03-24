@@ -1,3 +1,11 @@
+# 1.5.0
+- Prepare frontend to support curated extensions 132a605c707c7fb5fe8093f7869f179ed0a15e98
+- Update ForgeWrapper to 1.6.0 (fixes startup crashes) fc75bf3c2f951fd4bbebe6c3c0155ea0a70d7cc8
+- Fix offline mode for Minecraft 1.16.5 & 1.16.4 c9d5dbe786b4c50b1643af2a1b85cd21489f9291
+- Update electron to 29.1.4 and electron-builder to 24.6.4 04aa5a575fbb2ee65d0553329651173ed02a4baa
+- Update copyright year to 2024 a31a0551bc21c6c1211306777b9bbfbcdd19fd10 3fb2c9606493516fc3204cd2f60acbbc1e8349c8
+- Tweak Get Extensions UI nuances aee238ff5a022dee7fc6c3696a5ef9deab74e834
+
 # 1.4.0
 - Add local instance editing, tweak UI 35b27dfc92a55ca13cee3001997a352120025de7 ca761a91e053c772b5bf1c142df78c11d6a11bc4
 - UI Update - Browse, Library f9bf8e5838d8e0cd28e444c8f0ac84b1eb363137
