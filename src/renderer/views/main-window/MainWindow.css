@@ -261,6 +261,7 @@
 .modpack-entries {
     margin-top: 8px;
     margin-left: 8px;
+    margin-bottom: 16px;
 }
 .browse-section .section-title {
     font-weight: bold;
@@ -336,6 +337,8 @@
     padding: 16px;
     margin-top: 16px;
     background-color: rgba(0, 0, 0, 0.15);
+    max-height: calc(100% - 112px);
+    overflow-y: auto;
 }
 
 /* Modpack Library */

@@ -1,7 +1,7 @@
 /*
  *
  *   Aperiment - Custom Minecraft Launcher
- *   Copyright (C) 2020 - 2023 Adam Charvát
+ *   Copyright (C) 2020 - 2024 Adam Charvát
  *
  *   Aperiment is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -102,8 +102,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     popup.parent = document.querySelector(".page-item[name=browse]");
 
-    const modpackStoreList = document.getElementById("modpack-store-list");
-    const officialModpacks = {
+    const officialExtensionList = document.getElementById("official-extension-list");
+    const curatedExtensionList = document.getElementById("curated-extension-list");
+
+    const officialExtensions = {
         "SkulTech": "https://www.skulaurun.eu/skultech/manifest.json",
         "SkulTech Alpha 3.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a3.0.0.json",
         "SkulTech Alpha 2.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a2.0.0.json",
@@ -111,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "SkulTech Alpha 1.0.0": "https://www.skulaurun.eu/skultech/legacy/skultech-a1.0.0.json"
     };
 
-    ElementBuilder.buildTo(modpackStoreList, Object.entries(officialModpacks).map(([name, url]) => {
+    const template = (list) => Object.entries(list).map(([name, url]) => {
         return {
             type: "div",
             classList: ["extension-entry"],
@@ -131,7 +133,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             ]
         };
-    }));
+    });
+
+    ElementBuilder.buildTo(officialExtensionList, template(officialExtensions));
+    //ElementBuilder.buildTo(curatedExtensionList, template(officialExtensions));
+
+    // TEMPORARY
+    ElementBuilder.buildTo(curatedExtensionList, [{
+        type: "p",
+        textContent: "Support for curated extensions... Coming soon!"
+    }]);
 
     let modpackSearchBar = document.getElementById("modpack-search-bar");
     document.getElementById("add-modpack-button").addEventListener("click", () => {
