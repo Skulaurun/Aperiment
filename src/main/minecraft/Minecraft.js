@@ -537,10 +537,25 @@ module.exports = class Minecraft {
         ]);
         let natives = path.join(this.path, "natives");
 
+        // Fix offline mode due to a change in Mojang's auth servers
+        let offlineMode = [];
+        if (['1.16.5', '1.16.4'].includes(this.version)) {
+            if (this.user['accessToken'] == '{}') {
+                let invalid = 'https://mpfix.invalid';
+                offlineMode = [
+                    `-Dminecraft.api.auth.host=${invalid}`,
+                    `-Dminecraft.api.account.host=${invalid}`,
+                    `-Dminecraft.api.session.host=${invalid}`,
+                    `-Dminecraft.api.services.host=${invalid}`
+                ];
+            }
+        }
+
         return [
             `-Dminecraft.applet.TargetDirectory=${this.path}`,
             `-Djava.library.path=${natives}`,
             `-Dminecraft.client.jar=${client}`,
+            ...offlineMode,
             "-cp", `${libraries}`,
             this._manifest["mainClass"]
         ];
