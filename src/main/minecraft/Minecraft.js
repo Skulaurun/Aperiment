@@ -1,7 +1,7 @@
 /*
  *
  *   Aperiment - Custom Minecraft Launcher
- *   Copyright (C) 2020 - 2023 Adam Charvát
+ *   Copyright (C) 2020 - 2024 Adam Charvát
  *
  *   Aperiment is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -520,6 +520,8 @@ module.exports = class Minecraft {
             "auth_session": `token:${this.user['accessToken']}:${this.user['UUID']}`,
             "assets_root": path.join(this.cache, "assets"),
             "game_assets": path.join(this.cache, "assets/virtual/legacy"),
+            // Setting this to non-existent directory fixes gameDirectory changing for some legacy versions
+            //"game_assets": path.join(this.cache, "assets/virtual/legacy/dirty-fix"), // fix 1.2.3 non existent dir
             "assets_index_name": this._manifest["assetIndex"]["id"],
             "version_name": this._manifest["id"],
             "version_type": this._manifest["type"],
