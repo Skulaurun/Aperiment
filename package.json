@@ -1,6 +1,6 @@
 {
   "name": "aperiment",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Custom Minecraft Launcher",
   "main": "src/main/App.js",
   "scripts": {
