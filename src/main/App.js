@@ -337,6 +337,8 @@ ipcMain.on("main-window-load", async () => {
     let loadedIcons = await instanceManager.loadIcons();
     let changelogHTML = await loadChangelog() || "Failed to load CHANGELOG.txt!";
 
+    await fs.promises.mkdir(instanceManager.pathConfig['cache'], { recursive: true });
+
     let versionList = await getVersionList(
         instanceManager.pathConfig['cache']
     );
