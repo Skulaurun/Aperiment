@@ -1,3 +1,8 @@
+# 1.5.1
+- Run 'npm audit fix' without breaking changes (update vulnerable packages) e73db62f28bf623073ad2b67a4ea2b1d63cf9076
+- Fix add instance button not clickable when library is empty 4bcac882bd4cce170c0a30ba23d7fa58639af918
+- Fix Aperiment crash on first start (create cache folder) 3f73a9f91cbd3cff2fceb0c5709d48779ac2f95b
+
 # 1.5.0
 - Prepare frontend to support curated extensions 132a605c707c7fb5fe8093f7869f179ed0a15e98
 - Update ForgeWrapper to 1.6.0 (fixes startup crashes) fc75bf3c2f951fd4bbebe6c3c0155ea0a70d7cc8
