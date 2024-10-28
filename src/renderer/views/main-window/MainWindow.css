@@ -385,6 +385,9 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.3);
 }
+.page-item[name=library] .library-wrapper {
+    position: relative;
+}
 .page-item[name=library] .modpack-container {
     position: relative;
     margin-top: 8px;
@@ -449,14 +452,14 @@
 }
 .instance-container-empty {
     position: absolute;
-    top: 0; left: 0;
+    top: 48px; left: 0;
     right: 0; bottom: 0;
     display: none;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    height: 100%;
+    height: calc(100% - 48px);
     font-size: 32px;
     color: white;
     user-select: none;
